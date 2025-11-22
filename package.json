@@ -32,7 +32,7 @@
     "lint": "turbo run lint",
     "format": "turbo run format",
     "changeset": "changeset",
-    "release": "npm run build -- --filter=!@kiberon-labs/website  && npm run changeset publish",
+    "release": "npm run build -- --filter=!@kiberon-labs/website  && npm run changeset publish -- --provenance",
     "vers": "npm run changeset version",
     "typecheck": "turbo run typecheck"
   },
