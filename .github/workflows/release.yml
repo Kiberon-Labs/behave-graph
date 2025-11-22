@@ -33,10 +33,14 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
+          registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
 
       - name: Install Dependencies
         run: pnpm i
+
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
