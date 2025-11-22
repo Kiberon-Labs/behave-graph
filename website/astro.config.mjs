@@ -5,7 +5,8 @@ import starlightLinksValidator from 'starlight-links-validator';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
-  site: 'https://kiberon-labs.github.io/behave-graph/',
+  site: 'https://kiberon-labs.github.io',
+  base: '/behave-graph',
   integrations: [
     starlight({
       title: 'Behave Graphs',

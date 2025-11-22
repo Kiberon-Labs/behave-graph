@@ -31,6 +31,7 @@
     "test": "turbo test",
     "lint": "turbo run lint",
     "format": "turbo run format",
+    "changeset": "changeset",
     "release": "npm run build && npm run changeset publish",
     "vers": "npm run changeset version",
     "typecheck": "turbo run typecheck"
