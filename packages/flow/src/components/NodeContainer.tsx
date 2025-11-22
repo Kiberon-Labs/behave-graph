@@ -1,6 +1,6 @@
-import { NodeCategory, NodeSpecJSON } from '@behave-graph/core';
+import { NodeCategory, type NodeSpecJSON } from '@kiberon-labs/behave-graph';
 import cx from 'classnames';
-import React, { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 
 import { categoryColorMap, colors } from '../util/colors.js';
 

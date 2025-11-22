@@ -1,4 +1,4 @@
-import { GraphJSON } from '@behave-graph/core';
+import type { GraphJSON } from '@kiberon-labs/behave-graph';
 
 export const hasPositionMetaData = (graph: GraphJSON): boolean => {
   if (graph.nodes === undefined) return false;

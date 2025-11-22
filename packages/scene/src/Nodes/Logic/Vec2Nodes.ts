@@ -1,4 +1,4 @@
-import { makeInNOutFunctionDesc } from '@behave-graph/core';
+import { makeInNOutFunctionDesc } from '@kiberon-labs/behave-graph';
 
 import {
   Vec2,

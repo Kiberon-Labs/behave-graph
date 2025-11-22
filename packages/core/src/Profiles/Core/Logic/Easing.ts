@@ -1,8 +1,6 @@
 import { EasingFunctions, EasingModes } from '../../../Easing.js';
-import {
-  makeFunctionNodeDefinition,
-  NodeCategory
-} from '../../../Nodes/NodeDefinitions.js';
+import { makeFunctionNodeDefinition } from '../../../Nodes/NodeDefinitions.js';
+import { NodeCategory } from '~/Nodes/Registry/NodeCategory.js';
 
 export const Easing = makeFunctionNodeDefinition({
   typeName: 'math/easing',
@@ -27,8 +25,10 @@ export const Easing = makeFunctionNodeDefinition({
     t: 'float'
   },
   exec: ({ read, write }) => {
-    const easingFunction = EasingFunctions[read('easingFunction') as string];
-    const easingMode = EasingModes[read('easingMode') as string];
+    const easingFunction =
+      EasingFunctions[read('easingFunction') as keyof typeof EasingFunctions];
+    const easingMode =
+      EasingModes[read('easingMode') as keyof typeof EasingModes];
     const easing = easingMode(easingFunction);
     const inputT = read('t') as number;
 

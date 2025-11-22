@@ -1,4 +1,4 @@
-import { GraphInstance } from '../Graph.js';
+import type { GraphInstance } from '../Graph.js';
 import { validateGraphAcyclic } from './validateGraphAcyclic.js';
 import { validateGraphLinks } from './validateGraphLinks.js';
 

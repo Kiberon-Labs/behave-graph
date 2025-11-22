@@ -2,9 +2,9 @@ import {
   Assert,
   makeEventNodeDefinition,
   NodeCategory
-} from '@behave-graph/core';
+} from '@kiberon-labs/behave-graph';
 
-import { IScene } from '../../Abstractions/IScene.js';
+import type { IScene } from '../../Abstractions/IScene.js';
 
 type State = {
   jsonPath?: string | undefined;

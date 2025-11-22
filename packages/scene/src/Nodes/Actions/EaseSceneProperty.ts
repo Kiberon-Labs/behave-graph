@@ -1,17 +1,17 @@
 import {
   AsyncNode,
-  Easing,
+  type Easing,
   EasingFunctions,
   EasingModes,
   Engine,
-  IGraph,
-  ILifecycleEventEmitter,
+  type IGraph,
+  type ILifecycleEventEmitter,
   NodeDescription,
   Socket,
   toCamelCase
-} from '@behave-graph/core';
+} from '@kiberon-labs/behave-graph';
 
-import { IScene } from '../../Abstractions/IScene.js';
+import type { IScene } from '../../Abstractions/IScene.js';
 
 export class EaseSceneProperty extends AsyncNode {
   public static GetDescriptions(
@@ -25,24 +25,30 @@ export class EaseSceneProperty extends AsyncNode {
           `scene/ease/${valueTypeName}`,
           'Action',
           `Ease Scene ${toCamelCase(valueTypeName)}`,
-          (description, graph) =>
+          (description, graph, config, id) =>
             new EaseSceneProperty(
               description,
               graph,
               valueTypeName,
               scene,
-              lifecycleEventEmitter
+              lifecycleEventEmitter,
+              id
             )
         )
     );
   }
 
+  public readonly valueTypeName: string;
+  private readonly scene: IScene;
+  private readonly lifecycleEventEmitter: ILifecycleEventEmitter;
+
   constructor(
     description: NodeDescription,
     graph: IGraph,
-    public readonly valueTypeName: string,
-    private readonly scene: IScene,
-    private readonly lifecycleEventEmitter: ILifecycleEventEmitter
+    valueTypeName: string,
+    scene: IScene,
+    lifecycleEventEmitter: ILifecycleEventEmitter,
+    id: string
   ) {
     super(
       description,
@@ -68,8 +74,13 @@ export class EaseSceneProperty extends AsyncNode {
         new Socket('float', 'easeDuration'),
         new Socket('flow', 'cancel')
       ],
-      [new Socket('flow', 'flow')]
+      [new Socket('flow', 'flow')],
+      {},
+      id
     );
+    this.valueTypeName = valueTypeName;
+    this.scene = scene;
+    this.lifecycleEventEmitter = lifecycleEventEmitter;
   }
 
   private initialValue: any = undefined;
@@ -80,7 +91,7 @@ export class EaseSceneProperty extends AsyncNode {
   private startTime = 0;
   private onTick: (() => void) | undefined = undefined;
 
-  triggered(
+  override triggered(
     engine: Engine,
     triggeringSocketName: string,
     finished: () => void
@@ -106,12 +117,15 @@ export class EaseSceneProperty extends AsyncNode {
     this.startTime = Date.now();
 
     const easingFunction =
-      EasingFunctions[this.readInput('easingFunction') as string];
-    const easingMode = EasingModes[this.readInput('easingMode') as string];
+      EasingFunctions[
+        this.readInput('easingFunction') as keyof typeof EasingFunctions
+      ];
+    const easingMode =
+      EasingModes[this.readInput('easingMode') as keyof typeof EasingModes];
     this.easing = easingMode(easingFunction);
 
     const updateOnTick = () => {
-      const valueType = this.graph.values[this.valueTypeName];
+      const valueType = this.graph.values[this.valueTypeName]!;
       this.elapsedDuration = (Date.now() - this.startTime) / 1000;
 
       const t = Math.min(this.elapsedDuration / this.duration, 1);
@@ -138,7 +152,7 @@ export class EaseSceneProperty extends AsyncNode {
     this.lifecycleEventEmitter.tickEvent.addListener(this.onTick);
   }
 
-  dispose() {
+  override dispose() {
     this.elapsedDuration = this.duration = 0;
     if (this.onTick !== undefined) {
       this.lifecycleEventEmitter.tickEvent.removeListener(this.onTick);

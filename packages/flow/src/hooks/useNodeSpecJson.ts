@@ -1,8 +1,8 @@
 import {
-  IRegistry,
-  NodeSpecJSON,
+  type IRegistry,
+  type NodeSpecJSON,
   writeNodeSpecsToJSON
-} from '@behave-graph/core';
+} from '@kiberon-labs/behave-graph';
 import { useEffect, useState } from 'react';
 
 export const useNodeSpecJson = (registry: IRegistry) => {

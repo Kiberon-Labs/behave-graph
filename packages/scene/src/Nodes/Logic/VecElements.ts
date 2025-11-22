@@ -1,9 +1,9 @@
 import {
   FunctionNode,
-  IGraph,
+  type IGraph,
   NodeDescription,
   Socket
-} from '@behave-graph/core';
+} from '@kiberon-labs/behave-graph';
 
 export class VecElements<T> extends FunctionNode {
   constructor(
@@ -11,7 +11,8 @@ export class VecElements<T> extends FunctionNode {
     graph: IGraph,
     valueTypeName: string,
     elementNames: string[] = ['x', 'y', 'z', 'w'],
-    toArray: (value: T, array: number[], offset: number) => void
+    toArray: (value: T, array: number[], offset: number) => void,
+    id: string
   ) {
     super(
       description,
@@ -25,7 +26,9 @@ export class VecElements<T> extends FunctionNode {
         elementNames.forEach((elementName, index) =>
           this.writeOutput(elementName, elementValues[index])
         );
-      }
+      },
+      {},
+      id
     );
   }
 }

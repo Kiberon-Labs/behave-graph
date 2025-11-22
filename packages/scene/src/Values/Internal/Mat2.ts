@@ -3,7 +3,7 @@ import {
   equalsTolerance,
   parseSafeFloats,
   toSafeString
-} from '@behave-graph/core';
+} from '@kiberon-labs/behave-graph';
 
 import { Mat3 } from './Mat3.js';
 import { Mat4 } from './Mat4.js';
@@ -19,8 +19,12 @@ const NUM_ELEMENTS = NUM_ROWS * NUM_COLUMNS;
 
 export type Mat2JSON = number[];
 
+type Mat2Elements = [number, number, number, number];
+
 export class Mat2 {
-  constructor(public elements: number[] = [1, 0, 0, 1]) {
+  public elements: Mat2Elements;
+  constructor(elements: Mat2Elements = [1, 0, 0, 1]) {
+    this.elements = elements;
     if (elements.length !== NUM_ELEMENTS) {
       throw new Error(
         `elements must have length ${NUM_ELEMENTS}, got ${elements.length}`
@@ -31,15 +35,13 @@ export class Mat2 {
   clone(result = new Mat2()): Mat2 {
     return result.set(this.elements);
   }
-  set(elements: number[]): this {
+  set(elements: Mat2Elements): this {
     if (elements.length !== NUM_ELEMENTS) {
       throw new Error(
         `elements must have length ${NUM_ELEMENTS}, got ${elements.length}`
       );
     }
-    for (let i = 0; i < NUM_ELEMENTS; i++) {
-      this.elements[i] = elements[i];
-    }
+    this.elements = [...elements];
     return this;
   }
 }
@@ -79,7 +81,7 @@ export function column3ToMat2(
   const columns = [a, b, c];
   for (let c = 0; c < columns.length; c++) {
     const base = c * NUM_ROWS;
-    const column = columns[c];
+    const column = columns[c]!;
     re[base + 0] = column.x;
     re[base + 1] = column.y;
   }
@@ -88,13 +90,14 @@ export function column3ToMat2(
 
 export function mat2Equals(a: Mat2, b: Mat2, tolerance = EPSILON): boolean {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    if (!equalsTolerance(a.elements[i], b.elements[i], tolerance)) return false;
+    if (!equalsTolerance(a.elements[i]!, b.elements[i]!, tolerance))
+      return false;
   }
   return true;
 }
 export function mat2Add(a: Mat2, b: Mat2, result: Mat2 = new Mat2()): Mat2 {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] + b.elements[i];
+    result.elements[i] = a.elements[i]! + b.elements[i]!;
   }
   return result;
 }
@@ -104,7 +107,7 @@ export function mat2Subtract(
   result: Mat2 = new Mat2()
 ): Mat2 {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] - b.elements[i];
+    result.elements[i] = a.elements[i]! - b.elements[i]!;
   }
   return result;
 }
@@ -114,13 +117,13 @@ export function mat2MultiplyByScalar(
   result: Mat2 = new Mat2()
 ): Mat2 {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] * b;
+    result.elements[i] = a.elements[i]! * b;
   }
   return result;
 }
 export function mat2Negate(a: Mat2, result: Mat2 = new Mat2()): Mat2 {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = -a.elements[i];
+    result.elements[i] = -a.elements[i]!;
   }
   return result;
 }
@@ -157,7 +160,7 @@ export function mat2Mix(
 ): Mat2 {
   const s = 1 - t;
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] * s + b.elements[i] * t;
+    result.elements[i] = a.elements[i]! * s + b.elements[i]! * t;
   }
   return result;
 }
@@ -167,7 +170,7 @@ export function mat2FromArray(
   result: Mat2 = new Mat2()
 ): Mat2 {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = array[offset + i];
+    result.elements[i] = array[offset + i]!;
   }
   return result;
 }
@@ -177,7 +180,7 @@ export function mat2ToArray(
   offset = 0
 ): void {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    array[offset + i] = a.elements[i];
+    array[offset + i] = a.elements[i]!;
   }
 }
 

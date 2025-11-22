@@ -1,8 +1,8 @@
 import { Group } from 'three';
-import { DRACOLoader, GLTF, GLTFLoader } from 'three-stdlib';
+import { DRACOLoader, type GLTF, GLTFLoader } from 'three-stdlib';
 
-import { IScene } from './Abstractions/IScene.js';
-import { buildScene, ObjectMap } from './buildScene.js';
+import type { IScene } from './Abstractions/IScene.js';
+import { buildScene, type ObjectMap } from './buildScene.js';
 
 // Taken from react-three-fiber
 // Collects nodes and materials from a THREE.Object3D

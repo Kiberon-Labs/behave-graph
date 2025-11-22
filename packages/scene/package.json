@@ -1,25 +1,33 @@
 {
-  "name": "@behave-graph/scene",
-  "version": "0.9.12",
+  "name": "@kiberon-labs/behave-graph-scene",
+  "version": "1.0.0",
   "type": "module",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "source": "./src/index.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "jest"
+    "build": "tsdown",
+    "check": "oxfmt --check",
+    "format": "oxfmt",
+    "test": "vitest",
+    "dev": "tsdown --watch src",
+    "lint": "oxlint",
+    "typecheck": "tsc"
   },
   "devDependencies": {
-    "@types/three": "0.152.1",
     "@types/glob": "^8.0.0",
-    "@types/offscreencanvas": "^2019.7.0"
+    "@types/node": "^24.10.1",
+    "@types/offscreencanvas": "^2019.7.0",
+    "@types/three": "0.152.1",
+    "oxfmt": "^0.14.0",
+    "oxlint": "^1.29.0",
+    "tsdown": "^0.16.5",
+    "vitest": "^4.0.10"
   },
-  "dependencies": {
-    "@behave-graph/core": "*"
-  },
+  "dependencies": {},
   "license": "ISC",
   "peerDependencies": {
+    "@kiberon-labs/behave-graph": "*",
     "three": "0.152.2",
     "three-stdlib": "^2.22.4"
   }

@@ -1,10 +1,13 @@
 import {
   DefaultLogger,
-  IRegistry,
+  type IRegistry,
   ManualLifecycleEventEmitter,
   registerCoreProfile
-} from '@behave-graph/core';
-import { DummyScene, registerSceneProfile } from '@behave-graph/scene';
+} from '@kiberon-labs/behave-graph';
+import {
+  DummyScene,
+  registerSceneProfile
+} from '@kiberon-labs/behave-graph-scene';
 import { useMemo } from 'react';
 
 export const useRegistry = () => {

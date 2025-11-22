@@ -3,7 +3,7 @@ import {
   equalsTolerance,
   parseSafeFloats,
   toSafeString
-} from '@behave-graph/core';
+} from '@kiberon-labs/behave-graph';
 
 import { Mat3, mat4ToMat3 } from './Mat3.js';
 import { Mat4 } from './Mat4.js';
@@ -12,12 +12,16 @@ import { Vec3 } from './Vec3.js';
 export type Vec4JSON = number[];
 
 export class Vec4 {
-  constructor(
-    public x: number = 0,
-    public y: number = 0,
-    public z: number = 0,
-    public w: number = 0
-  ) {}
+  public x: number;
+  public y: number;
+  public z: number;
+  public w: number;
+  constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.w = w;
+  }
   clone(result = new Vec4()): Vec4 {
     return result.set(this.x, this.y, this.z, this.w);
   }
@@ -87,10 +91,10 @@ export function vec4FromArray(
   result = new Vec4()
 ): Vec4 {
   return result.set(
-    array[offset + 0],
-    array[offset + 1],
-    array[offset + 2],
-    array[offset + 3]
+    array[offset + 0]!,
+    array[offset + 1]!,
+    array[offset + 2]!,
+    array[offset + 3]!
   );
 }
 export function vec4ToArray(

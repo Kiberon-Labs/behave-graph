@@ -1,9 +1,12 @@
-import { InputSocketSpecJSON, NodeSpecJSON } from '@behave-graph/core';
+import type {
+  InputSocketSpecJSON,
+  NodeSpecJSON
+} from '@kiberon-labs/behave-graph';
 import { faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import cx from 'classnames';
 import React from 'react';
-import { Connection, Handle, Position, useReactFlow } from 'reactflow';
+import { type Connection, Handle, Position, useReactFlow } from 'reactflow';
 
 import { colors, valueTypeColorMap } from '../util/colors.js';
 import { isValidConnection } from '../util/isValidConnection.js';
@@ -28,7 +31,10 @@ const InputFieldForValue = ({
   'choices' | 'value' | 'defaultValue' | 'name' | 'onChange' | 'valueType'
 >) => {
   const showChoices = choices?.length;
-  const inputVal = String(value) ?? defaultValue ?? '';
+  //Stops 'undefined'
+  const defaultSafeValue =
+    defaultValue !== undefined ? String(defaultValue) : '';
+  const inputVal = value !== undefined ? String(value) : defaultSafeValue;
 
   if (showChoices)
     return (
@@ -98,7 +104,7 @@ const InputSocket: React.FC<InputSocketProps> = ({
   specJSON,
   ...rest
 }) => {
-  const { value, name, valueType, defaultValue, choices } = rest;
+  const { name, valueType } = rest;
   const instance = useReactFlow();
 
   const isFlowSocket = valueType === 'flow';
@@ -107,8 +113,6 @@ const InputSocket: React.FC<InputSocketProps> = ({
   if (colorName === undefined) {
     colorName = 'red';
   }
-
-  const inputVal = String(value) ?? defaultValue ?? '';
 
   // @ts-ignore
   const [backgroundColor, borderColor] = colors[colorName];

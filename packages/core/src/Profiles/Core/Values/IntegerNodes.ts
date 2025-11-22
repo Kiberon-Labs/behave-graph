@@ -151,5 +151,5 @@ export const toBoolean = makeInNOutFunctionDesc({
   label: 'To Boolean',
   in: ['integer'],
   out: 'boolean',
-  exec: (a: bigint) => a !== 0n
+  exec: (a: bigint) => a !== BigInt(0)
 });

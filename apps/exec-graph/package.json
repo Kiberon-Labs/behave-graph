@@ -1,17 +1,22 @@
 {
-  "name": "exec-graph",
-  "version": "0.0.1",
+  "name": "@kiberon-labs/behave-graph-exec",
+  "version": "1.0.0",
   "type": "module",
-  "bin": "./bin/cli.js",
+  "bin": {
+    "bh-exec": "./bin/cli.js"
+  },
   "main": "./dist/index.js",
   "source": "./src/index.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.10.1"
+  },
   "dependencies": {
-    "@behave-graph/core": "*",
-    "@behave-graph/scene": "*"
+    "@kiberon-labs/behave-graph": "*",
+    "@kiberon-labs/behave-graph-scene": "*",
+    "commander": "^14.0.2"
   }
 }

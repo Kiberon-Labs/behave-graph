@@ -1,9 +1,9 @@
-import { ValueType } from '@behave-graph/core';
+import type { ValueType } from '@kiberon-labs/behave-graph';
 
 import {
   Mat3,
   mat3Equals,
-  Mat3JSON,
+  type Mat3JSON,
   mat3Mix,
   mat3Parse
 } from './Internal/Mat3.js';

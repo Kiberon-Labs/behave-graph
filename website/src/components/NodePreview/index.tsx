@@ -1,32 +1,47 @@
-import { NodeSpecJSON } from 'packages/core/src/Graphs/IO/NodeSpecJSON';
-import { NodeDescription } from 'packages/core/src/Nodes/Registry/NodeDescription';
-import { Socket } from 'packages/core/src/Sockets/Socket';
-import React from 'react';
+import { Flow } from "@kiberon-labs/behave-graph-flow";
+import { DefaultLogger, ManualLifecycleEventEmitter, registerCoreProfile, type IRegistry } from "@kiberon-labs/behave-graph";
+import { useMemo } from "react";
 
-import Node from './Node.js';
+export type PreviewOpts = {
+    node: string
+}
 
-const NodePreview = ({ description, inputs, outputs, spec }: Props) => {
-  return (
-    <div
-      style={{
-        background: 'rgb(30, 31, 34)',
-        backgroundImage:
-          'linear-gradient(rgb(37,38,40) .1em, transparent .1em), linear-gradient(90deg, rgb(37,38,40) .1em, transparent .1em)',
-        backgroundSize: '1em 1em',
-        padding: '2em',
-        width: 'fit-content'
-      }}
-    >
-      <Node spec={spec} />
-    </div>
-  );
+export const useRegistry = () => {
+    return useMemo<IRegistry>(
+        () =>
+            registerCoreProfile({
+                values: {},
+                nodes: {},
+                dependencies: {
+                    ILogger: new DefaultLogger(),
+                    ILifecycleEventEmitter: new ManualLifecycleEventEmitter(),
+                }
+            }),
+        []
+    );
 };
 
-export type Props = {
-  description: NodeDescription;
-  inputs: Socket[];
-  outputs: Socket[];
-  spec: NodeSpecJSON;
-};
 
-export default NodePreview;
+
+export const Preview = ({ node }: PreviewOpts) => {
+
+
+    const registry = useRegistry();
+
+    const graph = useMemo(() => {
+        return {
+            "nodes": [
+                {
+                    "type": node,
+                    "id": "0"
+                }
+            ]
+        }
+    }, [])
+
+
+    return <div className="h-lvh not-content">
+        < Flow registry={registry} initialGraph={graph} examples={{}
+        } />
+    </div >
+}

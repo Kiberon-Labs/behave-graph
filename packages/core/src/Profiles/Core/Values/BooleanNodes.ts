@@ -53,5 +53,5 @@ export const toInteger = makeInNOutFunctionDesc({
   label: 'To Integer',
   in: ['boolean'],
   out: 'integer',
-  exec: (a: boolean) => (a ? 1n : 0n)
+  exec: (a: boolean) => (a ? BigInt(1) : BigInt(0))
 });

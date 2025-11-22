@@ -2,28 +2,44 @@
 // fdfdfd
 import { Assert } from '../Diagnostics/Assert.js';
 import { EventEmitter } from '../Events/EventEmitter.js';
-import { GraphNodes } from '../Graphs/Graph.js';
+import { generateUuid } from '../generateUuid.js';
+import type { GraphNodes } from '../Graphs/Graph.js';
 import {
-  IAsyncNode,
-  IEventNode,
-  INode,
+  type IAsyncNode,
+  type IEventNode,
+  type INode,
   isAsyncNode,
   isEventNode
 } from '../Nodes/NodeInstance.js';
 import { sleep } from '../sleep.js';
-import { Fiber } from './Fiber.js';
+import { Fiber, type FiberListenerInner } from './Fiber.js';
 import { resolveSocketValue } from './resolveSocketValue.js';
+
+type NodeError = {
+  node: INode;
+  error: unknown;
+};
+
+type NodeCommit = {
+  node: INode;
+  socket: string;
+};
 
 export class Engine {
   // tracking the next node+input socket to execute.
+  public readonly id = generateUuid();
   private readonly fiberQueue: Fiber[] = [];
   public readonly asyncNodes: IAsyncNode[] = [];
   public readonly eventNodes: IEventNode[] = [];
   public readonly onNodeExecutionStart = new EventEmitter<INode>();
   public readonly onNodeExecutionEnd = new EventEmitter<INode>();
+  public readonly onNodeExecutionError = new EventEmitter<NodeError>();
+  public readonly onNodeCommit = new EventEmitter<NodeCommit>();
+  public readonly nodes: GraphNodes;
   public executionSteps = 0;
 
-  constructor(public readonly nodes: GraphNodes) {
+  constructor(nodes: GraphNodes) {
+    this.nodes = nodes;
     // collect all event nodes
     Object.values(nodes).forEach((node) => {
       if (isEventNode(node)) {
@@ -31,17 +47,23 @@ export class Engine {
       }
     });
     // init all event nodes at startup
-    this.eventNodes.forEach((eventNode) => {
+    this.eventNodes.forEach(async (eventNode) => {
       // evaluate input parameters
-      eventNode.inputs.forEach((inputSocket) => {
-        Assert.mustBeTrue(inputSocket.valueTypeName !== 'flow');
-        this.executionSteps += resolveSocketValue(this, inputSocket);
-      });
 
-      this.onNodeExecutionStart.emit(eventNode);
-      eventNode.init(this);
-      this.executionSteps++;
-      this.onNodeExecutionEnd.emit(eventNode);
+      try {
+        for (const inputSocket of eventNode.inputs) {
+          Assert.mustBeTrue(inputSocket.valueTypeName !== 'flow');
+          this.executionSteps += await resolveSocketValue(this, inputSocket);
+        }
+
+        // this.onNodeExecutionStart.emit(eventNode);
+        await eventNode.init(this);
+        this.executionSteps++;
+        // this.onNodeExecutionEnd.emit(eventNode);
+      } catch (error) {
+        this.onNodeExecutionError.emit({ node: eventNode, error });
+        throw error;
+      }
     });
   }
 
@@ -57,33 +79,44 @@ export class Engine {
   commitToNewFiber(
     node: INode,
     outputFlowSocketName: string,
-    fiberCompletedListener: (() => void) | undefined = undefined
+    fiberCompletedListener: FiberListenerInner = undefined
   ) {
-    Assert.mustBeTrue(isEventNode(node) || isAsyncNode(node));
-    const outputSocket = node.outputs.find(
-      (socket) => socket.name === outputFlowSocketName
-    );
-    if (outputSocket === undefined) {
-      throw new Error(`no socket with the name ${outputFlowSocketName}`);
-    }
-    if (outputSocket.links.length > 1) {
-      throw new Error(
-        'invalid for an output flow socket to have multiple downstream links:' +
-          `${node.description.typeName}.${outputSocket.name} has ${outputSocket.links.length} downlinks`
+    try {
+      Assert.mustBeTrue(isEventNode(node) || isAsyncNode(node));
+      const outputSocket = node.outputs.find(
+        (socket) => socket.name === outputFlowSocketName
       );
-    }
-    if (outputSocket.links.length === 1) {
-      const fiber = new Fiber(
-        this,
-        outputSocket.links[0],
-        fiberCompletedListener
-      );
-      this.fiberQueue.push(fiber);
+      if (outputSocket === undefined) {
+        throw new Error(`no socket with the name ${outputFlowSocketName}`);
+      }
+      if (outputSocket.links.length > 1) {
+        throw new Error(
+          'invalid for an output flow socket to have multiple downstream links:' +
+            `${node.description.typeName}.${outputSocket.name} has ${outputSocket.links.length} downlinks`
+        );
+      }
+      if (outputSocket.links.length === 1) {
+        const fiber = new Fiber(
+          this,
+          outputSocket.links[0]!,
+          fiberCompletedListener,
+          node
+        );
+        this.onNodeCommit.emit({ node, socket: outputFlowSocketName });
+
+        this.fiberQueue.push(fiber);
+      }
+    } catch (error) {
+      this.onNodeExecutionError.emit({ node, error });
+      throw error;
     }
   }
 
   // NOTE: This does not execute all if there are promises.
-  executeAllSync(limitInSeconds = 100, limitInSteps = 100000000): number {
+  async executeAllSync(
+    limitInSeconds = 100,
+    limitInSteps = 100000000
+  ): Promise<number> {
     const startDateTime = Date.now();
     let elapsedSeconds = 0;
     let elapsedSteps = 0;
@@ -92,9 +125,10 @@ export class Engine {
       elapsedSeconds < limitInSeconds &&
       this.fiberQueue.length > 0
     ) {
-      const currentFiber = this.fiberQueue[0];
+      //Safe assertion as we know the queue length is >0
+      const currentFiber = this.fiberQueue[0]!;
       const startingFiberExecutionSteps = currentFiber.executionSteps;
-      currentFiber.executeStep();
+      await currentFiber.executeStep();
       elapsedSteps += currentFiber.executionSteps - startingFiberExecutionSteps;
       if (currentFiber.isCompleted()) {
         // remove first element
@@ -120,7 +154,7 @@ export class Engine {
         // eslint-disable-next-line no-await-in-loop
         await sleep(0);
       }
-      elapsedSteps += this.executeAllSync(
+      elapsedSteps += await this.executeAllSync(
         limitInSeconds - elapsedTime,
         limitInSteps - elapsedSteps
       );

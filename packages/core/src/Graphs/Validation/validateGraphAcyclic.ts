@@ -1,5 +1,5 @@
-import { INode } from '../../Nodes/NodeInstance.js';
-import { GraphNodes } from '../Graph.js';
+import type { INode } from '../../Nodes/NodeInstance.js';
+import type { GraphNodes } from '../Graph.js';
 
 export function validateGraphAcyclic(nodes: GraphNodes): string[] {
   // apparently if you can topological sort, it is a DAG according to: https://stackoverflow.com/questions/4168/graph-serialization/4577#4577
@@ -29,7 +29,7 @@ export function validateGraphAcyclic(nodes: GraphNodes): string[] {
       node.inputs.forEach((inputSocket) => {
         inputSocket.links.forEach((link) => {
           // is the other end marked?  If not, then it is still connected.
-          if (nodes[link.nodeId].metadata['dag.marked'] === 'false') {
+          if (nodes[link.nodeId]!.metadata['dag.marked'] === 'false') {
             inputsConnected = true;
           }
         });

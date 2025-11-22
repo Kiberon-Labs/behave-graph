@@ -1,17 +1,19 @@
 import { Engine } from '../Execution/Engine.js';
 import { Fiber } from '../Execution/Fiber.js';
-import { IGraph } from '../Graphs/Graph.js';
+import type { IGraph } from '../Graphs/Graph.js';
 import { Socket } from '../Sockets/Socket.js';
-import { NodeConfiguration } from './Node.js';
+import type { NodeConfiguration } from './Node.js';
 import { readInputFromSockets, writeOutputsToSocket } from './NodeSockets.js';
-import { INodeDescription } from './Registry/NodeDescription.js';
+import type { INodeDescription } from './Registry/NodeDescription.js';
 
-export enum NodeType {
-  Event = 'Event',
-  Flow = 'Flow',
-  Async = 'Async',
-  Function = 'Function'
-}
+export const NodeType = {
+  Event: 'Event',
+  Flow: 'Flow',
+  Async: 'Async',
+  Function: 'Function'
+} as const;
+
+export type NodeType = (typeof NodeType)[keyof typeof NodeType];
 
 export interface INode {
   readonly inputs: Socket[];
@@ -19,29 +21,33 @@ export interface INode {
   readonly graph: IGraph;
   description: INodeDescription;
   configuration: NodeConfiguration;
-  nodeType: NodeType;
+  nodeType: (typeof NodeType)[keyof typeof NodeType];
+  id: string;
   label?: string;
   metadata?: any;
 }
 
 export interface IFunctionNode extends INode {
-  nodeType: NodeType.Function;
-  exec: (node: INode) => void;
+  nodeType: typeof NodeType.Function;
+  exec: (node: INode) => void | Promise<void>;
 }
 
 export interface IEventNode extends INode {
-  nodeType: NodeType.Event;
+  nodeType: typeof NodeType.Event;
   init: (engine: Engine) => void;
   dispose: (engine: Engine) => void;
 }
 
 export interface IFlowNode extends INode {
-  nodeType: NodeType.Flow;
-  triggered: (fiber: Fiber, triggeringSocketName: string) => void;
+  nodeType: typeof NodeType.Flow;
+  triggered: (
+    fiber: Fiber,
+    triggeringSocketName: string
+  ) => void | Promise<void>;
 }
 
 export interface IAsyncNode extends INode {
-  nodeType: NodeType.Async;
+  nodeType: typeof NodeType.Async;
   triggered: (
     engine: Engine,
     triggeringSocketName: string,

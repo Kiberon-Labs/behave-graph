@@ -1,6 +1,6 @@
 import {
   makeFlowNodeDefinition,
-  SocketsList
+  type SocketsList
 } from '../../../Nodes/NodeDefinitions.js';
 import { sequence } from '../../../sequence.js';
 

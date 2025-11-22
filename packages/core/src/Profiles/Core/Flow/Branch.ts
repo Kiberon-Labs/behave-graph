@@ -1,7 +1,5 @@
-import {
-  makeFlowNodeDefinition,
-  NodeCategory
-} from '../../../Nodes/NodeDefinitions.js';
+import { makeFlowNodeDefinition } from '../../../Nodes/NodeDefinitions.js';
+import { NodeCategory } from '~/Nodes/Registry/NodeCategory.js';
 
 export const Branch = makeFlowNodeDefinition({
   typeName: 'flow/branch',
@@ -17,7 +15,7 @@ export const Branch = makeFlowNodeDefinition({
     true: 'flow',
     false: 'flow'
   },
-  triggered: ({ read, commit }) => {
+  triggered: async ({ read, commit }) => {
     commit(read('condition') === true ? 'true' : 'false');
   },
   initialState: undefined

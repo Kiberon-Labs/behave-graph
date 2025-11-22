@@ -3,7 +3,7 @@ import {
   equalsTolerance,
   parseSafeFloats,
   toSafeString
-} from '@behave-graph/core';
+} from '@kiberon-labs/behave-graph';
 
 import { eulerToMat3, Mat3, quatToMat3 } from './Mat3.js';
 import { Vec2 } from './Vec2.js';
@@ -28,31 +28,50 @@ import { Vec4 } from './Vec4.js';
 const NUM_ROWS = 4;
 const NUM_COLUMNS = 4;
 const NUM_ELEMENTS = NUM_ROWS * NUM_COLUMNS;
-export type Mat4JSON = number[];
+
+type Mat4Elements = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number
+];
+export type Mat4JSON = Mat4Elements;
 
 export class Mat4 {
+  public elements: Mat4Elements;
   constructor(
-    public elements: number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    elements: Mat4Elements = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
   ) {
     if (elements.length !== NUM_ELEMENTS) {
       throw new Error(
         `elements must have length ${NUM_ELEMENTS}, got ${elements.length}`
       );
     }
+    this.elements = elements;
   }
 
   clone(result = new Mat4()): Mat4 {
     return result.set(this.elements);
   }
-  set(elements: number[]): this {
+  set(elements: Mat4Elements): this {
     if (elements.length !== NUM_ELEMENTS) {
       throw new Error(
         `elements must have length ${NUM_ELEMENTS}, got ${elements.length}`
       );
     }
-    for (let i = 0; i < NUM_ELEMENTS; i++) {
-      this.elements[i] = elements[i];
-    }
+    this.elements = [...elements];
     return this;
   }
 }
@@ -98,7 +117,7 @@ export function column4ToMat4(
   const columns = [a, b, c, d];
   for (let c = 0; c < columns.length; c++) {
     const base = c * NUM_ROWS;
-    const column = columns[c];
+    const column = columns[c]!;
     re[base + 0] = column.x;
     re[base + 1] = column.y;
     re[base + 2] = column.z;
@@ -113,15 +132,16 @@ export function mat4Equals(
   tolerance: number = EPSILON
 ): boolean {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    if (!equalsTolerance(a.elements[i], b.elements[i], tolerance)) return false;
+    if (!equalsTolerance(a.elements[i]!, b.elements[i]!, tolerance))
+      return false;
   }
   return true;
 }
 
 export function mat4Add(a: Mat4, b: Mat4, result: Mat4 = new Mat4()): Mat4 {
-  for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] + b.elements[i];
-  }
+  result.elements = a.elements.map(
+    (a, i) => a + b.elements[i]!
+  ) as Mat4Elements;
   return result;
 }
 export function mat4Subtract(
@@ -129,9 +149,9 @@ export function mat4Subtract(
   b: Mat4,
   result: Mat4 = new Mat4()
 ): Mat4 {
-  for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] - b.elements[i];
-  }
+  result.elements = a.elements.map(
+    (a, i) => a - b.elements[i]!
+  ) as Mat4Elements;
   return result;
 }
 
@@ -140,16 +160,12 @@ export function mat4MultiplyByScalar(
   b: number,
   result: Mat4 = new Mat4()
 ): Mat4 {
-  for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] * b;
-  }
+  result.elements = a.elements.map((a) => a * b) as Mat4Elements;
   return result;
 }
 
 export function mat4Negate(a: Mat4, result: Mat4 = new Mat4()): Mat4 {
-  for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = -a.elements[i];
-  }
+  result.elements = a.elements.map((a) => -a) as Mat4Elements;
   return result;
 }
 
@@ -520,7 +536,7 @@ export function mat4Mix(
 ): Mat4 {
   const s = 1 - t;
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] * s + b.elements[i] * t;
+    result.elements[i] = a.elements[i]! * s + b.elements[i]! * t;
   }
   return result;
 }
@@ -531,7 +547,7 @@ export function mat4FromArray(
   result: Mat4 = new Mat4()
 ): Mat4 {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = array[offset + i];
+    result.elements[i] = array[offset + i]!;
   }
   return result;
 }
@@ -542,7 +558,7 @@ export function mat4ToArray(
   offset = 0
 ): void {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    array[offset + i] = a.elements[i];
+    array[offset + i] = a.elements[i]!;
   }
 }
 

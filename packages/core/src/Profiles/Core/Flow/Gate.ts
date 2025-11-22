@@ -1,7 +1,5 @@
-import {
-  makeFlowNodeDefinition,
-  NodeCategory
-} from '../../../Nodes/NodeDefinitions.js';
+import { makeFlowNodeDefinition } from '../../../Nodes/NodeDefinitions.js';
+import { NodeCategory } from '~/Nodes/Registry/NodeCategory.js';
 
 // based on Unreal Engine Blueprint Gate node
 

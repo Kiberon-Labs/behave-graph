@@ -1,9 +1,11 @@
-import { NodeCategory } from '../../Nodes/NodeDefinitions.js';
-import { IRegistry } from '../../Registry.js';
-import { Choices } from '../../Sockets/Socket.js';
+import type { NodeCategoryType } from '~/Nodes/Registry/NodeCategory.js';
+import type { NodeConfiguration } from '../../Nodes/Node.js';
+import type { IRegistry } from '../../Registry.js';
+import type { Choices } from '../../Sockets/Socket.js';
 import { createNode, makeGraphApi } from '../Graph.js';
-import {
+import type {
   ChoiceJSON,
+  ConfigurationSpecJSON,
   InputSocketSpecJSON,
   NodeSpecJSON,
   OutputSocketSpecJSON
@@ -13,6 +15,20 @@ function toChoices(valueChoices: Choices | undefined): ChoiceJSON | undefined {
   return valueChoices?.map((choice) => {
     if (typeof choice === 'string') return { text: choice, value: choice };
     return choice;
+  });
+}
+
+function writeConfigurationToJSON(
+  configuration: NodeConfiguration
+): ConfigurationSpecJSON[] {
+  return Object.entries(configuration).map(([name, configuration]) => {
+    const configurationSpecJSON: ConfigurationSpecJSON = {
+      name,
+      valueType: configuration.valueType,
+      defaultValue: configuration.defaultValue
+    };
+
+    return configurationSpecJSON;
   });
 }
 
@@ -27,20 +43,23 @@ export function writeNodeSpecsToJSON(registry: IRegistry): NodeSpecJSON[] {
     variables: {}
   });
 
-  Object.keys(registry.nodes).forEach((nodeTypeName) => {
+  Object.entries(registry.nodes).forEach(([nodeTypeName, nodeDefinition]) => {
+    const { configuration } = nodeDefinition;
     const node = createNode({
+      id: '0',
       graph,
       registry,
-      nodeTypeName
+      nodeTypeName,
+      nodeConfiguration: configuration
     });
 
     const nodeSpecJSON: NodeSpecJSON = {
       type: nodeTypeName,
-      category: node.description.category as NodeCategory,
+      category: node.description.category as NodeCategoryType,
       label: node.description.label,
       inputs: [],
       outputs: [],
-      configuration: []
+      configuration: writeConfigurationToJSON(node.configuration)
     };
 
     node.inputs.forEach((inputSocket) => {

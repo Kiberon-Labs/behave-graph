@@ -1,14 +1,15 @@
-/* eslint-disable max-len */
 import {
   getCoreValuesMap,
   getNodeDescriptions,
   getStringConversionsForValueType,
+  memo
+} from '@kiberon-labs/behave-graph';
+import type {
   IRegistry,
-  memo,
   NodeDefinition,
   ValueType,
   ValueTypeMap
-} from '@behave-graph/core';
+} from '@kiberon-labs/behave-graph';
 
 import { SetSceneProperty } from './Nodes/Actions/SetSceneProperty.js';
 import { OnSceneNodeClick } from './Nodes/Events/OnSceneNodeClick.js';

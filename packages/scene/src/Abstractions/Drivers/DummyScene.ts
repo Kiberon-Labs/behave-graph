@@ -4,8 +4,8 @@ import {
   FloatValue,
   IntegerValue,
   StringValue,
-  ValueType
-} from '@behave-graph/core';
+  type ValueType
+} from '@kiberon-labs/behave-graph';
 
 import { ColorValue } from '../../Values/ColorValue.js';
 import { EulerValue } from '../../Values/EulerValue.js';
@@ -13,7 +13,7 @@ import { QuatValue } from '../../Values/QuatValue.js';
 import { Vec2Value } from '../../Values/Vec2Value.js';
 import { Vec3Value } from '../../Values/Vec3Value.js';
 import { Vec4Value } from '../../Values/Vec4Value.js';
-import { IScene } from '../IScene.js';
+import type { IScene } from '../IScene.js';
 
 export class DummyScene implements IScene {
   public onSceneChanged = new EventEmitter<void>();

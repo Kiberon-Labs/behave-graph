@@ -1,5 +1,5 @@
-import { NodeSpecJSON } from '@behave-graph/core';
-import { Connection, ReactFlowInstance } from 'reactflow';
+import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
+import type { Connection, ReactFlowInstance } from 'reactflow';
 
 import { getSocketsByNodeTypeAndHandleType } from './getSocketsByNodeTypeAndHandleType.js';
 import { isHandleConnected } from './isHandleConnected.js';

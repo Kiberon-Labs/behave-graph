@@ -1,15 +1,15 @@
-import { IGraph } from '../Graphs/Graph.js';
+import type { IGraph } from '../Graphs/Graph.js';
 import { Socket } from '../Sockets/Socket.js';
-import { NodeConfiguration } from './Node.js';
+import type { NodeConfiguration } from './Node.js';
 import {
-  INodeDefinition,
-  NodeCategory,
-  SocketDefinition,
-  SocketsDefinition,
-  SocketsList,
-  SocketsMap
+  type INodeDefinition,
+  type SocketDefinition,
+  type SocketsDefinition,
+  type SocketsList,
+  type SocketsMap
 } from './NodeDefinitions.js';
-import { INode, NodeType } from './NodeInstance.js';
+import { type INode, NodeType } from './NodeInstance.js';
+import { NodeCategory } from './Registry/NodeCategory.js';
 
 const makeSocketFromDefinition = (
   key: string,
@@ -23,7 +23,7 @@ const makeSocketsFromMap = <TSockets extends SocketsMap>(
   graphApi: IGraph
 ): Socket[] => {
   return keys.map((key) => {
-    const definition = socketConfig[key];
+    const definition = socketConfig[key]!;
     if (typeof definition === 'string') {
       return new Socket(definition, key as string);
     }
@@ -91,7 +91,8 @@ export const makeCommonProps = (
     | 'label'
   >,
   configuration: NodeConfiguration,
-  graph: IGraph
+  graph: IGraph,
+  id: string
 ): INode => ({
   description: {
     typeName: typeName,
@@ -101,6 +102,7 @@ export const makeCommonProps = (
     helpDescription,
     label
   },
+  id,
   nodeType: nodeType,
   inputs: makeOrGenerateSockets(inputs, configuration, graph),
   outputs: makeOrGenerateSockets(out, configuration, graph),

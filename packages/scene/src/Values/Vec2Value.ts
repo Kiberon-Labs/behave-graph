@@ -1,6 +1,6 @@
-import { ValueType } from '@behave-graph/core';
+import type { ValueType } from '@kiberon-labs/behave-graph';
 
-import { Vec2, Vec2JSON, vec2Mix, vec2Parse } from './Internal/Vec2.js';
+import { Vec2, type Vec2JSON, vec2Mix, vec2Parse } from './Internal/Vec2.js';
 
 export const Vec2Value: ValueType = {
   name: 'vec2',

@@ -1,13 +1,27 @@
 {
-  "name": "@behave-graph/core",
-  "version": "0.9.12",
+  "name": "@kiberon-labs/behave-graph",
+  "version": "1.0.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
-  "source": "./src/index.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "jest"
-  }
+    "build": "tsdown",
+    "format": "oxfmt",
+    "check": "oxfmt --check",
+    "test": "vitest",
+    "lint": "oxlint",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "oxlint": "^1.29.0",
+    "tsdown": "^0.16.5",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.10",
+    "oxfmt": "^0.14.0"
+  },
+  "dependencies": {}
 }

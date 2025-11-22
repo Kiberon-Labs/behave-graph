@@ -1,8 +1,6 @@
-import {
-  makeFlowNodeDefinition,
-  NodeCategory
-} from '../../../Nodes/NodeDefinitions.js';
-import { ILogger, LogSeverity } from '../Abstractions/ILogger.js';
+import { makeFlowNodeDefinition } from '../../../Nodes/NodeDefinitions.js';
+import { NodeCategory } from '~/Nodes/Registry/NodeCategory.js';
+import type { ILogger, LogSeverity } from '../Abstractions/ILogger.js';
 
 export const Log = makeFlowNodeDefinition({
   typeName: 'debug/log',

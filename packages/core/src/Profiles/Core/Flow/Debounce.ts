@@ -1,6 +1,6 @@
+import { AsyncNode } from '~/Nodes/AsyncNode.js';
 import { Engine } from '../../../Execution/Engine.js';
-import { IGraph } from '../../../Graphs/Graph.js';
-import { AsyncNode } from '../../../Nodes/AsyncNode.js';
+import type { IGraph } from '../../../Graphs/Graph.js';
 import { NodeDescription } from '../../../Nodes/Registry/NodeDescription.js';
 import { Socket } from '../../../Sockets/Socket.js';
 
@@ -12,10 +12,20 @@ export class Debounce extends AsyncNode {
     'flow/debounce',
     'Flow',
     'Debounce',
-    (description, graph) => new Debounce(description, graph)
+    (description, graph, config, id) =>
+      new Debounce(description, graph, config, id)
   );
 
-  constructor(description: NodeDescription, graph: IGraph) {
+  private initialState = {
+    triggerVersion: 0
+  };
+
+  constructor(
+    description: NodeDescription,
+    graph: IGraph,
+    config: Record<string, unknown>,
+    id: string
+  ) {
     super(
       description,
       graph,
@@ -24,37 +34,48 @@ export class Debounce extends AsyncNode {
         new Socket('float', 'waitDuration'),
         new Socket('flow', 'cancel')
       ],
-      [new Socket('flow', 'flow')]
+      [new Socket('flow', 'flow')],
+      config,
+      id
     );
+
+    this.setState(this.initialState);
   }
 
-  private triggerVersion = 0;
-
-  triggered(
+  override async triggered(
     engine: Engine,
     triggeringSocketName: string,
     finished: () => void
   ) {
-    this.triggerVersion++;
+    const state = await this.getState();
+    let newState = { ...state };
+
+    newState.triggerVersion++;
 
     // if cancelling, just increment triggerVersion and do not set a timer. :)
     if (triggeringSocketName === 'cancel') {
       return;
     }
 
-    const localTriggerCount = this.triggerVersion;
-    setTimeout(() => {
-      if (this.triggerVersion >= localTriggerCount) {
-        // ignore this timer, as it isn't for the most recent trigger
-        return;
-      }
+    const localTriggerCount = newState.triggerVersion;
+    setTimeout(
+      () => {
+        if (newState.triggerVersion >= localTriggerCount) {
+          // ignore this timer, as it isn't for the most recent trigger
+          return;
+        }
 
-      engine.commitToNewFiber(this, 'flow');
-      finished();
-    }, this.readInput<number>('waitDuration') * 1000);
+        engine.commitToNewFiber(this, 'flow');
+        finished();
+      },
+      this.readInput<number>('waitDuration') * 1000
+    );
+    await this.setState(newState);
   }
 
-  dispose() {
-    this.triggerVersion++; // equivalent to 'cancel' trigger behavior.
+  override async dispose() {
+    const state = await this.getState();
+    state.triggerVersion++; // equivalent to 'cancel' trigger behavior.
+    await this.setState(state);
   }
 }

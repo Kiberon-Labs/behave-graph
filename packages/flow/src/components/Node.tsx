@@ -1,6 +1,6 @@
-import { NodeSpecJSON } from '@behave-graph/core';
+import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
 import React from 'react';
-import { NodeProps as FlowNodeProps, useEdges } from 'reactflow';
+import { useEdges, type NodeProps as FlowNodeProps } from 'reactflow';
 
 import { useChangeNodeData } from '../hooks/useChangeNodeData.js';
 import { isHandleConnected } from '../util/isHandleConnected.js';

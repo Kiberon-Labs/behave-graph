@@ -1,5 +1,5 @@
-import { GraphJSON } from '@behave-graph/core';
-import { Edge, Node } from 'reactflow';
+import type { GraphJSON } from '@kiberon-labs/behave-graph';
+import type { Edge, Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
 export const behaveToFlow = (graph: GraphJSON): [Node[], Edge[]] => {

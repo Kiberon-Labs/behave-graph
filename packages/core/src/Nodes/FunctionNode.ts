@@ -1,41 +1,45 @@
 import { Assert } from '../Diagnostics/Assert.js';
-import { IGraph } from '../Graphs/Graph.js';
+import type { IGraph } from '../Graphs/Graph.js';
 import { Socket } from '../Sockets/Socket.js';
-import { Node, NodeConfiguration } from './Node.js';
+import { Node, type NodeConfiguration } from './Node.js';
 import {
-  IFunctionNodeDefinition,
+  type IFunctionNodeDefinition,
   makeFunctionNodeDefinition,
-  NodeCategory,
-  SocketListDefinition,
-  SocketsList
+  type SocketListDefinition,
+  type SocketsList
 } from './NodeDefinitions.js';
-import { IFunctionNode, INode, NodeType } from './NodeInstance.js';
+import { type IFunctionNode, type INode, NodeType } from './NodeInstance.js';
 import { readInputFromSockets, writeOutputsToSocket } from './NodeSockets.js';
+import type { NodeCategoryType } from './Registry/NodeCategory.js';
 import { NodeDescription } from './Registry/NodeDescription.js';
 
 export abstract class FunctionNode
-  extends Node<NodeType.Function>
+  extends Node<'Function'>
   implements IFunctionNode
 {
+  public readonly exec: (node: INode) => Promise<void> | void;
   constructor(
     description: NodeDescription,
     graph: IGraph,
     inputs: Socket[] = [],
     outputs: Socket[] = [],
-    public readonly exec: (node: INode) => void,
-    configuration: NodeConfiguration = {}
+    exec: (node: INode) => Promise<void> | void,
+    configuration: NodeConfiguration = {},
+    id: string
   ) {
     super({
       description: {
         ...description,
-        category: description.category as NodeCategory
+        category: description.category as NodeCategoryType
       },
+      id,
       inputs,
       outputs,
       graph,
       configuration,
       nodeType: NodeType.Function
     });
+    this.exec = exec;
 
     // must have no input flow sockets
     Assert.mustBeTrue(
@@ -52,7 +56,7 @@ export abstract class FunctionNode
 export class FunctionNodeInstance<
     TFunctionNodeDef extends IFunctionNodeDefinition
   >
-  extends Node<NodeType.Function>
+  extends Node<'Function'>
   implements IFunctionNode
 {
   private execInner: TFunctionNodeDef['exec'];
@@ -64,8 +68,8 @@ export class FunctionNodeInstance<
     this.execInner = nodeProps.exec;
   }
 
-  exec = (node: INode) => {
-    this.execInner({
+  exec = async (node: INode) => {
+    await this.execInner({
       read: (name) =>
         readInputFromSockets(node.inputs, name, node.description.typeName),
       write: (name, value) =>
@@ -82,7 +86,8 @@ export class FunctionNodeInstance<
 }
 
 const alpha = 'abcdefghijklmnop';
-const getAlphabeticalKey = (index: number) => alpha[index];
+const getAlphabeticalKey = (index: number): string =>
+  alpha[index % alpha.length] as string;
 
 /** Converts list of sockets specifying value type names to an ordeered list of sockets,
  */
@@ -101,8 +106,8 @@ function makeSocketsList(
       };
     }
     return {
-      key: Object.keys(x)[0],
-      valueType: x[Object.keys(x)[0]]
+      key: Object.keys(x)[0]!,
+      valueType: x[Object.keys(x)[0]!]!
     };
   });
 }
@@ -119,8 +124,8 @@ export function makeInNOutFunctionDesc({
   aliases?: string[];
   in?: (string | { [key: string]: string })[];
   out: (string | { [key: string]: string })[] | string;
-  category?: NodeCategory;
-  exec: (...args: any[]) => any;
+  category?: NodeCategoryType;
+  exec: (...args: any[]) => Promise<any> | any;
 }) {
   const inputSockets = makeSocketsList(inputs, getAlphabeticalKey);
   const outputKeyFunc =
@@ -136,10 +141,10 @@ export function makeInNOutFunctionDesc({
     in: () => inputSockets,
     out: () => outputSockets,
     category,
-    exec: ({ read, write }) => {
+    exec: async ({ read, write }) => {
       const args = inputSockets.map(({ key }) => read(key));
-      const results = exec(...args);
-      if (outputSockets.length === 1 && outputSockets[0].key === 'result') {
+      const results = await exec(...args);
+      if (outputSockets.length === 1 && outputSockets[0]!.key === 'result') {
         write('result', results);
       } else {
         outputSockets.forEach(({ key }) => {

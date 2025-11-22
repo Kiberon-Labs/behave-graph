@@ -1,5 +1,8 @@
-import { NodeCategory } from '../../Nodes/Registry/NodeCategory.js';
-import { ValueJSON } from './GraphJSON.js';
+import {
+  NodeCategory,
+  type NodeCategoryType
+} from '~/Nodes/Registry/NodeCategory.js';
+import type { ValueJSON } from './GraphJSON.js';
 
 export type ChoiceJSON = { text: string; value: any }[];
 
@@ -21,7 +24,7 @@ export type ConfigurationSpecJSON = {
 };
 export type NodeSpecJSON = {
   type: string;
-  category: NodeCategory;
+  category: NodeCategoryType;
   label: string;
   configuration: ConfigurationSpecJSON[];
   inputs: InputSocketSpecJSON[];

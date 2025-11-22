@@ -1,6 +1,6 @@
 import { Assert } from '../../../Diagnostics/Assert.js';
 import { Engine } from '../../../Execution/Engine.js';
-import { IGraph } from '../../../Graphs/Graph.js';
+import type { IGraph } from '../../../Graphs/Graph.js';
 import { AsyncNode } from '../../../Nodes/AsyncNode.js';
 import { NodeDescription } from '../../../Nodes/Registry/NodeDescription.js';
 import { Socket } from '../../../Sockets/Socket.js';
@@ -12,10 +12,16 @@ export class Throttle extends AsyncNode {
     'flow/throttle',
     'Flow',
     'Throttle',
-    (description, graph) => new Throttle(description, graph)
+    (description, graph, config, id) =>
+      new Throttle(description, graph, config, id)
   );
 
-  constructor(description: NodeDescription, graph: IGraph) {
+  constructor(
+    description: NodeDescription,
+    graph: IGraph,
+    config: Record<string, unknown>,
+    id: string
+  ) {
     super(
       description,
       graph,
@@ -24,14 +30,16 @@ export class Throttle extends AsyncNode {
         new Socket('float', 'duration', 1),
         new Socket('flow', 'cancel')
       ],
-      [new Socket('flow', 'flow')]
+      [new Socket('flow', 'flow')],
+      config,
+      id
     );
   }
 
   private triggerVersion = 0;
   private timeoutPending = false;
 
-  triggered(
+  override triggered(
     engine: Engine,
     triggeringSocketName: string,
     finished: () => void
@@ -54,18 +62,21 @@ export class Throttle extends AsyncNode {
     this.triggerVersion++;
     const localTriggerCount = this.triggerVersion;
     this.timeoutPending = true;
-    setTimeout(() => {
-      if (this.triggerVersion !== localTriggerCount) {
-        return;
-      }
-      Assert.mustBeTrue(this.timeoutPending);
-      this.timeoutPending = false;
-      engine.commitToNewFiber(this, 'flow');
-      finished();
-    }, this.readInput<number>('duration') * 1000);
+    setTimeout(
+      () => {
+        if (this.triggerVersion !== localTriggerCount) {
+          return;
+        }
+        Assert.mustBeTrue(this.timeoutPending);
+        this.timeoutPending = false;
+        engine.commitToNewFiber(this, 'flow');
+        finished();
+      },
+      this.readInput<number>('duration') * 1000
+    );
   }
 
-  dispose() {
+  override dispose() {
     this.triggerVersion++; // equivalent to 'cancel' trigger behavior.
     this.timeoutPending = false;
   }

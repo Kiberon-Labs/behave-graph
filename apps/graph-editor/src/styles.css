@@ -1,6 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "reactflow/dist/style.css" layer(components);
+@import "rc-dock/dist/rc-dock-dark" layer(components);
+@source "../node_modules/@kiberon-labs/*";
+
 
 html,
 body,

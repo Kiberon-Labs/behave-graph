@@ -1,7 +1,7 @@
-import { NodeSpecJSON } from '@behave-graph/core';
+import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
 import React from 'react';
 import { useEffect, useState } from 'react';
-import { NodeTypes } from 'reactflow';
+import type { NodeTypes } from 'reactflow';
 
 import { Node } from '../components/Node.js';
 

@@ -1,4 +1,4 @@
-import { GraphJSON, NodeSpecJSON } from '@behave-graph/core';
+import type { GraphJSON, NodeSpecJSON } from '@kiberon-labs/behave-graph';
 import {
   faDownload,
   faPause,
@@ -14,7 +14,7 @@ import { ControlButton, Controls } from 'reactflow';
 
 import { ClearModal } from './modals/ClearModal.js';
 import { HelpModal } from './modals/HelpModal.js';
-import { Examples, LoadModal } from './modals/LoadModal.js';
+import { type Examples, LoadModal } from './modals/LoadModal.js';
 import { SaveModal } from './modals/SaveModal.js';
 
 export type CustomControlsProps = {

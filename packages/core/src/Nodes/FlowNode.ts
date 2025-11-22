@@ -1,26 +1,29 @@
 import { Assert } from '../Diagnostics/Assert.js';
 import { Fiber } from '../Execution/Fiber.js';
-import { IGraph } from '../Graphs/Graph.js';
+import type { IGraph } from '../Graphs/Graph.js';
 import { Socket } from '../Sockets/Socket.js';
-import { Node, NodeConfiguration } from './Node.js';
-import { IFlowNodeDefinition, NodeCategory } from './NodeDefinitions.js';
-import { IFlowNode, INode, NodeType } from './NodeInstance.js';
+import { Node, type NodeConfiguration } from './Node.js';
+import { type IFlowNodeDefinition } from './NodeDefinitions.js';
+import { type IFlowNode, type INode, NodeType } from './NodeInstance.js';
+import type { NodeCategoryType } from './Registry/NodeCategory.js';
 import { NodeDescription } from './Registry/NodeDescription.js';
 
-export class FlowNode extends Node<NodeType.Flow> implements IFlowNode {
+export class FlowNode extends Node<'Flow'> implements IFlowNode {
   constructor(
     description: NodeDescription,
     graph: IGraph,
     inputs: Socket[] = [],
     outputs: Socket[] = [],
-    configuration: NodeConfiguration = {}
+    configuration: NodeConfiguration = {},
+    id: string
   ) {
     // determine if this is an eval node
     super({
       description: {
         ...description,
-        category: description.category as NodeCategory
+        category: description.category as NodeCategoryType
       },
+      id,
       inputs,
       outputs,
       graph,
@@ -47,48 +50,57 @@ export class FlowNode2 extends FlowNode {
     inputs?: Socket[];
     outputs?: Socket[];
     configuration?: NodeConfiguration;
+    id: string;
   }) {
     super(
       props.description,
       props.graph,
       props.inputs,
       props.outputs,
-      props.configuration
+      props.configuration,
+      props.id
     );
   }
 }
 
 export class FlowNodeInstance<TFlowNodeDefinition extends IFlowNodeDefinition>
-  extends Node<NodeType.Flow>
+  extends Node<'Flow'>
   implements IFlowNode
 {
   private triggeredInner: TFlowNodeDefinition['triggered'];
-  private state: TFlowNodeDefinition['initialState'];
+  // private _state!: TFlowNodeDefinition['initialState'];
   private readonly outputSocketKeys: string[];
-
   constructor(
     nodeProps: Omit<INode, 'nodeType'> &
       Pick<TFlowNodeDefinition, 'triggered' | 'initialState'>
   ) {
     super({ ...nodeProps, nodeType: NodeType.Flow });
     this.triggeredInner = nodeProps.triggered;
-    this.state = nodeProps.initialState;
+    this._state = nodeProps.initialState;
     this.outputSocketKeys = nodeProps.outputs.map((s) => s.name);
   }
 
-  public triggered = (fiber: Fiber, triggeringSocketName: string) => {
-    this.state = this.triggeredInner({
+  public triggered = async (fiber: Fiber, triggeringSocketName: string) => {
+    const stateProxy = this.createStateProxy();
+
+    const state = await this.triggeredInner({
       commit: (outFlowName, fiberCompletedListener) =>
         fiber.commit(this, outFlowName, fiberCompletedListener),
       read: this.readInput,
       write: this.writeOutput,
       graph: this.graph,
-      state: this.state,
+      state: stateProxy,
       configuration: this.configuration,
       outputSocketKeys: this.outputSocketKeys,
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       triggeringSocketName
+    });
+
+    if (!state) return;
+
+    Object.keys(state).forEach((key) => {
+      stateProxy[key] = state[key];
     });
   };
 }

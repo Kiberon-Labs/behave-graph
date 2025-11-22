@@ -1,7 +1,7 @@
+import { NodeCategory } from '~/Nodes/Registry/NodeCategory.js';
 import {
   makeFlowNodeDefinition,
-  NodeCategory,
-  SocketsList
+  type SocketsList
 } from '../../../Nodes/NodeDefinitions.js';
 import { Variable } from '../../../Values/Variables/Variable.js';
 

@@ -1,4 +1,4 @@
-import { NodeSpecJSON } from '@behave-graph/core';
+import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
 
 export type color =
   | 'red'

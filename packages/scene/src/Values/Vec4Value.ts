@@ -1,9 +1,9 @@
-import { ValueType } from '@behave-graph/core';
+import type { ValueType } from '@kiberon-labs/behave-graph';
 
 import {
   Vec4,
   vec4Equals,
-  Vec4JSON,
+  type Vec4JSON,
   vec4Mix,
   vec4Parse
 } from './Internal/Vec4.js';

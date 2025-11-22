@@ -1,9 +1,12 @@
-import { NodeSpecJSON, OutputSocketSpecJSON } from '@behave-graph/core';
+import type {
+  NodeSpecJSON,
+  OutputSocketSpecJSON
+} from '@kiberon-labs/behave-graph';
 import { faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import cx from 'classnames';
 import React from 'react';
-import { Connection, Handle, Position, useReactFlow } from 'reactflow';
+import { type Connection, Handle, Position, useReactFlow } from 'reactflow';
 
 import { colors, valueTypeColorMap } from '../util/colors.js';
 import { isValidConnection } from '../util/isValidConnection.js';

@@ -1,9 +1,9 @@
-import { ValueType } from '@behave-graph/core';
+import type { ValueType } from '@kiberon-labs/behave-graph';
 
 import {
   Mat4,
   mat4Equals,
-  Mat4JSON,
+  type Mat4JSON,
   mat4Mix,
   mat4Parse
 } from './Internal/Mat4.js';

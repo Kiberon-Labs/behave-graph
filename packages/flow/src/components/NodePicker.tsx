@@ -1,6 +1,6 @@
-import { NodeSpecJSON } from '@behave-graph/core';
+import { type NodeSpecJSON } from '@kiberon-labs/behave-graph';
 import React, { useState } from 'react';
-import { useReactFlow, XYPosition } from 'reactflow';
+import { useReactFlow, type XYPosition } from 'reactflow';
 
 import { useOnPressKey } from '../hooks/useOnPressKey.js';
 

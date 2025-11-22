@@ -43,6 +43,9 @@ export * from './Nodes/Validation/validateNodeRegistry.js';
 export * from './Values/Validation/validateValueRegistry.js';
 export * from './validateRegistry.js';
 
+// helpers
+export * from './Nodes/nodeFactory.js';
+
 // graph validation
 export * from './Graphs/Validation/validateGraphAcyclic.js';
 export * from './Graphs/Validation/validateGraphLinks.js';

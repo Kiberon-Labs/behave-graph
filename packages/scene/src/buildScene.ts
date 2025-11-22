@@ -1,6 +1,6 @@
-import { Choices, EventEmitter } from '@behave-graph/core';
+import { type Choices, EventEmitter } from '@kiberon-labs/behave-graph';
 import {
-  Event,
+  type Event,
   Material,
   MeshBasicMaterial,
   Object3D,
@@ -8,18 +8,20 @@ import {
   Vector3,
   Vector4
 } from 'three';
-import { GLTF } from 'three-stdlib';
+import type { GLTF } from 'three-stdlib';
 
-import { IScene } from './Abstractions/IScene.js';
-import { GLTFJson } from './GLTFJson.js';
+import type { IScene } from './Abstractions/IScene.js';
+import type { GLTFJson } from './GLTFJson.js';
 import { Vec3 } from './Values/Internal/Vec3.js';
 import { Vec4 } from './Values/Internal/Vec4.js';
 
-enum Resource {
-  nodes = 'nodes',
-  materials = 'materials',
-  animations = 'animations'
-}
+const Resource = {
+  nodes: 'nodes',
+  materials: 'materials',
+  animations: 'animations'
+} as const;
+
+type Resource = (typeof Resource)[keyof typeof Resource];
 
 function toVec3(value: Vector3): Vec3 {
   return new Vec3(value.x, value.y, value.z);
@@ -56,10 +58,10 @@ export function toJsonPathString(
   short: boolean
 ) {
   if (short) {
-    if (!resourceType || typeof index === undefined) return;
+    if (!resourceType || index === undefined) return;
     return `${resourceType}/${index}`;
   } else {
-    if (!resourceType || typeof index === undefined || !property) return;
+    if (!resourceType || index === undefined || !property) return;
     return `${resourceType}/${index}/${property}`;
   }
 }
@@ -73,8 +75,8 @@ export function parseJsonPath(jsonPath: string, short = false): Path {
     throw new Error(`can not parse jsonPath (no groups): ${jsonPath}`);
   return {
     resource: matches.groups.resource as Resource,
-    index: +matches.groups.index,
-    property: matches.groups.property
+    index: +matches.groups.index!,
+    property: matches.groups.property!
   };
 }
 
@@ -133,7 +135,7 @@ const getResourceName = (
   { resource, index }: Pick<Path, 'resource' | 'index'>,
   properties: Properties
 ) => {
-  return properties[resource]?.options[index].name;
+  return properties[resource]?.options[index]?.name;
 };
 
 const getPropertyFromModel = (
@@ -379,7 +381,7 @@ export const buildScene = ({
         elementName: getResourceName(
           { resource: path.resource, index: path.index },
           properties
-        ),
+        )!,
         callbacks: []
       };
 
@@ -433,7 +435,7 @@ export const buildScene = ({
     });
   };
 
-  const getProperty = (jsonPath: string, valueTypeName: string) => {
+  const getProperty = (jsonPath: string, _valueTypeName: string) => {
     const path = parseJsonPath(jsonPath);
 
     return getPropertyFromModel(path, gltf, properties);

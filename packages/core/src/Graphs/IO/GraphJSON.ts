@@ -1,6 +1,13 @@
-import { Metadata } from '../../Metadata.js';
+import type { Metadata } from '../../Metadata.js';
+import type { SocketListDefinition } from '../../Nodes/NodeDefinitions.js';
 
-export type ValueJSON = string | boolean | number | number[];
+export type ValueJSON =
+  | string
+  | boolean
+  | number
+  | number[]
+  | Record<string, any>
+  | any[];
 
 export type LinkJSON = { nodeId: string; socket: string };
 
@@ -14,6 +21,10 @@ export type NodeParametersJSON = {
 
 export type FlowsJSON = {
   [key: string]: LinkJSON;
+};
+
+export type NodeConfigJSON = {
+  [key: string]: ValueJSON;
 };
 
 export type NodeConfigurationJSON = {
@@ -53,10 +64,17 @@ export type CustomEventJSON = {
   metadata?: Metadata;
 };
 
+export type GraphSocketJSON = SocketListDefinition & {
+  description?: string;
+};
+
 export type GraphJSON = {
   name?: string;
   nodes?: NodeJSON[];
   variables?: VariableJSON[];
+  graphInputs?: GraphSocketJSON[];
+  graphOutputs?: GraphSocketJSON[];
   customEvents?: CustomEventJSON[];
+  data?: Record<string, any>;
   metadata?: Metadata;
 };

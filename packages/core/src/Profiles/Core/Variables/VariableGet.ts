@@ -1,8 +1,8 @@
 import {
   makeFunctionNodeDefinition,
-  NodeCategory,
-  SocketsList
+  type SocketsList
 } from '../../../Nodes/NodeDefinitions.js';
+import { NodeCategory } from '~/Nodes/Registry/NodeCategory.js';
 import { Variable } from '../../../Values/Variables/Variable.js';
 
 export const VariableGet = makeFunctionNodeDefinition({

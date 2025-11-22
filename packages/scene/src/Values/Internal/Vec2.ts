@@ -3,12 +3,17 @@ import {
   equalsTolerance,
   parseSafeFloats,
   toSafeString
-} from '@behave-graph/core';
+} from '@kiberon-labs/behave-graph';
 
 export type Vec2JSON = number[];
 
 export class Vec2 {
-  constructor(public x: number = 0, public y: number = 0) {}
+  public x: number;
+  public y: number;
+  constructor(x: number = 0, y: number = 0) {
+    this.x = x;
+    this.y = y;
+  }
 
   clone(result = new Vec2()): Vec2 {
     return result.set(this.x, this.y);
@@ -73,7 +78,7 @@ export function vec2FromArray(
   offset = 0,
   result: Vec2 = new Vec2()
 ): Vec2 {
-  return result.set(array[offset + 0], array[offset + 1]);
+  return result.set(array[offset + 0]!, array[offset + 1]!);
 }
 export function vec2ToArray(
   a: Vec2,

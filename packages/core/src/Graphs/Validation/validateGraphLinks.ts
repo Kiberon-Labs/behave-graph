@@ -1,4 +1,4 @@
-import { GraphNodes } from '../Graph.js';
+import type { GraphNodes } from '../Graph.js';
 
 export function validateGraphLinks(nodes: GraphNodes): string[] {
   const errorList: string[] = [];
@@ -17,7 +17,7 @@ export function validateGraphLinks(nodes: GraphNodes): string[] {
         }
 
         // check if the socketName is correct
-        const upstreamNode = nodes[link.nodeId];
+        const upstreamNode = nodes[link.nodeId]!;
         const outputSocket = upstreamNode.outputs.find(
           (socket) => socket.name === link.socketName
         );

@@ -3,7 +3,7 @@ import {
   equalsTolerance,
   parseSafeFloats,
   toSafeString
-} from '@behave-graph/core';
+} from '@kiberon-labs/behave-graph';
 
 import { Mat4 } from './Mat4.js';
 import { Vec2 } from './Vec2.js';
@@ -21,29 +21,40 @@ const NUM_ROWS = 3;
 const NUM_COLUMNS = 3;
 const NUM_ELEMENTS = NUM_ROWS * NUM_COLUMNS;
 
-export type Mat3JSON = number[];
+type Mat3Elements = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number
+];
+export type Mat3JSON = Mat3Elements;
 
 export class Mat3 {
-  constructor(public elements: number[] = [1, 0, 0, 0, 1, 0, 0, 0, 1]) {
+  public elements: Mat3Elements;
+  constructor(elements: Mat3Elements = [1, 0, 0, 0, 1, 0, 0, 0, 1]) {
     if (elements.length !== NUM_ELEMENTS) {
       throw new Error(
         `elements must have length ${NUM_ELEMENTS}, got ${elements.length}`
       );
     }
+    this.elements = elements;
   }
 
   clone(result = new Mat3()): Mat3 {
     return result.set(this.elements);
   }
-  set(elements: number[]): this {
+  set(elements: Mat3Elements): this {
     if (elements.length !== NUM_ELEMENTS) {
       throw new Error(
         `elements must have length ${NUM_ELEMENTS}, got ${elements.length}`
       );
     }
-    for (let i = 0; i < NUM_ELEMENTS; i++) {
-      this.elements[i] = elements[i];
-    }
+    this.elements = [...elements];
     return this;
   }
 }
@@ -85,7 +96,7 @@ export function column3ToMat3(
   const columns = [a, b, c];
   for (let c = 0; c < columns.length; c++) {
     const base = c * NUM_ROWS;
-    const column = columns[c];
+    const column = columns[c]!;
     re[base + 0] = column.x;
     re[base + 1] = column.y;
     re[base + 2] = column.z;
@@ -95,13 +106,14 @@ export function column3ToMat3(
 
 export function mat3Equals(a: Mat3, b: Mat3, tolerance = EPSILON): boolean {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    if (!equalsTolerance(a.elements[i], b.elements[i], tolerance)) return false;
+    if (!equalsTolerance(a.elements[i]!, b.elements[i]!, tolerance))
+      return false;
   }
   return true;
 }
 export function mat3Add(a: Mat3, b: Mat3, result: Mat3 = new Mat3()): Mat3 {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] + b.elements[i];
+    result.elements[i] = a.elements[i]! + b.elements[i]!;
   }
   return result;
 }
@@ -110,9 +122,9 @@ export function mat3Subtract(
   b: Mat3,
   result: Mat3 = new Mat3()
 ): Mat3 {
-  for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] - b.elements[i];
-  }
+  result.elements = a.elements.map(
+    (a, i) => a - b.elements[i]!
+  ) as Mat3Elements;
   return result;
 }
 export function mat3MultiplyByScalar(
@@ -120,15 +132,11 @@ export function mat3MultiplyByScalar(
   b: number,
   result: Mat3 = new Mat3()
 ): Mat3 {
-  for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] * b;
-  }
+  result.elements = a.elements.map((x) => x * b) as Mat3Elements;
   return result;
 }
 export function mat3Negate(a: Mat3, result: Mat3 = new Mat3()): Mat3 {
-  for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = -a.elements[i];
-  }
+  result.elements = a.elements.map((x) => -x) as Mat3Elements;
   return result;
 }
 
@@ -257,7 +265,7 @@ export function mat3Mix(
 ): Mat3 {
   const s = 1 - t;
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = a.elements[i] * s + b.elements[i] * t;
+    result.elements[i] = a.elements[i]! * s + b.elements[i]! * t;
   }
   return result;
 }
@@ -267,7 +275,7 @@ export function mat3FromArray(
   result: Mat3 = new Mat3()
 ): Mat3 {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    result.elements[i] = array[offset + i];
+    result.elements[i] = array[offset + i]!;
   }
   return result;
 }
@@ -277,7 +285,7 @@ export function mat3ToArray(
   offset = 0
 ): void {
   for (let i = 0; i < NUM_ELEMENTS; i++) {
-    array[offset + i] = a.elements[i];
+    array[offset + i] = a.elements[i]!;
   }
 }
 

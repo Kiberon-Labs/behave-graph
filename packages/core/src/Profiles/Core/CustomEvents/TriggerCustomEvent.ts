@@ -1,8 +1,8 @@
 import { CustomEvent } from '../../../Events/CustomEvent.js';
 import { Fiber } from '../../../Execution/Fiber.js';
-import { IGraph } from '../../../Graphs/Graph.js';
+import type { IGraph } from '../../../Graphs/Graph.js';
 import { FlowNode2 } from '../../../Nodes/FlowNode.js';
-import { NodeConfiguration } from '../../../Nodes/Node.js';
+import type { NodeConfiguration } from '../../../Nodes/Node.js';
 import {
   NodeDescription,
   NodeDescription2
@@ -20,8 +20,8 @@ export class TriggerCustomEvent extends FlowNode2 {
         defaultValue: '-1'
       }
     },
-    factory: (description, graph, configuration) =>
-      new TriggerCustomEvent(description, graph, configuration)
+    factory: (description, graph, configuration, id) =>
+      new TriggerCustomEvent(description, graph, configuration, id)
   });
 
   private readonly customEvent: CustomEvent;
@@ -29,13 +29,15 @@ export class TriggerCustomEvent extends FlowNode2 {
   constructor(
     description: NodeDescription,
     graph: IGraph,
-    configuration: NodeConfiguration
+    configuration: NodeConfiguration,
+    id: string
   ) {
     const customEvent =
       graph.customEvents[configuration.customEventId] ||
       new CustomEvent('-1', 'undefined');
     super({
       description,
+      id,
       graph,
       inputs: [
         new Socket('flow', 'flow'),
@@ -56,7 +58,7 @@ export class TriggerCustomEvent extends FlowNode2 {
     this.customEvent = customEvent;
   }
 
-  triggered(fiber: Fiber, triggeringSocketName: string) {
+  override triggered(_fiber: Fiber, _triggeringSocketName: string) {
     const parameters: { [parameterName: string]: any } = {};
     this.customEvent.parameters.forEach((parameterSocket) => {
       parameters[parameterSocket.name] = this.readInput(parameterSocket.name);

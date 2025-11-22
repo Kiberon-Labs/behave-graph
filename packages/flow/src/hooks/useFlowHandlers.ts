@@ -1,11 +1,16 @@
-import { NodeSpecJSON } from '@behave-graph/core';
+import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
 import {
-  MouseEvent as ReactMouseEvent,
+  type MouseEvent as ReactMouseEvent,
   useCallback,
   useEffect,
   useState
 } from 'react';
-import { Connection, Node, OnConnectStartParams, XYPosition } from 'reactflow';
+import type {
+  Connection,
+  Node,
+  OnConnectStartParams,
+  XYPosition
+} from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
 import { calculateNewEdge } from '../util/calculateNewEdge.js';
@@ -131,7 +136,13 @@ export const useFlowHandlers = ({
 
   const handleStopConnect = useCallback((e: MouseEvent) => {
     const element = e.target as HTMLElement;
+    console.log(
+      'here',
+      element.classList,
+      element.classList.contains('react-flow__pane')
+    );
     if (element.classList.contains('react-flow__pane')) {
+      console.log('setting node picker');
       setNodePickerVisibility({ x: e.clientX, y: e.clientY });
     } else {
       setLastConnectStart(undefined);

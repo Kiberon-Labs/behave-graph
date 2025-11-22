@@ -1,4 +1,4 @@
-import { ValueTypeMap } from '../ValueTypeMap.js';
+import type { ValueTypeMap } from '../ValueTypeMap.js';
 
 const valueTypeNameRegex = /^\w+$/;
 

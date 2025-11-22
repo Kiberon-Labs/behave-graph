@@ -1,12 +1,13 @@
+import { Logger } from '~/Diagnostics/Logger.js';
 import { CustomEvent } from '../Events/CustomEvent.js';
-import { Logger } from '../index.js';
-import { Metadata } from '../Metadata.js';
-import { NodeConfiguration } from '../Nodes/Node.js';
-import { Dependencies } from '../Nodes/NodeDefinitions.js';
-import { INode } from '../Nodes/NodeInstance.js';
-import { IRegistry } from '../Registry.js';
+import { generateUuid } from '../generateUuid.js';
+import type { Metadata } from '../Metadata.js';
+import type { NodeConfiguration } from '../Nodes/Node.js';
+import type { Dependencies } from '../Nodes/NodeDefinitions.js';
+import type { INode } from '../Nodes/NodeInstance.js';
+import type { IRegistry } from '../Registry.js';
 import { Socket } from '../Sockets/Socket.js';
-import { ValueTypeMap } from '../Values/ValueTypeMap.js';
+import type { ValueTypeMap } from '../Values/ValueTypeMap.js';
 import { Variable } from '../Values/Variables/Variable.js';
 
 // Purpose:
@@ -16,7 +17,7 @@ export interface IGraph {
   readonly variables: { [id: string]: Variable };
   readonly customEvents: { [id: string]: CustomEvent };
   readonly values: ValueTypeMap;
-  readonly getDependency: <T>(id: string) => T | undefined;
+  readonly getDependency: <T>(id: string, supress?: boolean) => T | undefined;
 }
 
 export type GraphNodes = { [id: string]: INode };
@@ -32,11 +33,13 @@ export type GraphInstance = {
 };
 
 export const createNode = ({
+  id = generateUuid(),
   graph,
   registry,
   nodeTypeName,
   nodeConfiguration = {}
 }: {
+  id: string;
   graph: IGraph;
   registry: IRegistry;
   nodeTypeName: string;
@@ -53,7 +56,7 @@ export const createNode = ({
     );
   }
 
-  const node = nodeDefinition.nodeFactory(graph, nodeConfiguration);
+  const node = nodeDefinition.nodeFactory(graph, nodeConfiguration, id);
 
   node.inputs.forEach((socket: Socket) => {
     if (socket.valueTypeName !== 'flow' && socket.value === undefined) {
@@ -78,9 +81,9 @@ export const makeGraphApi = ({
   variables,
   customEvents,
   values,
-  getDependency: (id: string) => {
+  getDependency: (id: string, supress = false) => {
     const result = dependencies[id];
-    if (!result)
+    if (result == undefined && !supress)
       console.error(
         `Dependency not found ${id}.  Did you register it? Existing dependencies: ${Object.keys(
           dependencies

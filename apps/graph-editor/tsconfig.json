@@ -1,9 +1,60 @@
 {
-  "extends": "../../tsconfig.json",
-  "include": ["src"],
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Monorepo shared library",
   "compilerOptions": {
-    "outDir": "dist",
-    "jsx": "react-jsx",
-    "resolveJsonModule": true
-  }
+    /* Base Options: */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "esnext",
+    "lib": [
+      "DOM",
+      "esnext",
+      "ES6"
+    ],
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    /* Strictness */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "erasableSyntaxOnly": true,
+    /* Opinion */
+    "incremental": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+    "module": "preserve",
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "rootDir": "./src",
+    "paths": {
+      "~/*": [
+        "./src/*"
+      ],
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    /* Required for project references, which provide go-to-definition in your
+    IDE without first having to build the module, which is essential during development. */
+    "composite": true,
+    /* Assuming your bundler will output everything, but we can not have noEmit
+    enabled because it is not compatible with composite  / project references. Also declaration might be required for references to work fully. Not sure yet... */
+    "declaration": true,
+    "declarationMap": true,
+    "jsx": "react"
+  },
+  "include": [
+    "./src",
+    "./src/**/*.json"
+  ],
+  "references": [
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/flow"
+    }
+  ],
 }

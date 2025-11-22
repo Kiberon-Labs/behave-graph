@@ -1,5 +1,5 @@
 import { createNode, makeGraphApi } from '../../Graphs/Graph.js';
-import { IRegistry } from '../../Registry.js';
+import type { IRegistry } from '../../Registry.js';
 
 const nodeTypeNameRegex = /^\w+(\/\w+)*$/;
 const socketNameRegex = /^\w+$/;
@@ -11,7 +11,7 @@ export function validateNodeRegistry(registry: IRegistry): string[] {
     ...registry
   });
   Object.keys(registry.nodes).forEach((nodeTypeName) => {
-    const node = createNode({ graph, registry, nodeTypeName });
+    const node = createNode({ id: '0', graph, registry, nodeTypeName });
 
     // ensure node is registered correctly.
     if (node.description.typeName !== nodeTypeName) {

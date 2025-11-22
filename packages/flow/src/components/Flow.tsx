@@ -1,4 +1,4 @@
-import { GraphJSON, IRegistry } from '@behave-graph/core';
+import type { GraphJSON, IRegistry } from '@kiberon-labs/behave-graph';
 import React from 'react';
 import { Background, BackgroundVariant, ReactFlow } from 'reactflow';
 
@@ -7,7 +7,7 @@ import { useFlowHandlers } from '../hooks/useFlowHandlers.js';
 import { useGraphRunner } from '../hooks/useGraphRunner.js';
 import { useNodeSpecJson } from '../hooks/useNodeSpecJson.js';
 import CustomControls from './Controls.js';
-import { Examples } from './modals/LoadModal.js';
+import { type Examples } from './modals/LoadModal.js';
 import { NodePicker } from './NodePicker.js';
 
 type FlowProps = {
@@ -44,7 +44,6 @@ export const Flow: React.FC<FlowProps> = ({
     handlePaneContextMenu,
     nodePickerVisibility,
     handleAddNode,
-    lastConnectStart,
     closeNodePicker,
     nodePickFilters
   } = useFlowHandlers({

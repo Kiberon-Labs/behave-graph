@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ValueType<TValue = any, TJson = any> {
   name: string;
   creator: () => TValue;

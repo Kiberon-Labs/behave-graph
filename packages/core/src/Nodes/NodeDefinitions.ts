@@ -1,14 +1,16 @@
-import { IGraph } from '../Graphs/Graph.js';
-import { Choices } from '../Sockets/Socket.js';
+import { Engine } from '../Execution/Engine.js';
+import type { FiberListenerInner } from '../Execution/Fiber.js';
+import type { IGraph } from '../Graphs/Graph.js';
+import type { Choices } from '../Sockets/Socket.js';
 import { AsyncNodeInstance } from './AsyncNode.js';
 import { EventNodeInstance } from './EventNode.js';
 import { FlowNodeInstance } from './FlowNode.js';
 import { FunctionNodeInstance } from './FunctionNode.js';
-import { NodeConfiguration } from './Node.js';
+import type { NodeConfiguration } from './Node.js';
 import { makeCommonProps } from './nodeFactory.js';
-import { INode, NodeType } from './NodeInstance.js';
-import { NodeCategory } from './Registry/NodeCategory.js';
-import { NodeConfigurationDescription } from './Registry/NodeDescription.js';
+import { type INode, NodeType } from './NodeInstance.js';
+import type { NodeCategoryType } from './Registry/NodeCategory.js';
+import type { NodeConfigurationDescription } from './Registry/NodeDescription.js';
 
 export interface SocketDefinition {
   valueType: string;
@@ -33,7 +35,11 @@ export type SocketsGeneratorFromConfig = (
 
 export type SocketsDefinition = SocketsMap | SocketsGeneratorFromConfig;
 
-export type NodeFactory = (graph: IGraph, config: NodeConfiguration) => INode;
+export type NodeFactory = (
+  graph: IGraph,
+  config: NodeConfiguration,
+  id: string
+) => INode;
 
 export interface IHasNodeFactory {
   readonly nodeFactory: NodeFactory;
@@ -44,7 +50,7 @@ export interface INodeDefinition<
   TOutput extends SocketsDefinition = SocketsDefinition,
   TConfig extends NodeConfigurationDescription = NodeConfigurationDescription
 > extends IHasNodeFactory {
-  category?: NodeCategory;
+  category?: NodeCategoryType;
   typeName: string;
   otherTypeNames?: string[];
   aliases?: string[]; // for backwards compatibility
@@ -71,17 +77,18 @@ export type TriggeredFn<
   write<T>(outValueName: SocketNames<TOutput>, value: T): void;
   commit(
     outFlowName: SocketNames<TOutput>,
-    fiberCompletedListener?: () => void
+    fiberCompletedListener?: FiberListenerInner
   ): void; // commits to current fiber unless 'async-flow' or 'event-flow'
   outputSocketKeys: SocketNames<TOutput>[];
   triggeringSocketName: keyof TInput;
   // state of the node.
   state: TState;
-
+  engine?: Engine;
+  node?: INode;
   graph: IGraph;
   configuration: NodeConfiguration;
   finished?: () => void;
-}) => StateReturn<TState>;
+}) => StateReturn<TState> | Promise<StateReturn<TState>>;
 
 /** Flow Node Definition */
 export type TriggeredParams<
@@ -167,7 +174,9 @@ export interface IFunctionNodeDefinition<
   TOutput extends SocketsDefinition = SocketsDefinition,
   TConfig extends NodeConfigurationDescription = NodeConfigurationDescription
 > extends INodeDefinition<TInput, TOutput, TConfig> {
-  exec: (params: FunctionNodeExecParams<TInput, TOutput>) => void;
+  exec: (
+    params: FunctionNodeExecParams<TInput, TOutput>
+  ) => Promise<void> | void;
 }
 
 export interface IEventNodeDefinition<
@@ -195,9 +204,9 @@ export function makeFlowNodeDefinition<
 ): IFlowNodeDefinition<TInput, TOutput, TConfig, TState> {
   return {
     ...definition,
-    nodeFactory: (graph, config) =>
+    nodeFactory: (graph, config, id) =>
       new FlowNodeInstance({
-        ...makeCommonProps(NodeType.Flow, definition, config, graph),
+        ...makeCommonProps(NodeType.Flow, definition, config, graph, id),
         initialState: definition.initialState,
         triggered: definition.triggered
       })
@@ -216,9 +225,9 @@ export function makeAsyncNodeDefinition<
 ): IAsyncNodeDefinition<TInput, TOutput, TConfig, TState> {
   return {
     ...definition,
-    nodeFactory: (graph, config) =>
+    nodeFactory: (graph, config, id) =>
       new AsyncNodeInstance({
-        ...makeCommonProps(NodeType.Async, definition, config, graph),
+        ...makeCommonProps(NodeType.Async, definition, config, graph, id),
         initialState: definition.initialState,
         triggered: definition.triggered,
         dispose: definition.dispose
@@ -236,9 +245,15 @@ export function makeFunctionNodeDefinition<
 ): IFunctionNodeDefinition<TInput, TOutput> {
   return {
     ...definition,
-    nodeFactory: (graph, nodeConfig) =>
+    nodeFactory: (graph, nodeConfig, id) =>
       new FunctionNodeInstance({
-        ...makeCommonProps(NodeType.Function, definition, nodeConfig, graph),
+        ...makeCommonProps(
+          NodeType.Function,
+          definition,
+          nodeConfig,
+          graph,
+          id
+        ),
         exec: definition.exec
       })
   };
@@ -256,14 +271,12 @@ export function makeEventNodeDefinition<
 ): IEventNodeDefinition<TInput, TOutput, TConfig, TState> {
   return {
     ...definition,
-    nodeFactory: (graph, config) =>
+    nodeFactory: (graph, config, id) =>
       new EventNodeInstance({
-        ...makeCommonProps(NodeType.Event, definition, config, graph),
+        ...makeCommonProps(NodeType.Event, definition, config, graph, id),
         initialState: definition.initialState,
         init: definition.init,
         dispose: definition.dispose
       })
   };
 }
-
-export { NodeCategory } from './Registry/NodeCategory.js';

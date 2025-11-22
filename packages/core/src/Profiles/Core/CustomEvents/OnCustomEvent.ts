@@ -1,9 +1,9 @@
 import { Assert } from '../../../Diagnostics/Assert.js';
 import { CustomEvent } from '../../../Events/CustomEvent.js';
 import { Engine } from '../../../Execution/Engine.js';
-import { IGraph } from '../../../Graphs/Graph.js';
+import type { IGraph } from '../../../Graphs/Graph.js';
 import { EventNode2 } from '../../../Nodes/EventNode.js';
-import { NodeConfiguration } from '../../../Nodes/Node.js';
+import type { NodeConfiguration } from '../../../Nodes/Node.js';
 import {
   NodeDescription,
   NodeDescription2
@@ -21,8 +21,8 @@ export class OnCustomEvent extends EventNode2 {
         defaultValue: '-1'
       }
     },
-    factory: (description, graph, configuration) =>
-      new OnCustomEvent(description, graph, configuration)
+    factory: (description, graph, configuration, id) =>
+      new OnCustomEvent(description, graph, configuration, id)
   });
 
   private readonly customEvent: CustomEvent;
@@ -30,7 +30,8 @@ export class OnCustomEvent extends EventNode2 {
   constructor(
     description: NodeDescription,
     graph: IGraph,
-    configuration: NodeConfiguration
+    configuration: NodeConfiguration,
+    id: string
   ) {
     const customEvent =
       graph.customEvents[configuration.customEventId] ||
@@ -50,7 +51,8 @@ export class OnCustomEvent extends EventNode2 {
             )
         )
       ],
-      configuration
+      configuration,
+      id
     });
     this.customEvent = customEvent;
   }
@@ -58,7 +60,7 @@ export class OnCustomEvent extends EventNode2 {
     | ((parameters: { [parameter: string]: any }) => void)
     | undefined = undefined;
 
-  init(engine: Engine) {
+  override init(engine: Engine) {
     Assert.mustBeTrue(this.onCustomEvent === undefined);
 
     this.onCustomEvent = (parameters) => {
@@ -78,7 +80,7 @@ export class OnCustomEvent extends EventNode2 {
     this.customEvent.eventEmitter.addListener(this.onCustomEvent);
   }
 
-  dispose(engine: Engine) {
+  override dispose(_engine: Engine) {
     Assert.mustBeTrue(this.onCustomEvent !== undefined);
 
     if (this.onCustomEvent !== undefined) {

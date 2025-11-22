@@ -1,6 +1,6 @@
-import { IRegistry } from '../../Registry.js';
-import { GraphInstance } from '../Graph.js';
-import {
+import type { IRegistry } from '../../Registry.js';
+import type { GraphInstance } from '../Graph.js';
+import type {
   CustomEventJSON,
   CustomEventParameterJSON,
   GraphJSON,
@@ -105,7 +105,7 @@ export function writeGraphToJSON(
           )
         };
       } else if (inputSocket.links.length === 1) {
-        const link = inputSocket.links[0];
+        const link = inputSocket.links[0]!;
         parameterJson = {
           link: {
             nodeId: link.nodeId,
@@ -128,11 +128,12 @@ export function writeGraphToJSON(
     node.outputs.forEach((outputSocket) => {
       if (outputSocket.valueTypeName !== 'flow') return;
 
-      if (outputSocket.links.length === 0) return;
+      const output = outputSocket.links[0];
+      if (!output) return;
 
       const linkJson = {
-        nodeId: outputSocket.links[0].nodeId,
-        socket: outputSocket.links[0].socketName
+        nodeId: output.nodeId,
+        socket: output.socketName
       };
 
       flowsJson[outputSocket.name] = linkJson;

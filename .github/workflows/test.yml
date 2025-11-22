@@ -1,0 +1,57 @@
+name: Test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [master]
+
+
+
+env:
+  HUSKY: 0
+  TURBO_TELEMETRY_DISABLED: 1
+  DO_NOT_TRACK: 1
+  # Needed for VScode test runner
+  DISPLAY: ':99.0'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+
+permissions:
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+ 
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Check formatting
+        run: pnpm run check
+
+      - name: Check linting
+        run: pnpm run lint
+
+      - name: Check types
+        run: pnpm run typecheck
+
+      - name: Run tests
+        run: pnpm run test
+

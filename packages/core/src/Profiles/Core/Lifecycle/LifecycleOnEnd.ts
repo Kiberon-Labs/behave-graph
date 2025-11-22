@@ -1,9 +1,7 @@
 import { Assert } from '../../../Diagnostics/Assert.js';
-import {
-  makeEventNodeDefinition,
-  NodeCategory
-} from '../../../Nodes/NodeDefinitions.js';
-import { ILifecycleEventEmitter } from '../Abstractions/ILifecycleEventEmitter.js';
+import { makeEventNodeDefinition } from '../../../Nodes/NodeDefinitions.js';
+import { NodeCategory } from '~/Nodes/Registry/NodeCategory.js';
+import type { ILifecycleEventEmitter } from '../Abstractions/ILifecycleEventEmitter.js';
 
 // inspired by: https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/Blueprints/UserGuide/Events/
 

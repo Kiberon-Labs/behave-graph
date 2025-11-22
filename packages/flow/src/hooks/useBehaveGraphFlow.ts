@@ -1,4 +1,4 @@
-import { GraphJSON, NodeSpecJSON } from '@behave-graph/core';
+import type { GraphJSON, NodeSpecJSON } from '@kiberon-labs/behave-graph';
 import { useCallback, useEffect, useState } from 'react';
 import { useEdgesState, useNodesState } from 'reactflow';
 

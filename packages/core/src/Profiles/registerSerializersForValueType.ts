@@ -1,6 +1,6 @@
 import { makeInNOutFunctionDesc } from '../Nodes/FunctionNode.js';
 import { toCamelCase } from '../toCamelCase.js';
-import { ValueTypeMap } from '../Values/ValueTypeMap.js';
+import type { ValueTypeMap } from '../Values/ValueTypeMap.js';
 
 export function getStringConversionsForValueType({
   values,

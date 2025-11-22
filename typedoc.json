@@ -1,0 +1,34 @@
+{
+    "entryPoints": [
+        "packages/*"
+    ],
+    "entryPointStrategy": "packages",
+    "readme": "",
+    "includeVersion": false,
+    "out": "./website/docs/packages",
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "excludeExternals": true,
+    "name": "Behave Graph",
+    "plugin": [
+        "typedoc-plugin-markdown",
+    ],
+    "projectDocuments": [
+        "docs/*.md",
+        "docs/**/*.md"
+    ],
+    "categorizeByGroup": true,
+    "categoryOrder": [
+        "Core",
+        "Utils",
+        "*"
+    ],
+    "sort": [
+        "source-order"
+    ],
+    "searchInComments": true,
+    "validation": {
+        "invalidLink": true,
+        "notExported": true
+    }
+}

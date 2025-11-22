@@ -1,4 +1,4 @@
-import { IQueryableRegistry } from '@behave-graph/core';
+import type { IQueryableRegistry } from '@kiberon-labs/behave-graph';
 import { useMemo } from 'react';
 
 export const toQueryableDefinitions = <T>(definitionsMap: {

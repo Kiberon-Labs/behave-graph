@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 import { memo } from '../../memo.js';
-import { NodeDefinition } from '../../Nodes/Registry/NodeDefinitionsMap.js';
+import type { NodeDefinition } from '../../Nodes/Registry/NodeDefinitionsMap.js';
 import { getNodeDescriptions } from '../../Nodes/Registry/NodeDescription.js';
-import { IRegistry } from '../../Registry.js';
-import { ValueTypeMap } from '../../Values/ValueTypeMap.js';
+import type { IRegistry } from '../../Registry.js';
+import type { ValueTypeMap } from '../../Values/ValueTypeMap.js';
 import { getStringConversionsForValueType } from '../registerSerializersForValueType.js';
 import { OnCustomEvent } from './CustomEvents/OnCustomEvent.js';
 import { TriggerCustomEvent } from './CustomEvents/TriggerCustomEvent.js';
@@ -83,7 +83,7 @@ export const getCoreNodesMap = memo<Record<string, NodeDefinition>>(() => {
     LifecycleOnTick,
 
     // time
-    Delay.Description,
+    Delay,
     ...getNodeDescriptions(TimeNodes),
 
     // flow control

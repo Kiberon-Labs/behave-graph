@@ -1,8 +1,5 @@
-import {
-  makeFlowNodeDefinition,
-  NodeCategory
-} from '../../../Nodes/NodeDefinitions.js';
-
+import { makeFlowNodeDefinition } from '../../../Nodes/NodeDefinitions.js';
+import { NodeCategory } from '~/Nodes/Registry/NodeCategory.js';
 // https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/Blueprints/UserGuide/flow/
 
 export const MultiGate = makeFlowNodeDefinition({
@@ -52,7 +49,7 @@ export const MultiGate = makeFlowNodeDefinition({
       }
       case 'flow': {
         if (0 <= nextIndex && nextIndex < outputSocketKeys.length) {
-          const output = outputSocketKeys[nextIndex];
+          const output = outputSocketKeys[nextIndex]!;
           commit(output);
         }
         nextIndex++;
@@ -66,7 +63,7 @@ export const MultiGate = makeFlowNodeDefinition({
     // Thus a promise is returned and it continually returns a promise until each of the sequences has been executed.
     const sequenceIteration = (i: number) => {
       if (i < outputSocketKeys.length) {
-        const outputSocket = outputSocketKeys[i];
+        const outputSocket = outputSocketKeys[i]!;
         commit(outputSocket, () => {
           sequenceIteration(i + 1);
         });

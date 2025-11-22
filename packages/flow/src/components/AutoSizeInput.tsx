@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-  CSSProperties,
-  HTMLProps,
+  type CSSProperties,
+  type HTMLProps,
   useCallback,
   useEffect,
   useRef,

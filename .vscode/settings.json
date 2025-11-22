@@ -1,21 +1,13 @@
 {
-  "eslint.probe": ["javascript", "javascriptreact", "typescript", "json"],
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
-  "cSpell.words": [
-    "fontawesome",
-    "fortawesome",
-    "GLTF",
-    "interruptible",
-    "lerp",
-    "Nullary",
-    "outfile",
-    "reactflow",
-    "reserialization",
-    "reserialized",
-    "Slerp",
-    "threeify"
+  "oxc.fmt.experimental": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.codeActionsOnSave": [
+    "source.formatDocument",
+    "source.fixAll.eslint"
   ],
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.codeActionsOnSave": ["source.formatDocument", "source.fixAll.eslint"]
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }

@@ -1,14 +1,16 @@
 /* eslint-disable no-console */
 
 import { EventEmitter } from '../Events/EventEmitter.js';
-import { LogSeverity } from '../index.js';
+import type { LogSeverity } from '../index.js';
 
-export enum LogLevel {
-  Verbose = 0,
-  Info = 1,
-  Warning = 2,
-  Error = 3
-}
+export const LogLevel = {
+  Verbose: 0,
+  Info: 1,
+  Warning: 2,
+  Error: 3
+} as const;
+
+export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
 
 export function logSeverityToLevel(severity: LogSeverity) {
   switch (severity) {
@@ -22,21 +24,18 @@ export function logSeverityToLevel(severity: LogSeverity) {
       return LogLevel.Error;
   }
 }
-export enum PrefixStyle {
-  None = 0,
-  Time = 1
-}
+export const PrefixStyle = {
+  None: 0,
+  Time: 1
+} as const;
 
-const Reset = '\x1b[0m';
-const FgRed = '\x1b[31m';
-const BgYellow = '\x1b[43m';
-const Dim = '\x1b[2m';
+export type PrefixStyle = (typeof PrefixStyle)[keyof typeof PrefixStyle];
 
 export type LogMessage = { severity: LogSeverity; text: string };
 
 export class Logger {
-  static logLevel = LogLevel.Info;
-  static prefixStyle = PrefixStyle.None;
+  static logLevel: LogLevel = LogLevel.Info;
+  static prefixStyle: PrefixStyle = PrefixStyle.None;
 
   public static readonly onLog = new EventEmitter<LogMessage>();
 

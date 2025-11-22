@@ -1,6 +1,9 @@
-import { makeFlowNodeDefinition, NodeCategory } from '@behave-graph/core';
+import {
+  makeFlowNodeDefinition,
+  NodeCategory
+} from '@kiberon-labs/behave-graph';
 
-import { IScene } from '../../Abstractions/IScene.js';
+import type { IScene } from '../../Abstractions/IScene.js';
 
 export const SetSceneProperty = (valueTypeNames: string[]) =>
   valueTypeNames.map((valueTypeName) =>

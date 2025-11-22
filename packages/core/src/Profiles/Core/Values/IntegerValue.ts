@@ -1,4 +1,4 @@
-import { ValueType } from '../../../Values/ValueType.js';
+import type { ValueType } from '../../../Values/ValueType.js';
 
 export const IntegerValue: ValueType = {
   name: 'integer',

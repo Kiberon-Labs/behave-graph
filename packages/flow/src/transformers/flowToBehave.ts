@@ -1,5 +1,9 @@
-import { GraphJSON, NodeJSON, NodeSpecJSON } from '@behave-graph/core';
-import { Edge, Node } from 'reactflow';
+import type {
+  GraphJSON,
+  NodeJSON,
+  NodeSpecJSON
+} from '@kiberon-labs/behave-graph';
+import type { Edge, Node } from 'reactflow';
 
 const isNullish = (value: any): value is null | undefined =>
   value === undefined || value === null;

@@ -1,11 +1,10 @@
-import {
-  Engine,
+import { Engine, readGraphFromJSON } from '@kiberon-labs/behave-graph';
+import type {
   GraphJSON,
   GraphNodes,
   ILifecycleEventEmitter,
-  IRegistry,
-  readGraphFromJSON
-} from '@behave-graph/core';
+  IRegistry
+} from '@kiberon-labs/behave-graph';
 import { useCallback, useEffect, useState } from 'react';
 
 /** Runs the behavior graph by building the execution

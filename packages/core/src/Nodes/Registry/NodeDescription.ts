@@ -1,17 +1,18 @@
-import { IGraph } from '../../Graphs/Graph.js';
-import {
+import type { IGraph } from '../../Graphs/Graph.js';
+import type {
   IHasNodeFactory,
   INodeDefinition,
   NodeFactory
 } from '../NodeDefinitions.js';
-import { INode } from '../NodeInstance.js';
-import { NodeConfiguration } from './../Node.js';
-import { NodeCategory } from './NodeCategory.js';
+import type { INode } from '../NodeInstance.js';
+import type { NodeConfiguration } from './../Node.js';
+import { type NodeCategoryType } from './NodeCategory.js';
 
 export type NodeConfigurationDescription = {
   [key: string]: {
     valueType: string;
     defaultValue?: any;
+    choices?: string[];
   };
 };
 
@@ -23,7 +24,7 @@ export function getNodeDescriptions(importWildcard: {
 
 export interface INodeDescription {
   readonly typeName: string;
-  readonly category: NodeCategory | string;
+  readonly category: NodeCategoryType | string;
   readonly label: string;
   readonly otherTypeNames: string[];
   readonly helpDescription: string;
@@ -33,38 +34,51 @@ export interface INodeDescription {
 export type NodeFactoryWithDescription = (
   entry: NodeDescription,
   graph: IGraph,
-  config: NodeConfiguration
+  config: NodeConfiguration,
+  id: string
 ) => INode;
 
 export class NodeDescription implements INodeDescription, IHasNodeFactory {
   nodeFactory: NodeFactory;
 
-  constructor(
-    public readonly typeName: string,
-    public readonly category: NodeCategory | string,
-    public readonly label: string = '',
-    factory: NodeFactoryWithDescription,
-    public readonly otherTypeNames: string[] = [],
-    public readonly helpDescription: string = '',
+  readonly typeName: string;
+  readonly category: NodeCategoryType | string;
+  readonly label: string;
 
-    public readonly configuration: NodeConfigurationDescription = {}
+  readonly otherTypeNames: string[];
+  readonly helpDescription: string;
+
+  readonly configuration: NodeConfigurationDescription;
+  constructor(
+    typeName: string,
+    category: NodeCategoryType | string,
+    label: string = '',
+    factory: NodeFactoryWithDescription,
+    otherTypeNames: string[] = [],
+    helpDescription: string = '',
+
+    configuration: NodeConfigurationDescription = {}
   ) {
-    this.nodeFactory = (graph, config) => factory(this, graph, config);
+    this.typeName = typeName;
+    this.category = category;
+    this.label = label;
+    this.otherTypeNames = otherTypeNames;
+    this.helpDescription = helpDescription;
+    this.configuration = configuration;
+    this.nodeFactory = (graph, config, id) => factory(this, graph, config, id);
   }
 }
 
 export class NodeDescription2 extends NodeDescription {
-  constructor(
-    public properties: {
-      typeName: string;
-      category: NodeCategory | string;
-      label?: string;
-      configuration?: NodeConfigurationDescription;
-      factory: NodeFactoryWithDescription;
-      otherTypeNames?: string[];
-      helpDescription?: string;
-    }
-  ) {
+  constructor(properties: {
+    typeName: string;
+    category: NodeCategoryType | string;
+    label?: string;
+    configuration?: NodeConfigurationDescription;
+    factory: NodeFactoryWithDescription;
+    otherTypeNames?: string[];
+    helpDescription?: string;
+  }) {
     super(
       properties.typeName,
       properties.category,

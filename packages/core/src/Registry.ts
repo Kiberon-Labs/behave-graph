@@ -1,5 +1,5 @@
-import { NodeDefinitionsMap } from './Nodes/Registry/NodeDefinitionsMap.js';
-import { ValueTypeMap } from './Values/ValueTypeMap.js';
+import type { NodeDefinitionsMap } from './Nodes/Registry/NodeDefinitionsMap.js';
+import type { ValueTypeMap } from './Values/ValueTypeMap.js';
 
 export interface IRegistry {
   readonly values: ValueTypeMap;

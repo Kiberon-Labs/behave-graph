@@ -1,5 +1,5 @@
 import { parseSafeFloat } from '../../../parseFloats.js';
-import { ValueType } from '../../../Values/ValueType.js';
+import type { ValueType } from '../../../Values/ValueType.js';
 
 export const FloatValue: ValueType = {
   name: 'float',
