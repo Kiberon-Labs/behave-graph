@@ -1,6 +1,6 @@
 {
   "name": "@kiberon-labs/behave-graph-scene",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
@@ -30,5 +30,8 @@
     "@kiberon-labs/behave-graph": "*",
     "three": "0.152.2",
     "three-stdlib": "^2.22.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

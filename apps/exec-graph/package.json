@@ -18,5 +18,8 @@
     "@kiberon-labs/behave-graph": "*",
     "@kiberon-labs/behave-graph-scene": "*",
     "commander": "^14.0.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

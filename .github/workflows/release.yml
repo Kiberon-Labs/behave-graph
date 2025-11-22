@@ -9,11 +9,12 @@ on:
 permissions:
   contents: write
   pages: write
-  id-token: write
+  id-token: write  # Required for OIDC
   pull-requests: write
 
 jobs:
   release:
+    environment: npm
     # Prevents changesets action from creating a PR on forks
     if: github.repository == 'kiberon-labs/behave-graph'
     name: Release

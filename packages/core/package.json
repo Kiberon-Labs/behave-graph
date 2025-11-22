@@ -1,6 +1,6 @@
 {
   "name": "@kiberon-labs/behave-graph",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "files": [
     "dist"
@@ -23,5 +23,8 @@
     "vitest": "^4.0.10",
     "oxfmt": "^0.14.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "publishConfig": {
+    "access": "public"
+  }
 }
