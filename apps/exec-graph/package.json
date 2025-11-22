@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kiberon-labs/behave-graph.git",
+    "url": "https://github.com/Kiberon-Labs/behave-graph",
     "directory": "apps/exec-graph"
   },
   "bugs": "https://github.com/kiberon-labs/behave-graph/issues",
