@@ -11,6 +11,12 @@
     "build": "tsc",
     "dev": "tsc --watch"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiberon-labs/behave-graph.git",
+    "directory": "apps/exec-graph"
+  },
+  "bugs": "https://github.com/kiberon-labs/behave-graph/issues",
   "devDependencies": {
     "@types/node": "^24.10.1"
   },
@@ -20,6 +26,7 @@
     "commander": "^14.0.2"
   },
   "publishConfig": {
+    "provenance": true,
     "access": "public"
   }
 }

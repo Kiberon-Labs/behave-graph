@@ -27,6 +27,12 @@
     "vitest": "^4.0.10",
     "oxfmt": "^0.14.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiberon-labs/behave-graph.git",
+    "directory": "packages/flow"
+  },
+  "bugs": "https://github.com/kiberon-labs/behave-graph/issues",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.2",
     "@fortawesome/free-solid-svg-icons": "^6.1.2",
@@ -40,6 +46,7 @@
     "@kiberon-labs/behave-graph": "*"
   },
   "publishConfig": {
+    "provenance": true,
     "access": "public"
   }
 }

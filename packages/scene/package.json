@@ -14,6 +14,12 @@
     "lint": "oxlint",
     "typecheck": "tsc"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiberon-labs/behave-graph.git",
+    "directory": "packages/scene"
+  },
+  "bugs": "https://github.com/kiberon-labs/behave-graph/issues",
   "devDependencies": {
     "@types/glob": "^8.0.0",
     "@types/node": "^24.10.1",
@@ -32,6 +38,7 @@
     "three-stdlib": "^2.22.4"
   },
   "publishConfig": {
+    "provenance": true,
     "access": "public"
   }
 }

@@ -15,6 +15,12 @@
     "lint": "oxlint",
     "typecheck": "tsc"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiberon-labs/behave-graph.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/kiberon-labs/behave-graph/issues",
   "devDependencies": {
     "@types/node": "^24.10.1",
     "oxlint": "^1.29.0",
@@ -25,6 +31,7 @@
   },
   "dependencies": {},
   "publishConfig": {
+    "provenance": true,
     "access": "public"
   }
 }
