@@ -19,15 +19,6 @@ export const colors: Record<color, [string, string, string]> = {
   white: ['bg-white', 'border-white', 'text-gray-700']
 };
 
-export const valueTypeColorMap: Record<string, string> = {
-  flow: 'white',
-  number: 'green',
-  float: 'green',
-  integer: 'lime',
-  boolean: 'red',
-  string: 'purple'
-};
-
 export const categoryColorMap: Record<NodeSpecJSON['category'], color> = {
   Event: 'red',
   Logic: 'green',

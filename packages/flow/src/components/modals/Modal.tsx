@@ -1,5 +1,6 @@
 import React from 'react';
 import type { PropsWithChildren } from 'react';
+import { VscodeButton } from '@vscode-elements/react-elements';
 
 import { useOnPressKey } from '../../hooks/useOnPressKey.js';
 
@@ -42,20 +43,16 @@ export const Modal: React.FC<PropsWithChildren<ModalProps>> = ({
           <h2 className="text-lg text-center font-bold">{title}</h2>
         </div>
         <div className="p-3">{children}</div>
-        <div className="flex gap-3 p-3 border-t">
+        <div className="flex gap-3 p-3">
           {actions.map((action, ix) => (
-            <button
+            <VscodeButton
               key={ix}
-              className={
-                'text-white p-2 w-full cursor-pointer ' +
-                (ix === actions.length - 1
-                  ? actionColors.primary
-                  : actionColors.secondary)
-              }
+              className={'w-full'}
+              secondary={ix !== actions.length - 1}
               onClick={action.onClick}
             >
               {action.label}
-            </button>
+            </VscodeButton>
           ))}
         </div>
       </div>

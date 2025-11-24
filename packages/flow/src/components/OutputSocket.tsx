@@ -2,14 +2,13 @@ import type {
   NodeSpecJSON,
   OutputSocketSpecJSON
 } from '@kiberon-labs/behave-graph';
-import { faCaretRight } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import cx from 'classnames';
-import React from 'react';
 import { type Connection, Handle, Position, useReactFlow } from 'reactflow';
-
-import { colors, valueTypeColorMap } from '../util/colors.js';
+import { colors } from '../util/colors.js';
 import { isValidConnection } from '../util/isValidConnection.js';
+import { NavArrowRightSolid } from 'iconoir-react';
+import { useSystem } from '@/system/provider.js';
+import { useStore } from 'zustand';
 
 export type OutputSocketProps = {
   connected: boolean;
@@ -23,8 +22,12 @@ export default function OutputSocket({
   name
 }: OutputSocketProps) {
   const instance = useReactFlow();
+  const sys = useSystem();
+  const { valueTypeColors, icons, defaultIcon } = useStore(sys.legendStore);
+  const Icon = icons[valueType] ?? defaultIcon
+
   const isFlowSocket = valueType === 'flow';
-  let colorName = valueTypeColorMap[valueType];
+  let colorName = valueTypeColors[valueType];
   if (colorName === undefined) {
     colorName = 'red';
   }
@@ -36,12 +39,7 @@ export default function OutputSocket({
     <div className="flex grow items-center justify-end h-7">
       {showName && <div className="capitalize">{name}</div>}
       {isFlowSocket && (
-        <FontAwesomeIcon
-          icon={faCaretRight}
-          color="#ffffff"
-          size="lg"
-          className="ml-1"
-        />
+        <NavArrowRightSolid />
       )}
 
       <Handle
@@ -52,7 +50,8 @@ export default function OutputSocket({
         isValidConnection={(connection: Connection) =>
           isValidConnection(connection, instance, specJSON)
         }
-      />
+      ><Icon />
+      </Handle>
     </div>
   );
 }

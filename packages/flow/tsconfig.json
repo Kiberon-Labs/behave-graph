@@ -24,11 +24,11 @@
     "baseUrl": ".",
     "rootDir": "./src",
     "paths": {
-      "~/*": [
-        "./src/*"
-      ],
       "@/*": [
         "./src/*"
+      ],
+      "~stories/*": [
+        "./stories/*"
       ]
     },
     /* Required for project references, which provide go-to-definition in your
@@ -46,12 +46,11 @@
     ],
   },
   "include": [
-    "./src",
-    "./src/**/*.json",
+    "./**/*.ts",
+    "./**/*.tsx",
+    "./**/*.json",
   ],
-  "exclude": [
-    "!./src/**"
-  ],
+  "exclude": [],
   "references": [
     {
       "path": "../core"

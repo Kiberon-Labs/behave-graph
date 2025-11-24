@@ -1,0 +1,95 @@
+@import "tailwindcss";
+@import "reactflow/dist/style.css" layer(components);
+@import "rc-dock/dist/rc-dock-dark" layer(components);
+@source "../node_modules/@kiberon-labs/*";
+@source "../../node_modules/@kiberon-labs/*";
+
+
+:root {
+    --colors-bgCanvas: 'var(--vscode-editor-background)';
+    --colors-bgDefault: 'var(--vscode-editor-background)';
+    --colors-bgEmphasis: 'var(--vscode-editor-background)';
+    --colors-bgSubtle: '#373737';
+    --colors-bgSurface: '#292929';
+    --colors-borderDefault: '#636363';
+    --colors-borderMuted: '#2e2e2e';
+    --colors-borderSubtle: '#454545';
+    --colors-fgSubtle: '#8a8a8a';
+    --colors-inputBg: 'var(--vscode-input-background)';
+    --colors-inputBorderRest: 'var(--vscode-input-border)';
+}
+
+body {
+    margin: 0;
+    padding: 0 !important;
+}
+
+#graph-editor {
+    height: 100vh;
+    background: var(--colors-bgCanvas)
+}
+
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+/* fixes issue with tailwind resetting flow control buttons */
+button,
+[type='button'] {
+    background-color: #fff;
+}
+
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.25rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+}
+
+.react-flow__handle {
+    width: 10px;
+    height: 10px;
+}
+
+.react-flow__handle-right {
+    right: -6px;
+}
+
+.react-flow__handle-left {
+    left: -6px;
+}
+
+.react-flow__edge-path {
+    stroke: #b1b1b7;
+    stroke-width: 2;
+    cursor: pointer;
+}
+
+input[type='number'] {
+    -moz-appearance: textfield;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+.react-flow__edge-path {
+    stroke: #555;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+    stroke: #fff;
+}
+
+.react-flow .react-flow__controls {
+    display: flex;
+    top: 0;
+    right: 0;
+    left: auto;
+    bottom: auto;
+}

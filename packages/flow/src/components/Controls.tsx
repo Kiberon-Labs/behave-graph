@@ -1,10 +1,8 @@
 import type { GraphJSON, NodeSpecJSON } from '@kiberon-labs/behave-graph';
 import {
-  faDownload,
   faPause,
   faPlay,
   faQuestion,
-  faTrash,
   faUpload
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -16,6 +14,7 @@ import { ClearModal } from './modals/ClearModal.js';
 import { HelpModal } from './modals/HelpModal.js';
 import { type Examples, LoadModal } from './modals/LoadModal.js';
 import { SaveModal } from './modals/SaveModal.js';
+import { Download, Trash } from 'iconoir-react';
 
 export type CustomControlsProps = {
   playing: boolean;
@@ -53,10 +52,10 @@ export const CustomControls: React.FC<CustomControlsProps> = ({
           <FontAwesomeIcon icon={faUpload} />
         </ControlButton>
         <ControlButton title="Save" onClick={() => setSaveModalOpen(true)}>
-          <FontAwesomeIcon icon={faDownload} />
+          <Download />
         </ControlButton>
         <ControlButton title="Clear" onClick={() => setClearModalOpen(true)}>
-          <FontAwesomeIcon icon={faTrash} />
+          <Trash />
         </ControlButton>
         <ControlButton title="Run" onClick={togglePlay}>
           <FontAwesomeIcon icon={playing ? faPause : faPlay} />

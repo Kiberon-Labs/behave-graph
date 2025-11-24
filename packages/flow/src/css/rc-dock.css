@@ -1,0 +1,71 @@
+.dock-panel {
+    color: inherit;
+    border-color: transparent;
+    border: none;
+    background: var(--colors-bgCanvas);
+}
+
+.dock-top .dock-bar {
+    border-bottom-color: var(--color-neutral-stroke-subtle);
+    padding-left: 0px;
+
+}
+
+.dock-tab {
+    color: var(--colors-fg);
+    background: transparent;
+    border-bottom: none;
+    z-index: 10;
+}
+
+.dock-tab>div {
+    padding: 4px 14px;
+    outline-color: #108ee9;
+}
+
+
+
+.dock-nav {
+    flex-grow: 1;
+}
+
+.dock-nav-wrap {
+    cursor: move;
+}
+
+.dock-panel.dock-style-main .dock-tab,
+.dock-tab {
+    background: var(--color-neutral-canvas-subtle-bg);
+}
+
+.dock-fbox>.dock-panel {
+    box-shadow: 0 0 0.25rem var(--color-neutral-canvas-subtle-fg-subtle);
+}
+
+.drag-initiator {
+    display: flex;
+    align-items: center;
+    gap: var(--component-spacing-sm);
+}
+
+.dock-panel,
+.dock-top .dock-bar,
+.dock-tab {
+    background: var(--colors-bgCanvas);
+}
+
+.dock-tab {
+    background: var(--colors-bgCanvas);
+}
+
+.dock-panel.dock-style-main .dock-bar {
+    border-bottom-color: var(--color-neutral-stroke-subtle);
+}
+
+.drag-initiator {
+    transition: width 0.2s;
+}
+
+.drag-initiator .dock-tab-close-btn {
+    position: relative;
+}

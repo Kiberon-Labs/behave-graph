@@ -1,0 +1,129 @@
+{
+  "name": "kiberon-labs-behave-engine-vscode",
+  "displayName": "Kiberon Labs Graph extension",
+  "description": "Run behave graphs locally in VS Code",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MPL-2.0",
+  "publisher": "kiberon-labs",
+  "author": "Kiberon Labs",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Extension Packs",
+    "Visualization"
+  ],
+  "pricing": "Free",
+  "icon": "media/logo.png",
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "capabilities": {
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "Using ESLint is not possible in virtual workspaces."
+    },
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "The extension requires workspace trust because it loads configuration files and code from the workspace and executes it."
+    }
+  },
+  "contributes": {
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceLangId == kiberon-labs-behave-graph",
+          "command": "kiberon-labs-behave-graph.executeGraph",
+          "group": "z_commands"
+        }
+      ]
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": ".klbgraphrc",
+        "url": "https://schemas.kiberon-labs.com/v1/klbgraphrc.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "kiberon-labs-behave-graph",
+        "aliases": [
+          "Behave Graph",
+          "Kiberon Labs Behave Graph"
+        ],
+        "extensions": [
+          ".klbgraph"
+        ],
+        "icon": {
+          "light": "./media/icon.png",
+          "dark": "./media/icon.png"
+        }
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "kiberon-labs-behave-graph.graphFile",
+        "displayName": "Behave Graph file",
+        "selector": [
+          {
+            "filenamePattern": "*.klbgraph"
+          }
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "kiberon-labs-behave-graph.graph.new",
+        "title": "Create new KL Behave Graph file",
+        "category": "Graph Engine"
+      },
+      {
+        "command": "kiberon-labs-behave-graph.openGraphEngine",
+        "title": "Open Graph Engine"
+      },
+      {
+        "command": "kiberon-labs-behave-graph.executeGraph",
+        "title": "Execute Graph"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiberon-labs/behave-graph"
+  },
+  "scripts": {
+    "vite": "vite",
+    "build:app": "vite build",
+    "vscode:prepublish": "yarn run build",
+    "build": "npm run check-types  && npm run build:app && npm run build:ext",
+    "build:ext": "node esbuild.js",
+    "dev": "npm-run-all -p dev:*",
+    "dev:ext": "node esbuild.js  --watch",
+    "dev:app": "vite build --watch",
+    "dev:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "pretest": "yarn run build-tests && yarn run build ",
+    "check-types": "tsc --noEmit",
+    "test:e2e": "vscode-test"
+  },
+  "dependencies": {
+    "@kiberon-labs/behave-graph": "*",
+    "@kiberon-labs/behave-graph-flow": "*",
+    "@tailwindcss/postcss": "^4.1.17",
+    "@tailwindcss/vite": "^4.1.17",
+    "rc-dock": "4.0.0-alpha.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "reactflow": "^11.11.4",
+    "tailwindcss": "^4.1.17"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.7",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.60.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.4.0",
+    "esbuild": "^0.27.0",
+    "npm-run-all": "^4.1.5",
+    "vite": "^7.2.4"
+  }
+}

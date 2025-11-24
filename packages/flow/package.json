@@ -12,20 +12,28 @@
     "check": "oxfmt --check",
     "format": "oxfmt",
     "lint": "oxlint",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "typecheck": "tsc"
   },
   "devDependencies": {
-    "@testing-library/react": "^13.3.0",
-    "@testing-library/user-event": "^13.5.0",
+    "@storybook/addon-a11y": "^10.0.8",
+    "@storybook/addon-docs": "^10.0.8",
+    "@storybook/addon-vitest": "^10.0.8",
+    "@storybook/react-vite": "^10.0.8",
+    "@tailwindcss/vite": "^4.1.17",
     "@types/react": "^19.2.6",
     "@types/uuid": "^8.3.4",
     "autoprefixer": "^10.4.22",
+    "oxfmt": "^0.14.0",
     "oxlint": "^1.29.0",
     "react": "^19.2.0",
+    "storybook": "^10.0.8",
     "tailwindcss": "^4.1.17",
     "tsdown": "^0.16.5",
-    "vitest": "^4.0.10",
-    "oxfmt": "^0.14.0"
+    "vite": "^7.2.4",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.0.10"
   },
   "repository": {
     "type": "git",
@@ -37,13 +45,27 @@
     "@fortawesome/fontawesome-svg-core": "^6.1.2",
     "@fortawesome/free-solid-svg-icons": "^6.1.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@vscode-elements/react-elements": "^2.3.1",
+    "@vscode/codicons": "^0.0.43",
     "classnames": "^2.3.1",
+    "component-emitter": "^2.0.0",
+    "copy-to-clipboard": "^3.3.3",
+    "dockview": "^4.11.0",
     "downshift": "^6.1.7",
-    "uuid": "^8.3.2"
+    "iconoir-react": "^7.11.0",
+    "rc-dock": "4.0.0-alpha.2",
+    "rc-menu": "^9.16.1",
+    "react-colorful": "^5.6.1",
+    "react-error-boundary": "^6.0.0",
+    "react-hotkeys": "^2.0.0",
+    "react-json-tree": "^0.20.0",
+    "uuid": "^8.3.2",
+    "zustand": "^5.0.8"
   },
   "peerDependencies": {
-    "reactflow": "^11.1.1",
-    "@kiberon-labs/behave-graph": "*"
+    "@kiberon-labs/behave-graph": "*",
+    "reactflow": "^11.1.1"
   },
   "publishConfig": {
     "provenance": true,

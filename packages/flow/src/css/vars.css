@@ -1,0 +1,15 @@
+:root {
+
+    --colors-bgCanvas: #1f1f1f;
+    --colors-bgDefault: #181818;
+    --colors-bgEmphasis: #444444;
+    --colors-bgSubtle: #373737;
+    --colors-bgSurface: #292929;
+    --colors-borderDefault: #636363;
+    --colors-borderMuted: #2e2e2e;
+    --colors-borderSubtle: #454545;
+    --colors-fg: #fff;
+    --colors-fgSubtle: #8a8a8a;
+    --colors-inputBg: red;
+    --colors-inputBorderRest: red;
+}

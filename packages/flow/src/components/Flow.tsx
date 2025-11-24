@@ -1,6 +1,6 @@
 import type { GraphJSON, IRegistry } from '@kiberon-labs/behave-graph';
 import React from 'react';
-import { Background, BackgroundVariant, ReactFlow } from 'reactflow';
+import { Background, BackgroundVariant, MiniMap, ReactFlow } from 'reactflow';
 
 import { useBehaveGraphFlow } from '../hooks/useBehaveGraphFlow.js';
 import { useFlowHandlers } from '../hooks/useFlowHandlers.js';
@@ -9,6 +9,7 @@ import { useNodeSpecJson } from '../hooks/useNodeSpecJson.js';
 import CustomControls from './Controls.js';
 import { type Examples } from './modals/LoadModal.js';
 import { NodePicker } from './NodePicker.js';
+import { useSystem } from '@/system/provider.js';
 
 type FlowProps = {
   initialGraph: GraphJSON;
@@ -21,7 +22,13 @@ export const Flow: React.FC<FlowProps> = ({
   registry,
   examples
 }) => {
+  const system = useSystem();
   const specJson = useNodeSpecJson(registry);
+  const showGrid = system.useSystemSettings(x => x.showGrid);
+  const showMinimap = system.useSystemSettings(x => x.showMinimap);
+  const snapGrid = system.useSystemSettings(x => x.snapGrid);
+
+
 
   const {
     nodes,
@@ -70,6 +77,7 @@ export const Flow: React.FC<FlowProps> = ({
       onConnectStart={handleStartConnect}
       // @ts-ignore
       onConnectEnd={handleStopConnect}
+      snapToGrid={snapGrid}
       fitView
       fitViewOptions={{ maxZoom: 1 }}
       onPaneClick={handlePaneClick}
@@ -82,11 +90,12 @@ export const Flow: React.FC<FlowProps> = ({
         examples={examples}
         specJson={specJson}
       />
-      <Background
+      {showGrid && <Background
         variant={BackgroundVariant.Lines}
-        color="#2a2b2d"
-        style={{ backgroundColor: '#1E1F22' }}
-      />
+        color="#373737"
+        style={{ backgroundColor: 'var(--colors-bgCanvas)' }}
+      />}
+      {showMinimap && <MiniMap />}
       {nodePickerVisibility && (
         <NodePicker
           position={nodePickerVisibility}

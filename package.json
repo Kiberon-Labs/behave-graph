@@ -19,9 +19,7 @@
   "license": "ISC",
   "author": "Kiberon Labs",
   "workspaces": [
-    "packages/*",
-    "apps/*",
-    "website"
+    "packages/*"
   ],
   "scripts": {
     "check": "turbo run check",

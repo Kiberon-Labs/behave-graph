@@ -69,6 +69,7 @@ export type GraphSocketJSON = SocketListDefinition & {
 };
 
 export type GraphJSON = {
+  v?: number;
   name?: string;
   nodes?: NodeJSON[];
   variables?: VariableJSON[];

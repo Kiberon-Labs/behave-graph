@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import {
   type CSSProperties,
   type HTMLProps,
@@ -9,6 +9,7 @@ import {
 } from 'react';
 
 export type AutoSizeInputProps = HTMLProps<HTMLInputElement> & {
+  icon?: ReactElement;
   minWidth?: number;
 };
 
@@ -23,6 +24,7 @@ const baseStyles: CSSProperties = {
 };
 
 export const AutoSizeInput: React.FC<AutoSizeInputProps> = ({
+  icon,
   minWidth = 30,
   ...props
 }) => {

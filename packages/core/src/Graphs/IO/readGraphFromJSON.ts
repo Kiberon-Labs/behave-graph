@@ -36,6 +36,7 @@ export function readGraphFromJSON({
 }): GraphInstance {
   const graphName = graphJson?.name || '';
   const graphMetadata = graphJson?.metadata || {};
+  const v = graphJson.v ?? 1;
 
   let variables: GraphVariables = {};
   let customEvents: GraphCustomEvents = {};
@@ -154,6 +155,7 @@ export function readGraphFromJSON({
   });
 
   return {
+    v,
     name: graphName,
     metadata: graphMetadata,
     nodes: nodes,

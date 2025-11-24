@@ -2,15 +2,17 @@ import type {
   InputSocketSpecJSON,
   NodeSpecJSON
 } from '@kiberon-labs/behave-graph';
-import { faCaretRight } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 import cx from 'classnames';
 import React from 'react';
 import { type Connection, Handle, Position, useReactFlow } from 'reactflow';
 
-import { colors, valueTypeColorMap } from '../util/colors.js';
+import { colors } from '../util/colors.js';
 import { isValidConnection } from '../util/isValidConnection.js';
 import { AutoSizeInput } from './AutoSizeInput.js';
+import { NavArrowRightSolid } from 'iconoir-react';
+import { useSystem } from '@/system/provider.js';
+import { useStore } from 'zustand';
 
 export type InputSocketProps = {
   connected: boolean;
@@ -53,9 +55,11 @@ const InputFieldForValue = ({
       </select>
     );
 
+
   return (
     <>
       {valueType === 'string' && (
+
         <AutoSizeInput
           type="text"
           className="bg-gray-600 disabled:bg-gray-700 py-1 px-2 nodrag"
@@ -106,10 +110,14 @@ const InputSocket: React.FC<InputSocketProps> = ({
 }) => {
   const { name, valueType } = rest;
   const instance = useReactFlow();
+  const sys = useSystem();
+  const { valueTypeColors, icons, defaultIcon } = useStore(sys.legendStore);
+  const Icon = icons[valueType] ?? defaultIcon
+
 
   const isFlowSocket = valueType === 'flow';
 
-  let colorName = valueTypeColorMap[valueType];
+  let colorName = valueTypeColors[valueType];
   if (colorName === undefined) {
     colorName = 'red';
   }
@@ -118,14 +126,16 @@ const InputSocket: React.FC<InputSocketProps> = ({
   const [backgroundColor, borderColor] = colors[colorName];
   const showName = isFlowSocket === false || name !== 'flow';
 
+
   return (
     <div className="flex grow items-center justify-start h-7">
       {isFlowSocket && (
-        <FontAwesomeIcon icon={faCaretRight} color="#ffffff" size="lg" />
+        <NavArrowRightSolid />
       )}
       {showName && <div className="capitalize mr-2">{name}</div>}
 
       {!isFlowSocket && !connected && <InputFieldForValue {...rest} />}
+
       <Handle
         id={name}
         type="target"
@@ -134,7 +144,9 @@ const InputSocket: React.FC<InputSocketProps> = ({
         isValidConnection={(connection: Connection) =>
           isValidConnection(connection, instance, specJSON)
         }
-      />
+      >
+        <Icon />
+      </Handle>
     </div>
   );
 };

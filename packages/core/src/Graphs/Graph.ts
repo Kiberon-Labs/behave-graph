@@ -25,6 +25,7 @@ export type GraphVariables = { [id: string]: Variable };
 export type GraphCustomEvents = { [id: string]: CustomEvent };
 
 export type GraphInstance = {
+  v: number;
   name: string;
   metadata: Metadata;
   nodes: GraphNodes;

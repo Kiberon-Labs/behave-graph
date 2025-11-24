@@ -5,7 +5,7 @@
     "entryPointStrategy": "packages",
     "readme": "",
     "includeVersion": false,
-    "out": "./website/docs/packages",
+    "out": "./packages/website/docs/packages",
     "excludePrivate": true,
     "excludeProtected": true,
     "excludeExternals": true,

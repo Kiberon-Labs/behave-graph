@@ -21,7 +21,6 @@ export * from './hooks/useGraphRunner.js';
 export * from './hooks/useBehaveGraphFlow.js';
 export * from './hooks/useNodeSpecJson.js';
 export * from './hooks/useCustomNodeTypes.js';
-export * from './hooks/useMergeMap.js';
 
 export * from './transformers/behaveToFlow.js';
 export * from './transformers/flowToBehave.js';
@@ -35,3 +34,6 @@ export * from './util/hasPositionMetaData.js';
 export * from './util/isHandleConnected.js';
 export * from './util/isValidConnection.js';
 export * from './util/sleep.js';
+
+export * from './system/index.js';
+export * from './components/layoutController/index.js';
