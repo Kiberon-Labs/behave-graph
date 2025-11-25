@@ -27,6 +27,7 @@ import { LifecycleOnEnd } from './Lifecycle/LifecycleOnEnd.js';
 import { LifecycleOnStart } from './Lifecycle/LifecycleOnStart.js';
 import { LifecycleOnTick } from './Lifecycle/LifecycleOnTick.js';
 import { Easing } from './Logic/Easing.js';
+import { stringSplit } from './Logic/split.js';
 import { Delay } from './Time/Delay.js';
 import * as TimeNodes from './Time/TimeNodes.js';
 import * as BooleanNodes from './Values/BooleanNodes.js';
@@ -97,6 +98,7 @@ export const getCoreNodesMap = memo<Record<string, NodeDefinition>>(() => {
     Throttle.Description,
     DoN,
     DoOnce,
+    stringSplit,
     Gate,
     MultiGate,
     WaitAll.Description,
