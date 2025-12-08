@@ -8,7 +8,13 @@ const meta: Meta<typeof SaveModal> = {
   title: 'components/modals/SaveModal',
   component: SaveModal,
   tags: ['autodocs'],
-  decorators: [(Story) => <ReactFlowProvider><Story /></ReactFlowProvider>],
+  decorators: [
+    (Story) => (
+      <ReactFlowProvider>
+        <Story />
+      </ReactFlowProvider>
+    )
+  ],
   argTypes: {}
 };
 
@@ -19,7 +25,9 @@ type Story = StoryObj<typeof meta>;
 export const Primary: Story = {
   args: {
     open: true,
-    onClose: () => { console.log('closed'); },
+    onClose: () => {
+      console.log('closed');
+    },
     specJson: []
   }
 };

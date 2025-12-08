@@ -1,10 +1,10 @@
-# Kiberon Labs Behave Graphs for VScode
+# Kinforge Behave Graphs for VScode
 
 This is a proof of concept exploration of embedding the graph engine inside of VS Code for faster iteration of behave graph
 
 ## Features
 
-- Provides a custom editor for the new file extension type `.klbgraph` which is a Kiberon Labs specific format for the serialized behave graph.
+- Provides a custom editor for the new file extension type `.klbgraph` which is a Kinforge specific format for the serialized behave graph.
 
 - Custom icons for the `.klbgraph` format
 

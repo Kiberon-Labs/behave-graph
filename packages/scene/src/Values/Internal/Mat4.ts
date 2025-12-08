@@ -3,7 +3,7 @@ import {
   equalsTolerance,
   parseSafeFloats,
   toSafeString
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 import { eulerToMat3, Mat3, quatToMat3 } from './Mat3.js';
 import { Vec2 } from './Vec2.js';

@@ -4,7 +4,7 @@ import {
   equalsTolerance,
   parseSafeFloats,
   toSafeString
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 import { Mat3, mat4ToMat3, quatToMat3 } from './Mat3.js';
 import { Mat4 } from './Mat4.js';

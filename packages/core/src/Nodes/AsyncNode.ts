@@ -16,7 +16,7 @@ export class AsyncNode extends Node<'Async'> {
     inputs: Socket[] = [],
     outputs: Socket[] = [],
     configuration: NodeConfiguration = {},
-    id: string
+    id: string = rando
   ) {
     super({
       description: {

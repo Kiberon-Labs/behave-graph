@@ -1,12 +1,12 @@
 {
-  "name": "kiberon-labs-behave-engine-vscode",
-  "displayName": "Kiberon Labs Graph extension",
+  "name": "kinforge-behave-engine-vscode",
+  "displayName": "Kinforge Graph extension",
   "description": "Run behave graphs locally in VS Code",
   "version": "1.0.0",
   "private": true,
   "license": "MPL-2.0",
-  "publisher": "kiberon-labs",
-  "author": "Kiberon Labs",
+  "publisher": "kinforge",
+  "author": "kiberonlabsdev",
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -32,8 +32,8 @@
     "menus": {
       "explorer/context": [
         {
-          "when": "resourceLangId == kiberon-labs-behave-graph",
-          "command": "kiberon-labs-behave-graph.executeGraph",
+          "when": "resourceLangId == kinforge-behave-graph",
+          "command": "kinforge-behave-graph.executeGraph",
           "group": "z_commands"
         }
       ]
@@ -41,12 +41,12 @@
     "jsonValidation": [
       {
         "fileMatch": ".klbgraphrc",
-        "url": "https://schemas.kiberon-labs.com/v1/klbgraphrc.json"
+        "url": "https://schemas.kinforge.co.za/v1/klbgraphrc.json"
       }
     ],
     "languages": [
       {
-        "id": "kiberon-labs-behave-graph",
+        "id": "kinforge-behave-graph",
         "aliases": [
           "Behave Graph",
           "Kiberon Labs Behave Graph"
@@ -62,7 +62,7 @@
     ],
     "customEditors": [
       {
-        "viewType": "kiberon-labs-behave-graph.graphFile",
+        "viewType": "kinforge-behave-graph.graphFile",
         "displayName": "Behave Graph file",
         "selector": [
           {
@@ -73,23 +73,23 @@
     ],
     "commands": [
       {
-        "command": "kiberon-labs-behave-graph.graph.new",
-        "title": "Create new KL Behave Graph file",
+        "command": "kinforge-behave-graph.graph.new",
+        "title": "Create new Behave Graph file",
         "category": "Graph Engine"
       },
       {
-        "command": "kiberon-labs-behave-graph.openGraphEngine",
+        "command": "kinforge-behave-graph.openGraphEngine",
         "title": "Open Graph Engine"
       },
       {
-        "command": "kiberon-labs-behave-graph.executeGraph",
+        "command": "kinforge-behave-graph.executeGraph",
         "title": "Execute Graph"
       }
     ]
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kiberon-labs/behave-graph"
+    "url": "https://github.com/new-horizon-organisation/behave-graph"
   },
   "scripts": {
     "vite": "vite",
@@ -106,8 +106,8 @@
     "test:e2e": "vscode-test"
   },
   "dependencies": {
-    "@kiberon-labs/behave-graph": "*",
-    "@kiberon-labs/behave-graph-flow": "*",
+    "@kinforge/behave-graph": "*",
+    "@kinforge/behave-graph-flow": "*",
     "@tailwindcss/postcss": "^4.1.17",
     "@tailwindcss/vite": "^4.1.17",
     "rc-dock": "4.0.0-alpha.2",

@@ -1,8 +1,8 @@
 @import "tailwindcss";
 @import "reactflow/dist/style.css" layer(components);
 @import "rc-dock/dist/rc-dock-dark" layer(components);
-@source "../node_modules/@kiberon-labs/*";
-@source "../../node_modules/@kiberon-labs/*";
+@source "../node_modules/@kinforge/*";
+@source "../../node_modules/@kinforge/*";
 
 
 :root {

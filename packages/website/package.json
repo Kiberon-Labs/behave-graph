@@ -1,5 +1,5 @@
 {
-  "name": "@kiberon-labs/website",
+  "name": "@kinforge/website",
   "private": true,
   "type": "module",
   "version": "0.0.1",
@@ -16,8 +16,8 @@
     "@astrojs/starlight": "^0.36.2",
     "@astrojs/starlight-tailwind": "^4.0.2",
     "@iconify/react": "^6.0.2",
-    "@kiberon-labs/behave-graph": "*",
-    "@kiberon-labs/behave-graph-flow": "*",
+    "@kinforge/behave-graph": "*",
+    "@kinforge/behave-graph-flow": "*",
     "@tailwindcss/vite": "^4.1.17",
     "@types/react-dom": "^19.2.3",
     "astro": "^5.6.1",

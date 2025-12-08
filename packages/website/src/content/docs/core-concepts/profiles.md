@@ -6,7 +6,7 @@ A profile is a function that updates the registry with the nodes and value types
 
 ## Using official Profiles
 
-The official profiles are available in the `@kiberon-labs/behave-graph` package.
+The official profiles are available in the `@kinforge/behave-graph` package.
 
 ```ts
 import {
@@ -16,7 +16,7 @@ import {
   Registry,
   registerCoreProfile,
   registerSceneProfile
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 const registry = new Registry();
 const logger = new DefaultLogger();
@@ -30,7 +30,7 @@ registerSceneProfile(registry, scene);
 ## Creating a Custom Profile
 
 ```ts
-import { Registry, ILogger } from '@kiberon-labs/behave-graph';
+import { Registry, ILogger } from '@kinforge/behave-graph';
 
 const registerMyProfile = (registry: Registry, logger: ILogger) => {
   const { nodes, values } = registry;

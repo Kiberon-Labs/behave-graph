@@ -3,7 +3,7 @@
 import { Assert } from '../Diagnostics/Assert.js';
 import { EventEmitter } from '../Events/EventEmitter.js';
 import { generateUuid } from '../generateUuid.js';
-import type { GraphNodes } from '../Graphs/Graph.js';
+import type { GraphInstance, GraphNodes } from '../Graphs/Graph.js';
 import {
   type IAsyncNode,
   type IEventNode,
@@ -28,7 +28,7 @@ type NodeCommit = {
 export class Engine {
   // tracking the next node+input socket to execute.
   public readonly id = generateUuid();
-  private readonly fiberQueue: Fiber[] = [];
+  protected readonly fiberQueue: Fiber[] = [];
   public readonly asyncNodes: IAsyncNode[] = [];
   public readonly eventNodes: IEventNode[] = [];
   public readonly onNodeExecutionStart = new EventEmitter<INode>();
@@ -38,10 +38,10 @@ export class Engine {
   public readonly nodes: GraphNodes;
   public executionSteps = 0;
 
-  constructor(nodes: GraphNodes) {
-    this.nodes = nodes;
+  constructor(graph:GraphInstance) {
+    this.nodes = graph.nodes;
     // collect all event nodes
-    Object.values(nodes).forEach((node) => {
+    Object.values(this.nodes).forEach((node) => {
       if (isEventNode(node)) {
         this.eventNodes.push(node);
       }

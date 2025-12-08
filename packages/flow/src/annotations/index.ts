@@ -21,7 +21,7 @@ export const xpos = 'ui.pos.x';
 export const ypos = 'ui.pos.y';
 
 //Used on nodes and graph
-export const title = 'ui.title';
+export const annotatedTitle = 'ui.title';
 export const description = 'ui.description';
 
 //Used exclusively on graph

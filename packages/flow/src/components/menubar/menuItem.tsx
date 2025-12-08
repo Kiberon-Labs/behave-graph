@@ -13,7 +13,6 @@ export type IMenuItemElement = React.ComponentProps<typeof Item> & {
  * You must provide a unique key for each item
  */
 export const MenuItemElement = ({
-  icon,
   inner = (children) => children,
   children,
   ...rest
@@ -22,10 +21,11 @@ export const MenuItemElement = ({
     // @ts-expect-error This is the correct attribute
     <Item selectable={'false'} {...rest}>
       {inner(
-        <div className='flex gap-1 align-center'>
-          <div>{icon}</div>
-          <span>{children}</span>
-        </div>,
+        <div className="flex gap-1 align-center rounded w-full">
+          <div className="pl-2 pr-2 inner-menu-item p-1 rounded w-full min-width-300px">
+            {children}
+          </div>
+        </div>
       )}
     </Item>
   );

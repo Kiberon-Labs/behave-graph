@@ -9,7 +9,7 @@ import {
   NodeDescription,
   Socket,
   toCamelCase
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 import type { IScene } from '../../Abstractions/IScene.js';
 

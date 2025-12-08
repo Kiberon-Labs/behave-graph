@@ -3,7 +3,7 @@ import {
   registerCoreProfile,
   validateNodeRegistry,
   type IRegistry
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 import { registerSceneProfile } from '../src/registerSceneProfile.js';
 import { describe, test, expect } from 'vitest';

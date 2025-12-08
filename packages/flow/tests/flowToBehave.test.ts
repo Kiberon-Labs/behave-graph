@@ -2,7 +2,7 @@ import {
   registerCoreProfile,
   type GraphJSON,
   writeNodeSpecsToJSON
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 import rawFlowGraph from '../../../graphs/react-flow/graph.json';
 import { behaveToFlow } from '../src/transformers/behaveToFlow.js';

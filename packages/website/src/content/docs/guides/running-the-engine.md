@@ -18,7 +18,7 @@ import {
   registerCoreProfile,
   Registry,
   ManualLifecycleEventEmitter
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 import myGraphJson from './myGraph.json';
 

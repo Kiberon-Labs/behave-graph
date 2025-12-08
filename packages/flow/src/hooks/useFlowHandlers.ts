@@ -1,4 +1,4 @@
-import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
+import type { NodeSpecJSON } from '@kinforge/behave-graph';
 import {
   type MouseEvent as ReactMouseEvent,
   useCallback,
@@ -7,6 +7,7 @@ import {
 } from 'react';
 import type {
   Connection,
+  ConnectionStatus,
   Node,
   OnConnectStartParams,
   XYPosition
@@ -16,6 +17,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { calculateNewEdge } from '../util/calculateNewEdge.js';
 import { getNodePickerFilters } from '../util/getPickerFilters.js';
 import { useBehaveGraphFlow } from './useBehaveGraphFlow.js';
+import { useSystem } from '@/system/provider.js';
+import type { AnyNode, CommentNode, IBehaveNode } from '@/types.js';
 
 type BehaveGraphFlow = ReturnType<typeof useBehaveGraphFlow>;
 
@@ -48,6 +51,7 @@ export const useFlowHandlers = ({
   nodes: Node[];
   specJSON: NodeSpecJSON[] | undefined;
 }) => {
+  const sys = useSystem();
   const [lastConnectStart, setLastConnectStart] =
     useState<OnConnectStartParams>();
   const [nodePickerVisibility, setNodePickerVisibility] =
@@ -65,6 +69,8 @@ export const useFlowHandlers = ({
         sourceHandle: connection.sourceHandle,
         targetHandle: connection.targetHandle
       };
+      console.log('onConnect', newEdge);
+      sys.pubsub.publish('newEdge', newEdge);
       onEdgesChange([
         {
           type: 'add',
@@ -83,18 +89,29 @@ export const useFlowHandlers = ({
   const handleAddNode = useCallback(
     (nodeType: string, position: XYPosition) => {
       closeNodePicker();
-      const newNode = {
+      const newNode: IBehaveNode = {
         id: uuidv4(),
-        type: nodeType,
+        type: 'behaveNode',
         position,
-        data: {}
-      };
-      onNodesChange([
-        {
-          type: 'add',
-          item: newNode
+        data: {
+          configuration: {},
+          type: nodeType,
+          ports: {}
         }
-      ]);
+      };
+
+      sys.undoManager.execute({
+        execute: () => {
+          sys.nodeStore.getState().addNode(newNode);
+        },
+        undo: () => {
+          sys.nodeStore
+            .getState()
+            .setNodes((existing) =>
+              existing.filter((n) => n.id !== newNode.id)
+            );
+        }
+      });
 
       if (lastConnectStart === undefined) return;
 
@@ -134,20 +151,17 @@ export const useFlowHandlers = ({
     []
   );
 
-  const handleStopConnect = useCallback((e: MouseEvent) => {
-    const element = e.target as HTMLElement;
-    console.log(
-      'here',
-      element.classList,
-      element.classList.contains('react-flow__pane')
-    );
-    if (element.classList.contains('react-flow__pane')) {
-      console.log('setting node picker');
-      setNodePickerVisibility({ x: e.clientX, y: e.clientY });
-    } else {
-      setLastConnectStart(undefined);
-    }
-  }, []);
+  const handleStopConnect = useCallback(
+    (e: MouseEvent, connectionState: ConnectionStatus) => {
+      const element = e.target as HTMLElement;
+      if (element.classList.contains('react-flow__pane')) {
+        setNodePickerVisibility({ x: e.clientX, y: e.clientY });
+      } else {
+        setLastConnectStart(undefined);
+      }
+    },
+    []
+  );
 
   const handlePaneClick = useCallback(
     () => closeNodePicker(),

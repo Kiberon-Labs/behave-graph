@@ -1,4 +1,6 @@
 import { defineConfig } from 'tsdown';
+import { tailwindPlugin } from '@bosh-code/tsdown-plugin-tailwindcss';
+import { injectCssPlugin } from '@bosh-code/tsdown-plugin-inject-css';
 
 export default defineConfig({
   entry: ['./src/index.ts'],
@@ -7,8 +9,9 @@ export default defineConfig({
   sourcemap: true,
   tsconfig: 'tsconfig.prod.json',
   skipNodeModulesBundle: true,
+  plugins: [tailwindPlugin(), injectCssPlugin()],
   external: [
-    '@kiberon-labs/behave-graph',
+    '@kinforge/behave-graph',
     '@vscode-elements/react-elements',
     'rc-dock',
     'rc-menu'

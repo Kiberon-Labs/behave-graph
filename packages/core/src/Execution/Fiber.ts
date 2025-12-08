@@ -9,7 +9,10 @@ export type FiberListenerInner =
   | ((resolveSockets: () => Promise<void>) => Promise<void> | void)
   | undefined;
 
-type FiberListener = (() => Promise<void> | void) | undefined;
+type FiberListener = {
+    cb:()=>void;
+    nodeId?:string;
+}  ;
 
 function isPromise(value: any) {
   return (
@@ -18,8 +21,8 @@ function isPromise(value: any) {
 }
 
 export class Fiber {
-  private readonly fiberCompletedListenerStack: FiberListener[] = [];
-  private readonly nodes: GraphNodes;
+  protected readonly fiberCompletedListenerStack: FiberListener[] = [];
+  protected readonly nodes: GraphNodes;
   public executionSteps = 0;
   public engine: Engine;
   public nextEval: Link | null;
@@ -39,7 +42,9 @@ export class Fiber {
         node
       );
 
-      this.fiberCompletedListenerStack.push(wrappedFiberCompletedListener);
+      this.fiberCompletedListenerStack.push({
+        cb:wrappedFiberCompletedListener
+      });
     }
   }
 
@@ -114,7 +119,10 @@ export class Fiber {
           node
         );
 
-        this.fiberCompletedListenerStack.push(wrappedFiberCompletedListener);
+        this.fiberCompletedListenerStack.push({
+          cb:wrappedFiberCompletedListener,
+          nodeId:node.id
+        });
       }
     } catch (error) {
       this.engine.onNodeExecutionError.emit({ node, error });
@@ -150,7 +158,7 @@ export class Fiber {
       if (awaitingCallback === undefined) {
         throw new Error('awaitingCallback is empty');
       }
-      await awaitingCallback();
+      await awaitingCallback.cb();
       return;
     }
 

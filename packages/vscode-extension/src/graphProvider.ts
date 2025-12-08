@@ -31,7 +31,7 @@ export class GraphProvider
 
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
     vscode.commands.registerCommand(
-      'kiberon-labs-behave-graph.graph.new',
+      'kinforge-behave-graph.graph.new',
       () => {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) {
@@ -69,7 +69,7 @@ export class GraphProvider
     );
   }
 
-  private static readonly viewType = 'kiberon-labs-behave-graph.graphFile';
+  private static readonly viewType = 'kinforge-behave-graph.graphFile';
 
   /**
    * Tracks all known webviews

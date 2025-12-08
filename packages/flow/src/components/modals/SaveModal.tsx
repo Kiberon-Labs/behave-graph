@@ -1,10 +1,11 @@
-import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
+import type { NodeSpecJSON } from '@kinforge/behave-graph';
 import React from 'react';
 import { useMemo, useRef, useState } from 'react';
-import { useEdges, useNodes } from 'reactflow';
 
 import { flowToBehave } from '../../transformers/flowToBehave.js';
 import { Modal } from './Modal.js';
+import { useSystem } from '@/system/provider.js';
+import { useStore } from 'zustand';
 
 export type SaveModalProps = {
   open?: boolean;
@@ -19,9 +20,10 @@ export const SaveModal: React.FC<SaveModalProps> = ({
 }) => {
   const ref = useRef<HTMLTextAreaElement>(null);
   const [copied, setCopied] = useState(false);
+  const sys = useSystem();
 
-  const edges = useEdges();
-  const nodes = useNodes();
+  const edges = useStore(sys.edgeStore, (s) => s.edges);
+  const nodes = useStore(sys.nodeStore, (s) => s.nodes);
 
   const flow = useMemo(
     () => flowToBehave(nodes, edges, specJson),

@@ -1,6 +1,6 @@
 # Behave-Graph
 
-[![GitHub license](https://img.shields.io/npm/l/behave-graph)](https://github.com/kiberon-labs/behave-graph/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@kiberon-labs/behave-graph)](https://www.npmjs.com/package/@kiberon-labs/behave-graph)
+[![GitHub license](https://img.shields.io/npm/l/behave-graph)](https://github.com/new-horizon-organisation/behave-graph/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@kinforge/behave-graph)](https://www.npmjs.com/package/@kinforge/behave-graph)
 
 Behave-Graph is a standalone library that implements the concept of "behavior graphs" as a portable TypeScript library with no required external run-time dependencies. Behavior graphs are expressive, deterministic, and extensible state machines that can encode arbitrarily complex behavior.
 
@@ -12,7 +12,7 @@ Another neat fact about behavior graphs is that they offer a sand boxed executio
 
 ## Documentation
 
-See the dedicated documentation site [here](https://kiberon-labs.github.io/behave-graph/)
+See the dedicated documentation site [here](https://behave-graph.kinforge.co.za)
 
 ## Licence 
 

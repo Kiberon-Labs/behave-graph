@@ -1,4 +1,4 @@
-import type { Choices } from '@kiberon-labs/behave-graph';
+import type { Choices } from '@kinforge/behave-graph';
 
 export interface IScene {
   getProperty(jsonPath: string, valueTypeName: string): any;

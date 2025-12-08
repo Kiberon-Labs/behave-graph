@@ -1,7 +1,4 @@
-import {
-  makeFlowNodeDefinition,
-  NodeCategory
-} from '@kiberon-labs/behave-graph';
+import { makeFlowNodeDefinition, NodeCategory } from '@kinforge/behave-graph';
 
 import type { IScene } from '../../Abstractions/IScene.js';
 

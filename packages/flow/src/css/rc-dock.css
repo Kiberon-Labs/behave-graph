@@ -8,22 +8,42 @@
 .dock-top .dock-bar {
     border-bottom-color: var(--color-neutral-stroke-subtle);
     padding-left: 0px;
-
 }
 
 .dock-tab {
     color: var(--colors-fg);
-    background: transparent;
+    background: green;
     border-bottom: none;
     z-index: 10;
 }
 
-.dock-tab>div {
-    padding: 4px 14px;
-    outline-color: #108ee9;
+.dock-tab-btn[aria-selected="true"] {
+    background: var(--colors-bgSurface);
+}
+
+.dock-tab-close-btn {
+    position: static;
+
+    &:hover {
+        background: var(--colors-bgEmphasis);
+        border-radius: 4px;
+    }
 }
 
 
+.dock-tab {
+    margin-right: 0;
+    border-right: 1px solid var(--colors-borderSubtle);
+    border-bottom: 1px solid var(--colors-borderSubtle);
+}
+
+.dock-nav-operations-hidden{
+    display: none;
+}
+
+.dock-fbox{
+    overflow: hidden;
+}
 
 .dock-nav {
     flex-grow: 1;
@@ -31,6 +51,7 @@
 
 .dock-nav-wrap {
     cursor: move;
+    border-bottom: 1px solid var(--colors-borderDefault);
 }
 
 .dock-panel.dock-style-main .dock-tab,
@@ -45,7 +66,7 @@
 .drag-initiator {
     display: flex;
     align-items: center;
-    gap: var(--component-spacing-sm);
+    gap: 0.5em;
 }
 
 .dock-panel,
@@ -64,8 +85,4 @@
 
 .drag-initiator {
     transition: width 0.2s;
-}
-
-.drag-initiator .dock-tab-close-btn {
-    position: relative;
 }

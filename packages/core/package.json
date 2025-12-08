@@ -1,5 +1,5 @@
 {
-  "name": "@kiberon-labs/behave-graph",
+  "name": "@kinforge/behave-graph",
   "version": "1.0.1",
   "type": "module",
   "files": [
@@ -15,12 +15,13 @@
     "lint": "oxlint",
     "typecheck": "tsc"
   },
+    "author": "kiberonlabsdev",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Kiberon-Labs/behave-graph",
+    "url": "https://github.com/new-horizon-organisation/behave-graph",
     "directory": "packages/core"
   },
-  "bugs": "https://github.com/kiberon-labs/behave-graph/issues",
+  "bugs": "https://github.com/new-horizon-organisation/behave-graph/issues",
   "devDependencies": {
     "@types/node": "^24.10.1",
     "oxlint": "^1.29.0",

@@ -1,4 +1,4 @@
-import type { LogSeverity } from '@kiberon-labs/behave-graph';
+import type { LogSeverity } from '@kinforge/behave-graph';
 import { create } from 'zustand';
 
 export interface ILog {

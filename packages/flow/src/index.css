@@ -1,29 +1,46 @@
 @import "reactflow/dist/style.css" layer(base);
 @import 'rc-menu/assets/index.css' layer(base);
-@import "rc-dock/dist/rc-dock-dark" layer(base);
+@import "rc-dock/dist/rc-dock-dark.css" layer(base);
 
 @import "./css/vars.css";
-@import "./css/rc-dock.css";
+@import "./css/rc-dock.css" layer(components);
+@import "./css/rc-menu.css" layer(components);
+
+
 
 
 .reactflow {
     background: #262626;
     color: var(--colors-fg);
+    position: static !important;
+}
+
+
+.react-flow__node {
+    display: flex;
+    &.filtered {
+        opacity: 0.25;
+    }
+}
+
+.react-flow__edge-default {
+    fill: none;
 }
 
 .react-flow__handle>* {
     /* Don't allow blocking of the handle */
     user-select: none;
     pointer-events: none;
+    flex: 1;
 }
 
 .react-flow__handle {
-
+    display: flex;
+    align-items: center;
     font-size: 8px;
     width: 16px;
     height: 16px;
     border-radius: 4px;
-    padding: 2px
 }
 
 .react-flow__handle-left {
@@ -40,10 +57,15 @@
     color: var(--colors-fg);
 }
 
+.rc-menu-sub .rc-menu-item {
+    padding: 0.1em !important;
+}
+
 .rc-menu-item {
     color: var(--colors-fg);
     padding: 0 1em !important;
 }
+
 
 .rc-menu-horizontal {
     padding: 0.2em;
@@ -62,6 +84,7 @@
 }
 
 .dock-divider {
+    background: var(--colors-borderMuted);
     flex: 0 0 1px;
 }
 
@@ -89,4 +112,35 @@
     z-index: 0;
     height: 100%;
     border-radius: var(--component-radii-sm);
+}
+
+
+/* Dark scrollbars for all elements */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #4a4a4a #262626;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #262626;
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: #4a4a4a;
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #5a5a5a;
+}
+
+*::-webkit-scrollbar-corner {
+    background: #262626;
 }

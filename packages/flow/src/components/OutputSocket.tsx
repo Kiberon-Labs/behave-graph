@@ -1,7 +1,7 @@
 import type {
   NodeSpecJSON,
   OutputSocketSpecJSON
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 import cx from 'classnames';
 import { type Connection, Handle, Position, useReactFlow } from 'reactflow';
 import { colors } from '../util/colors.js';
@@ -24,7 +24,7 @@ export default function OutputSocket({
   const instance = useReactFlow();
   const sys = useSystem();
   const { valueTypeColors, icons, defaultIcon } = useStore(sys.legendStore);
-  const Icon = icons[valueType] ?? defaultIcon
+  const Icon = icons[valueType] ?? defaultIcon;
 
   const isFlowSocket = valueType === 'flow';
   let colorName = valueTypeColors[valueType];
@@ -38,9 +38,7 @@ export default function OutputSocket({
   return (
     <div className="flex grow items-center justify-end h-7">
       {showName && <div className="capitalize">{name}</div>}
-      {isFlowSocket && (
-        <NavArrowRightSolid />
-      )}
+      {isFlowSocket && <NavArrowRightSolid />}
 
       <Handle
         id={name}
@@ -50,7 +48,8 @@ export default function OutputSocket({
         isValidConnection={(connection: Connection) =>
           isValidConnection(connection, instance, specJSON)
         }
-      ><Icon />
+      >
+        <Icon />
       </Handle>
     </div>
   );

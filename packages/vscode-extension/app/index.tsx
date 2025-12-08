@@ -2,9 +2,9 @@ import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { Flow, SystemProvider, System, LayoutController } from '@kiberon-labs/behave-graph-flow';
+import { Flow, SystemProvider, System, LayoutController } from '@kinforge/behave-graph-flow';
 import { useRegistry } from './hooks/useRegistry';
-import { DefaultLogger, ManualLifecycleEventEmitter, registerCoreProfile } from '@kiberon-labs/behave-graph';
+import { DefaultLogger, ManualLifecycleEventEmitter, registerCoreProfile } from '@kinforge/behave-graph';
 
 
 const registry = registerCoreProfile({

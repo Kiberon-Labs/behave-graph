@@ -5,7 +5,10 @@ import InputPopover from './InputPopover.js';
 import React from 'react';
 import styles from './index.module.css';
 
-export function ColorPicker({ value, onChange }: Pick<ColorPickerPopoverProps, 'value' | 'onChange'>) {
+export function ColorPicker({
+  value,
+  onChange
+}: Pick<ColorPickerPopoverProps, 'value' | 'onChange'>) {
   return (
     <HexColorPicker
       color={value}
@@ -28,7 +31,7 @@ export function ColorPickerPopover({
   defaultOpen = false,
   onChange,
   showRemoveButton = false,
-  onRemove,
+  onRemove
 }: ColorPickerPopoverProps) {
   return (
     <InputPopover
@@ -44,8 +47,7 @@ export function ColorPickerPopover({
       <VscodeTextfield
         value={value}
         onChange={(event) => {
-          onChange(event.target?.value)
-
+          onChange(event.target?.value);
         }}
       />
       {showRemoveButton && (

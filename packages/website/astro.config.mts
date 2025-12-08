@@ -4,8 +4,7 @@ import starlightLinksValidator from 'starlight-links-validator';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
-  site: 'https://kiberon-labs.github.io',
-  base: '/behave-graph',
+  site: 'https://behave-graph.kinforge.co.za',
   integrations: [
     starlight({
       title: 'Behave Graphs',
@@ -22,7 +21,7 @@ export default defineConfig({
         {
           icon: 'github',
           label: 'GitHub',
-          href: 'https://github.com/kiberon-labs/behave-graph'
+          href: 'https://github.com/new-horizon-organisation/behave-graph'
         }
       ],
       sidebar: [
@@ -37,6 +36,10 @@ export default defineConfig({
         {
           label: 'Guides',
           autogenerate: { directory: 'guides' }
+        },
+                {
+          label: 'Flow',
+          autogenerate: { directory: 'flow' }
         },
         {
           label: 'Reference',

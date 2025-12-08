@@ -1,4 +1,3 @@
-import './menubar.css';
 import { defaultMenuDataFactory } from './defaults.js';
 import Menu, { Divider, Item as MenuItem, SubMenu } from 'rc-menu';
 import React, { useEffect, useMemo } from 'react';
@@ -45,16 +44,11 @@ export const MenuBar = () => {
       items.map((submenu) => {
         return <SubMenuComponent submenu={submenu} key={submenu.name} />;
       }),
-    [items],
+    [items]
   );
 
   return (
-    <div
-      style={{
-        padding: 'var(--component-spacing-sm) var(--component-spacing-md)',
-      }}
-    >
-      {/** @ts-expect-error not a valid JSX element apparently */}
+    <div>
       <Menu mode={'horizontal'}>{menuItems}</Menu>
     </div>
   );

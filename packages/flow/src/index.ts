@@ -1,3 +1,5 @@
+import './index.css';
+
 export * from './components/modals/ClearModal.js';
 export * from './components/modals/HelpModal.js';
 export * from './components/modals/LoadModal.js';
@@ -8,10 +10,10 @@ export * from './components/Controls.js';
 export * from './components/AutoSizeInput.js';
 export * from './components/Controls.js';
 export * from './components/InputSocket.js';
-export * from './components/Node.js';
+export * from './components/nodes/behave/Node.js';
 export * from './components/Flow.js';
-export * from './components/NodeContainer.js';
-export * from './components/NodePicker.js';
+export * from './components/nodes/behave/NodeContainer.js';
+export * from './components/contextMenus/NodePicker.js';
 export * from './components/OutputSocket.js';
 
 export * from './hooks/useChangeNodeData.js';

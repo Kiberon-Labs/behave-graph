@@ -61,7 +61,7 @@ The Core profile contains the following value types:
 To create a custom value type, you need to create a value type description with serializer and deserializer functions.
 
 ```ts
-import { ValueType } from '@kiberon-labs/behave-graph';
+import { ValueType } from '@kinforge/behave-graph';
 
 export const ObjectValue = new ValueType(
   'object',

@@ -113,7 +113,7 @@ To create a custom node, you need to create a node description, there are severa
 If you want to create a node that defines constants, you can use the `NodeDescription` constructor with the `In1Out1FuncNode` helper.
 
 ```ts
-import { In1Out1FuncNode, NodeDescription } from '@kiberon-labs/behave-graph';
+import { In1Out1FuncNode, NodeDescription } from '@kinforge/behave-graph';
 
 const Constant = new NodeDescription(
   'logic/object',
@@ -135,7 +135,7 @@ const Constant = new NodeDescription(
 The same way, if you want to create a node that defines binary functions, you can use the `NodeDescription` constructor with the `In2Out1FuncNode` helper. (There are also `In3Out1FuncNode` and `In4Out1FuncNode` helpers)
 
 ```ts
-import { In2Out1FuncNode, NodeDescription } from '@kiberon-labs/behave-graph';
+import { In2Out1FuncNode, NodeDescription } from '@kinforge/behave-graph';
 import { path } from 'rambdax';
 
 const Path = new NodeDescription(
@@ -168,7 +168,7 @@ import {
   NodeDescription,
   Socket,
   ILogger
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 class LogObject extends FlowNode {
   public static Description = (logger: ILogger) =>
@@ -234,7 +234,7 @@ import {
   Graph,
   NodeDescription,
   Socket
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 import { JSONTemplateEngine } from 'json-template-engine';
 
 export type ITemplateEngineFactory = () => JSONTemplateEngine;

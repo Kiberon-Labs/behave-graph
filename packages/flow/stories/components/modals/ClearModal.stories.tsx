@@ -6,7 +6,13 @@ const meta: Meta<typeof ClearModal> = {
   title: 'components/modals/ClearModal',
   component: ClearModal,
   tags: ['autodocs'],
-  decorators: [(Story) => <ReactFlowProvider><Story /></ReactFlowProvider>],
+  decorators: [
+    (Story) => (
+      <ReactFlowProvider>
+        <Story />
+      </ReactFlowProvider>
+    )
+  ],
   argTypes: {}
 };
 
@@ -17,6 +23,8 @@ type Story = StoryObj<typeof meta>;
 export const Primary: Story = {
   args: {
     open: true,
-    onClose: () => { console.log('closed'); }
+    onClose: () => {
+      console.log('closed');
+    }
   }
 };

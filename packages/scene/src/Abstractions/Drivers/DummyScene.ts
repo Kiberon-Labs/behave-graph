@@ -5,7 +5,7 @@ import {
   IntegerValue,
   StringValue,
   type ValueType
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 import { ColorValue } from '../../Values/ColorValue.js';
 import { EulerValue } from '../../Values/EulerValue.js';

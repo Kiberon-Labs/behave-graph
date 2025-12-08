@@ -1,4 +1,4 @@
-import type { GraphJSON } from '@kiberon-labs/behave-graph';
+import type { GraphJSON } from '@kinforge/behave-graph';
 import React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useReactFlow } from 'reactflow';

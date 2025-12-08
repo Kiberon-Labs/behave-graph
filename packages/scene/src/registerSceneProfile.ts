@@ -3,13 +3,13 @@ import {
   getNodeDescriptions,
   getStringConversionsForValueType,
   memo
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 import type {
   IRegistry,
   NodeDefinition,
   ValueType,
   ValueTypeMap
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 import { SetSceneProperty } from './Nodes/Actions/SetSceneProperty.js';
 import { OnSceneNodeClick } from './Nodes/Events/OnSceneNodeClick.js';

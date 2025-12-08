@@ -16,7 +16,7 @@ jobs:
   release:
     environment: npm
     # Prevents changesets action from creating a PR on forks
-    if: github.repository == 'kiberon-labs/behave-graph'
+    if: github.repository == 'new-horizon-organisation/behave-graph'
     name: Release
     runs-on: ubuntu-latest
     steps:

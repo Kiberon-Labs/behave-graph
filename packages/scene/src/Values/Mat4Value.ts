@@ -1,4 +1,4 @@
-import type { ValueType } from '@kiberon-labs/behave-graph';
+import type { ValueType } from '@kinforge/behave-graph';
 
 import {
   Mat4,

@@ -48,7 +48,7 @@ Get started by **creating a new TypeScript/JavaScript project**.
 In order to use behave-graph in your project you need to install it from npm:
 
 ```bash
-npm install @kiberon-labs/behave-graph
+npm install @kinforge/behave-graph
 ```
 
 You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.

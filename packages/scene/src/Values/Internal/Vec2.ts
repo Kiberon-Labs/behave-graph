@@ -3,7 +3,7 @@ import {
   equalsTolerance,
   parseSafeFloats,
   toSafeString
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 export type Vec2JSON = number[];
 

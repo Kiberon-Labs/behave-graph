@@ -1,12 +1,12 @@
-import type { GraphJSON, NodeSpecJSON } from '@kiberon-labs/behave-graph';
+import type { GraphJSON, NodeSpecJSON } from '@kinforge/behave-graph';
 import { useCallback, useEffect, useState } from 'react';
-import { useEdgesState, useNodesState } from 'reactflow';
-
 import { behaveToFlow } from '../transformers/behaveToFlow.js';
 import { flowToBehave } from '../transformers/flowToBehave.js';
 import { autoLayout } from '../util/autoLayout.js';
 import { hasPositionMetaData } from '../util/hasPositionMetaData.js';
 import { useCustomNodeTypes } from './useCustomNodeTypes.js';
+import { useSystem } from '@/system/provider.js';
+import { useStore } from 'zustand';
 
 export const fetchBehaviorGraphJson = async (url: string) =>
   // eslint-disable-next-line unicorn/no-await-expression-member
@@ -27,8 +27,19 @@ export const useBehaveGraphFlow = ({
   specJson: NodeSpecJSON[] | undefined;
 }) => {
   const [graphJson, setStoredGraphJson] = useState<GraphJSON | undefined>();
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const sys = useSystem();
+
+  const {
+    nodes,
+    setNodes,
+    applyNodeChanges: onNodesChange
+  } = useStore(sys.nodeStore);
+
+  const {
+    edges,
+    setEdges,
+    applyEdgeChanges: onEdgesChange
+  } = useStore(sys.edgeStore);
 
   const setGraphJson = useCallback(
     (graphJson: GraphJSON) => {

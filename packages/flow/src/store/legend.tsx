@@ -1,11 +1,18 @@
-import { Cube, Droplet, EaseCurveControlPoints, Hashtag, InputOutput, SelectPoint3d, Text } from 'iconoir-react';
+import {
+  Cube,
+  Droplet,
+  EaseCurveControlPoints,
+  Hashtag,
+  InputOutput,
+  SelectPoint3d,
+  Text
+} from 'iconoir-react';
 import { create } from 'zustand';
-
 
 export type LegendStore = {
   icons: Record<string, React.ComponentType>;
-  defaultIcon: React.ComponentType
-  valueTypeColors: Record<string, string>
+  defaultIcon: React.ComponentType;
+  valueTypeColors: Record<string, string>;
 };
 
 export const legendStoreFactory = () =>
@@ -27,7 +34,6 @@ export const legendStoreFactory = () =>
       boolean: InputOutput,
       float: Hashtag,
       integer: Hashtag,
-      object: Cube,
-    },
-
+      object: Cube
+    }
   }));

@@ -1,9 +1,12 @@
-import type {
-  GraphJSON,
-  NodeJSON,
-  NodeSpecJSON
-} from '@kiberon-labs/behave-graph';
+import { useSystem } from '@/system';
+import {
+  serializeVariable,
+  type GraphJSON,
+  type NodeJSON,
+  type NodeSpecJSON
+} from '@kinforge/behave-graph';
 import type { Edge, Node } from 'reactflow';
+import { useStore } from 'zustand';
 
 const isNullish = (value: any): value is null | undefined =>
   value === undefined || value === null;
@@ -15,25 +18,30 @@ export const flowToBehave = (
 ): GraphJSON => {
   const graph: GraphJSON = { nodes: [], variables: [], customEvents: [] };
 
+  // const system = useSystem();
+  // const varStore = useStore(system.variableStore,x=>x.variables);
+
   nodes.forEach((node) => {
-    if (node.type === undefined) return;
+    if (node.type !== 'behaveNode') return;
+
+    const nodeType = node.data.type as string;
 
     const nodeSpec = nodeSpecJSON.find(
-      (nodeSpec) => nodeSpec.type === node.type
+      (nodeSpec) => nodeSpec.type === nodeType
     );
 
     if (nodeSpec === undefined) return;
 
     const behaveNode: NodeJSON = {
       id: node.id,
-      type: node.type,
+      type: nodeType,
       metadata: {
         positionX: String(node.position.x),
         positionY: String(node.position.y)
       }
     };
 
-    Object.entries(node.data).forEach(([key, value]) => {
+    Object.entries(node.data.ports ?? {}).forEach(([key, value]) => {
       if (behaveNode.parameters === undefined) {
         behaveNode.parameters = {};
       }
@@ -88,6 +96,8 @@ export const flowToBehave = (
 
     graph.nodes?.push(behaveNode);
   });
+
+  // graph.variables =Object.values(varStore).map((variable) => serializeVariable(variable, system.registry))
 
   return graph;
 };

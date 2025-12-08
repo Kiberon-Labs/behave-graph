@@ -3,7 +3,7 @@ import {
   type IGraph,
   NodeDescription,
   Socket
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 export class VecElements<T> extends FunctionNode {
   constructor(

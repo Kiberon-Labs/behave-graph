@@ -1,4 +1,3 @@
-
 import type { Node } from 'reactflow';
 import {
   AlignHorizontalCenters,
@@ -12,10 +11,11 @@ import {
   CompAlignRight,
   CompAlignRightSolid,
   CompAlignTop,
-  CompAlignTopSolid,
+  CompAlignTopSolid
 } from 'iconoir-react';
 import { VscodeButton } from '@vscode-elements/react-elements';
 import { useSystem } from '@/system/provider';
+import type { System } from '@/system';
 
 const partitionSelectedNodes = (nodes: Node[]) => {
   return nodes.reduce(
@@ -30,113 +30,112 @@ const partitionSelectedNodes = (nodes: Node[]) => {
     },
     {
       selectedNodes: [] as Node[],
-      unselectedNodes: [] as Node[],
-    },
+      unselectedNodes: [] as Node[]
+    }
   );
 };
 
-const handleChange = (graphEditor) => (updater) => {
-  const currentFlow = graphEditor?.getFlow();
-  if (!currentFlow) return;
-  const { selectedNodes, unselectedNodes } = partitionSelectedNodes(
-    currentFlow.getNodes(),
-  );
-  //Assume it changes it directly
-  updater(selectedNodes);
-  //Make sure unselected nodes are processed first for cases like groups
-  currentFlow.setNodes([...unselectedNodes, ...selectedNodes]);
-};
+const handleChange =
+  (system: System) => (updater: (selectedNodes: Node[]) => void) => {
+    const { nodes, setNodes } = system.nodeStore.getState();
+
+    const { selectedNodes, unselectedNodes } = partitionSelectedNodes(nodes);
+    //Assume it changes it directly
+    updater(selectedNodes);
+    //Make sure unselected nodes are processed first for cases like groups
+    setNodes([...unselectedNodes, ...selectedNodes]);
+  };
 
 export const ALIGNMENT = {
   START: 0,
   CENTER: 1,
-  END: 2,
-} as const
+  END: 2
+} as const;
 
-export type Alignment = typeof ALIGNMENT[keyof typeof ALIGNMENT];
+export type Alignment = (typeof ALIGNMENT)[keyof typeof ALIGNMENT];
 
 export const align =
-  (align: Alignment, prop = 'x') =>
-    (selectedNodes) => {
-      // Align selected nodes to the left
-      let v = 0;
-      switch (align) {
-        case ALIGNMENT.START:
-          v = Math.min(...selectedNodes.map((node) => node.position[prop]));
-          break;
-        case ALIGNMENT.CENTER: {
-          const vmin = Math.min(
-            ...selectedNodes.map((node) => node.position[prop]),
-          );
-          const vmax = Math.max(
-            ...selectedNodes.map((node) => node.position[prop]),
-          );
-          v = (vmin + vmax) / 2;
-          break;
-        }
-        default:
-          v = Math.max(...selectedNodes.map((node) => node.position[prop]));
+  (align: Alignment, prop: 'x' | 'y' = 'x') =>
+  (selectedNodes: Node[]) => {
+    // Align selected nodes to the left
+    let v = 0;
+    switch (align) {
+      case ALIGNMENT.START:
+        v = Math.min(...selectedNodes.map((node) => node.position[prop]));
+        break;
+      case ALIGNMENT.CENTER: {
+        const vmin = Math.min(
+          ...selectedNodes.map((node) => node.position[prop])
+        );
+        const vmax = Math.max(
+          ...selectedNodes.map((node) => node.position[prop])
+        );
+        v = (vmin + vmax) / 2;
+        break;
       }
-      selectedNodes.forEach((node) => {
-        node.position[prop] = v;
-      });
-    };
+      default:
+        v = Math.max(...selectedNodes.map((node) => node.position[prop]));
+    }
+    selectedNodes.forEach((node) => {
+      node.position[prop] = v;
+    });
+  };
 
 export const distribute =
-  (align: Alignment, prop = 'x') =>
-    (selectedNodes) => {
-      if (selectedNodes.length < 3) {
-        return;
+  (align: Alignment, prop: 'x' | 'y' = 'x') =>
+  (selectedNodes: Node[]) => {
+    if (selectedNodes.length < 3) {
+      return;
+    }
+
+    //Sort the nodes by position
+    selectedNodes = [...selectedNodes].sort(
+      (a, b) => a.position[prop] - b.position[prop]
+    );
+
+    const getLength = (node: Node) => {
+      if (prop === 'x') {
+        return node.width ?? 0;
       }
-
-      //Sort the nodes by position
-      selectedNodes = [...selectedNodes].sort(
-        (a, b) => a.position[prop] - b.position[prop],
-      );
-
-      const getLength = (node) => {
-        if (prop === 'x') {
-          return node.width;
-        }
-        return node.height;
-      };
-
-      const getPos = (node) => {
-        switch (align) {
-          case ALIGNMENT.START:
-            return node.position[prop];
-          case ALIGNMENT.CENTER:
-            return node.position[prop] + getLength(node) / 2;
-          default:
-            return node.position[prop] + getLength(node);
-        }
-      };
-
-      const startNode = selectedNodes.reduce((acc, node) => {
-        return getPos(node) < getPos(acc) ? node : acc;
-      }, selectedNodes[0]);
-
-      const endNode = selectedNodes.reduce((acc, node) => {
-        return getPos(node) > getPos(acc) ? node : acc;
-      }, selectedNodes[0]);
-
-      //Get the total length
-      const incrementLength =
-        (getPos(endNode) - getPos(startNode)) / (selectedNodes.length - 1);
-
-      selectedNodes.forEach((node, i) => {
-        node.position[prop] = startNode.position[prop] + i * incrementLength;
-      });
+      return node.height ?? 0;
     };
+
+    const getPos = (node: Node) => {
+      switch (align) {
+        case ALIGNMENT.START:
+          return node.position[prop];
+        case ALIGNMENT.CENTER:
+          return node.position[prop] + getLength(node) / 2;
+        default:
+          return node.position[prop] + getLength(node);
+      }
+    };
+
+    const startNode = selectedNodes.reduce((acc, node) => {
+      return getPos(node) < getPos(acc) ? node : acc;
+    }, selectedNodes[0] as Node);
+
+    const endNode = selectedNodes.reduce((acc, node) => {
+      return getPos(node) > getPos(acc) ? node : acc;
+    }, selectedNodes[0] as Node);
+    //Get the total length
+    const incrementLength =
+      (getPos(endNode) - getPos(startNode)) / (selectedNodes.length - 1);
+
+    selectedNodes.forEach((node, i) => {
+      node.position[prop] = startNode.position[prop] + i * incrementLength;
+    });
+  };
 
 export function AlignmentPanel() {
   const graphEditor = useSystem();
   const updateNodes = handleChange(graphEditor);
 
   return (
-    <div className='flex-col flex-1 h-full w-full p-1'
+    <div
+      className="flex-col flex-1 h-full w-full p-1"
       style={{
-        overflow: 'auto',
+        overflow: 'auto'
       }}
     >
       <div className="flex flex-col">
@@ -191,7 +190,7 @@ export function AlignmentPanel() {
             <CompAlignBottom />
           </VscodeButton>
         </div>
-        <span >Distribute</span>
+        <span>Distribute</span>
         <div className="flex h-full flex-1">
           <VscodeButton
             secondary
@@ -241,8 +240,8 @@ export function AlignmentPanel() {
           >
             <CompAlignBottomSolid />
           </VscodeButton>
-        </div >
-      </div >
-    </div >
+        </div>
+      </div>
+    </div>
   );
 }

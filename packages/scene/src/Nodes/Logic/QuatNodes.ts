@@ -1,4 +1,4 @@
-import { makeInNOutFunctionDesc } from '@kiberon-labs/behave-graph';
+import { makeInNOutFunctionDesc } from '@kinforge/behave-graph';
 
 import {
   angleAxisToQuat,

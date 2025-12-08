@@ -1,4 +1,5 @@
-import type { GraphJSON } from '@kiberon-labs/behave-graph';
+import type { IBehaveNode } from '@/types';
+import type { GraphJSON } from '@kinforge/behave-graph';
 import type { Edge, Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -7,9 +8,9 @@ export const behaveToFlow = (graph: GraphJSON): [Node[], Edge[]] => {
   const edges: Edge[] = [];
 
   graph.nodes?.forEach((nodeJSON) => {
-    const node: Node = {
+    const node: IBehaveNode = {
       id: nodeJSON.id,
-      type: nodeJSON.type,
+      type: 'behaveNode',
       position: {
         x: nodeJSON.metadata?.positionX
           ? Number(nodeJSON.metadata?.positionX)
@@ -18,7 +19,12 @@ export const behaveToFlow = (graph: GraphJSON): [Node[], Edge[]] => {
           ? Number(nodeJSON.metadata?.positionY)
           : 0
       },
-      data: {} as { [key: string]: any }
+      data: {
+        annotations: {},
+        configuration: {},
+        type: nodeJSON.type,
+        ports: {}
+      }
     };
 
     nodes.push(node);
@@ -35,7 +41,7 @@ export const behaveToFlow = (graph: GraphJSON): [Node[], Edge[]] => {
           });
         }
         if ('value' in input) {
-          node.data[inputKey] = input.value;
+          node.data.ports[inputKey] = input.value;
         }
       }
     }

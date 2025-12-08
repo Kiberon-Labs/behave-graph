@@ -2,7 +2,7 @@ import {
   type IRegistry,
   type NodeSpecJSON,
   writeNodeSpecsToJSON
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 import { useEffect, useState } from 'react';
 
 export const useNodeSpecJson = (registry: IRegistry) => {

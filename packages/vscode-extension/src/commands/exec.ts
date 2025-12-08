@@ -9,7 +9,7 @@ import {
   registerCoreProfile,
   validateGraph,
   validateRegistry
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 type ProgramOptions = {
   logLevel?: LogLevel;

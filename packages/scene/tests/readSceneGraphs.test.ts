@@ -12,7 +12,7 @@ import {
   type IRegistry,
   type GraphInstance,
   type GraphJSON
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 import { registerSceneProfile } from '@/registerSceneProfile.js';
 import { describe, test, expect } from 'vitest';
 

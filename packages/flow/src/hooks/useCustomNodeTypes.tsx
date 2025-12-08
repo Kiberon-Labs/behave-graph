@@ -1,17 +1,25 @@
-import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
-import React from 'react';
+import type { NodeSpecJSON } from '@kinforge/behave-graph';
 import { useEffect, useState } from 'react';
 import type { NodeTypes } from 'reactflow';
 
-import { Node } from '../components/Node.js';
+import { Node } from '../components/nodes/behave/Node.js';
+import { CommentNode } from '@/components/nodes/comment/comment.js';
+import type { AnyNodeType } from '@/types.js';
 
-const getCustomNodeTypes = (allSpecs: NodeSpecJSON[]) => {
-  return allSpecs.reduce((nodes: NodeTypes, node) => {
-    nodes[node.type] = (props) => (
-      <Node spec={node} allSpecs={allSpecs} {...props} />
-    );
-    return nodes;
-  }, {});
+const getCustomNodeTypes = (
+  allSpecs: NodeSpecJSON[]
+): Record<string, React.ComponentType<any>> => {
+  //Conver the nodespecs to a dictionary
+  const specDict: { [key: string]: NodeSpecJSON } = {};
+  allSpecs.forEach((spec) => {
+    specDict[spec.type] = spec;
+  });
+
+  return {
+    behaveNode: (props) => (
+      <Node spec={specDict[props.data.type]} allSpecs={allSpecs} {...props} />
+    )
+  };
 };
 
 export const useCustomNodeTypes = ({
@@ -22,7 +30,12 @@ export const useCustomNodeTypes = ({
   const [customNodeTypes, setCustomNodeTypes] = useState<NodeTypes>();
   useEffect(() => {
     if (!specJson) return;
-    const customNodeTypes = getCustomNodeTypes(specJson);
+    const customNodeTypes: Record<
+      AnyNodeType,
+      React.ComponentType<any>
+    > = getCustomNodeTypes(specJson);
+
+    customNodeTypes['commentNode'] = CommentNode;
 
     setCustomNodeTypes(customNodeTypes);
   }, [specJson]);

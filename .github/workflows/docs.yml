@@ -1,14 +1,13 @@
-name: Deploy Web
+name: Release docs
 on:
   push:
     branches: [master]
-env:
-  BEFORE_SHA: ${{ github.event.before }}
-  cache-name: npm
+
 
 permissions:
-  pages: write
   id-token: write
+  packages: write
+  contents: read
 
 
 jobs:
@@ -38,13 +37,62 @@ jobs:
         run: pnpm install
 
       - name: Build docs
-        run: pnpm run build --filter @kiberon-labs/website
+        run: pnpm run build --filter @kinforge/website
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Get package version
+        id: package-version
+        run: |
+          $version = (Get-Content packages/website/package.json | ConvertFrom-Json).version
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          # Upload entire repository
-          path: './packages/website/dist'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if image exists
+        id: check-image
+        run: |
+          $exists = "false"
+          $statusCode = 0
+          try {
+            docker manifest inspect ghcr.io/${{ github.repository }}/docs:v${{ steps.package-version.outputs.version }} 2>$null
+            $statusCode = $LASTEXITCODE
+            if ($statusCode -eq 0) {
+              $exists = "true"
+            }
+          } catch {
+            $exists = "false"
+          }
+          echo "exists=$exists" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+        continue-on-error: true
+
+      - name: Set up Docker Buildx
+        if: steps.check-image.outputs.exists != 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract metadata for Docker
+        if: steps.check-image.outputs.exists != 'true'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/docs
+          tags: |
+            type=raw,value=v${{ steps.package-version.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        if: steps.check-image.outputs.exists != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./packages/website
+          file: ./packages/website/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

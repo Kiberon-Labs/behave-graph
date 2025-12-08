@@ -10,11 +10,11 @@ const meta: Meta<typeof Settings> = {
       <DefaultSystemProvider>
         <Story />
       </DefaultSystemProvider>
-    ),
+    )
   ],
   parameters: {
-    layout: 'fullscreen',
-  },
+    layout: 'fullscreen'
+  }
 };
 
 export default meta;
@@ -22,5 +22,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {}
 };

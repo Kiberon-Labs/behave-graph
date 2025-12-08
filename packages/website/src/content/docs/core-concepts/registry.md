@@ -7,7 +7,7 @@ The registry is a collection of all the nodes and value types that are available
 In order to add a node or value type to the registry, you need to use the register function, usually inside your [profile's register function](./profiles.md).
 
 ```ts
-import { Registry } from '@kiberon-labs/behave-graph';
+import { Registry } from '@kinforge/behave-graph';
 
 const registry = new Registry();
 

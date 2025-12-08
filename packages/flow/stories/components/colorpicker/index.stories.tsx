@@ -2,10 +2,9 @@ import { ColorPickerPopover } from '@/components/controls/colorPicker/index';
 import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-
 const meta: Meta<typeof ColorPickerPopover> = {
   title: 'Components/Controls/Color Picker Popover',
-  component: ColorPickerPopover,
+  component: ColorPickerPopover
 };
 
 export default meta;
@@ -17,5 +16,5 @@ export const Default: Story = {
 
     return <ColorPickerPopover value={value} onChange={setValue} />;
   },
-  args: {},
+  args: {}
 };

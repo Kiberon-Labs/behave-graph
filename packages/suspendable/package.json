@@ -1,0 +1,40 @@
+{
+  "name": "@kinforge/behave-graph-suspendable",
+  "version": "1.0.1",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "source": "./src/index.ts",
+  "author": "kiberonlabsdev",
+  "scripts": {
+    "build": "tsdown",
+    "check": "oxfmt --check",
+    "format": "oxfmt",
+    "test": "vitest",
+    "dev": "tsdown --watch src",
+    "lint": "oxlint",
+    "typecheck": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/new-horizon-organisation/behave-graph",
+    "directory": "packages/scene"
+  },
+  "bugs": "https://github.com/new-horizon-organisation/behave-graph/issues",
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "oxfmt": "^0.14.0",
+    "oxlint": "^1.29.0",
+    "tsdown": "^0.16.5",
+    "vitest": "^4.0.10"
+  },
+  "dependencies": {},
+  "license": "ISC",
+  "peerDependencies": {
+    "@kinforge/behave-graph": "*"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  }
+}

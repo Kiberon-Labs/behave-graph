@@ -16,11 +16,23 @@ type Story = StoryObj<typeof meta>;
 export const Primary: Story = {
   args: {
     open: true,
-    onClose: () => { console.log('closed'); },
+    onClose: () => {
+      console.log('closed');
+    },
     title: 'My Modal',
     actions: [
-      { label: 'Cancel', onClick: () => { console.log('cancel'); } },
-      { label: 'OK', onClick: () => { console.log('ok'); } }
+      {
+        label: 'Cancel',
+        onClick: () => {
+          console.log('cancel');
+        }
+      },
+      {
+        label: 'OK',
+        onClick: () => {
+          console.log('ok');
+        }
+      }
     ],
     children: <p>This is the content of the modal.</p>
   }

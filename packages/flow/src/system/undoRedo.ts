@@ -1,7 +1,10 @@
 interface Command {
   execute(): void;
   undo(): void;
-  // optional: redo() if different from execute
+  /**
+   * Optional redo method if different from execute
+   */
+  redo?(): void;
 }
 
 export class UndoManager {
@@ -30,7 +33,11 @@ export class UndoManager {
   redo() {
     const command = this.stack.pop();
     if (command) {
-      command.execute();
+      if (command.redo) {
+        command.redo();
+      } else {
+        command.execute();
+      }
       this.history.push(command);
     }
   }

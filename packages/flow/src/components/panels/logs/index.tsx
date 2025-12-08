@@ -1,14 +1,17 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Search, Trash } from 'iconoir-react';
-import { VscodeBadge, VscodeButton, VscodeTextfield } from '@vscode-elements/react-elements';
+import {
+  VscodeBadge,
+  VscodeButton,
+  VscodeTextfield
+} from '@vscode-elements/react-elements';
 import { useSystem } from '@/system/provider';
 import { useStore } from 'zustand';
 
 export function LogsPanel() {
-
   const system = useSystem();
-  const logs = useStore(system.logsStore, (x => x.logs));
-  const clearLogs = useStore(system.logsStore, (x => x.clear));
+  const logs = useStore(system.logsStore, (x) => x.logs);
+  const clearLogs = useStore(system.logsStore, (x) => x.clear);
 
   const [searchText, setSearchText] = React.useState('');
   const [currentSearchTerm, setCurrentSearchTerm] = React.useState('');
@@ -26,7 +29,7 @@ export function LogsPanel() {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchText(e.target.value);
     },
-    [],
+    []
   );
 
   const handleSearch = useCallback(() => {
@@ -38,18 +41,21 @@ export function LogsPanel() {
       return logs;
     }
     const lowerCaseSearchText = currentSearchTerm.toLowerCase();
-    return logs.filter(log => {
+    return logs.filter((log) => {
       const logDataString = JSON.stringify(log.data).toLowerCase();
       const logTypeString = log.type.toLowerCase();
-      return logDataString.includes(lowerCaseSearchText) || logTypeString.includes(lowerCaseSearchText);
+      return (
+        logDataString.includes(lowerCaseSearchText) ||
+        logTypeString.includes(lowerCaseSearchText)
+      );
     });
   }, [logs, currentSearchTerm]);
 
   return (
-    <div className='flex-col gap-1 h-100 flex-1 p-1'>
+    <div className="flex-col gap-1 h-100 flex-1 p-1">
       <div className="flex">
         <VscodeTextfield
-          className='flex-1'
+          className="flex-1"
           value={searchText}
           placeholder="Search logs..."
           onChange={onSearchChange}
@@ -62,7 +68,7 @@ export function LogsPanel() {
         <VscodeButton secondary iconOnly onClick={handleSearch}>
           <Search />
         </VscodeButton>
-        <VscodeButton secondary onClick={clearLogs} iconOnly >
+        <VscodeButton secondary onClick={clearLogs} iconOnly>
           <Trash />
         </VscodeButton>
       </div>
@@ -71,23 +77,20 @@ export function LogsPanel() {
         style={{
           padding: 'var(--component-spacing-xs)',
           overflow: 'auto',
-          fontSize: 'smaller',
+          fontSize: 'smaller'
         }}
       >
-        <div className='flex-col gap-1 p-1'>
+        <div className="flex-col gap-1 p-1">
           {filteredLogs.map((log, index) => (
             <div
               key={index}
               style={{
                 border: '1px solid var(--color-neutral-stroke-subtle)',
-                padding: 'var(--component-spacing-sm)',
+                padding: 'var(--component-spacing-sm)'
               }}
             >
-              <div className='flex gap-1 items-center'>
-
-                <VscodeBadge>
-                  {log.type}
-                </VscodeBadge>
+              <div className="flex gap-1 items-center">
+                <VscodeBadge>{log.type}</VscodeBadge>
                 <span
                   style={{
                     fontSize: '0.7em'
@@ -96,10 +99,7 @@ export function LogsPanel() {
                   {log.time.toLocaleTimeString()}
                 </span>
 
-
-                <div className="flex-1"  >
-                  {JSON.stringify(log.data)}
-                </div>
+                <div className="flex-1">{JSON.stringify(log.data)}</div>
               </div>
             </div>
           ))}

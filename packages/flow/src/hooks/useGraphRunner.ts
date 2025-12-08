@@ -1,102 +1,63 @@
-import { Engine, readGraphFromJSON } from '@kiberon-labs/behave-graph';
-import type {
-  GraphJSON,
-  GraphNodes,
-  ILifecycleEventEmitter,
-  IRegistry
-} from '@kiberon-labs/behave-graph';
-import { useCallback, useEffect, useState } from 'react';
+import type { GraphJSON, IRegistry } from '@kinforge/behave-graph';
+import { useCallback, useEffect } from 'react';
+import { useSystem } from '@/system';
+import { useStore } from 'zustand';
 
 /** Runs the behavior graph by building the execution
  * engine and triggering start on the lifecycle event emitter.
+ *
+ * This hook now delegates to the System's GraphRunner instance
+ * for centralized graph execution management.
  */
 export const useGraphRunner = ({
   graphJson,
-  autoRun = false,
-  registry
+  autoRun = false
 }: {
   graphJson: GraphJSON | undefined;
   autoRun?: boolean;
   registry: IRegistry;
 }) => {
-  const [engine, setEngine] = useState<Engine>();
+  const system = useSystem();
+  const runner = system.runner;
 
-  const [run, setRun] = useState(autoRun);
+  // Subscribe to runner state
+  const playing = useStore(system.runner.store, (state) => state.playing);
+  const engine = useStore(system.runner.store, (state) => state.engine);
 
   const play = useCallback(() => {
-    setRun(true);
-  }, []);
+    runner.play();
+  }, [runner]);
 
   const pause = useCallback(() => {
-    setRun(false);
-  }, []);
+    runner.pause();
+  }, [runner]);
 
   const togglePlay = useCallback(() => {
-    setRun((existing) => !existing);
-  }, []);
+    runner.togglePlay();
+  }, [runner]);
 
+  // Update the runner when the graph changes
   useEffect(() => {
-    if (!graphJson || !registry.values || !run || !registry.dependencies)
-      return;
-
-    let graphNodes: GraphNodes;
-    try {
-      graphNodes = readGraphFromJSON({
-        graphJson,
-        registry
-      }).nodes;
-    } catch (e) {
-      console.error(e);
+    if (!graphJson) {
       return;
     }
-    const engine = new Engine(graphNodes);
 
-    setEngine(engine);
+    runner.setGraph(graphJson);
 
+    // Auto-run if requested
+    if (autoRun && !runner.store.getState().playing) {
+      runner.play();
+    }
+
+    // Cleanup on unmount
     return () => {
-      engine.dispose();
-      setEngine(undefined);
+      runner.dispose();
     };
-  }, [graphJson, registry.values, registry.nodes, run, registry.dependencies]);
-
-  useEffect(() => {
-    if (!engine || !run) return;
-
-    engine.executeAllSync();
-
-    let timeout: number;
-
-    const eventEmitter = registry.dependencies
-      ?.ILifecycleEventEmitter as ILifecycleEventEmitter;
-
-    const onTick = async () => {
-      eventEmitter.tickEvent.emit();
-
-      // eslint-disable-next-line no-await-in-loop
-      await engine.executeAllAsync(500);
-
-      timeout = window.setTimeout(onTick, 50);
-    };
-
-    (async () => {
-      if (eventEmitter.startEvent.listenerCount > 0) {
-        eventEmitter.startEvent.emit();
-
-        await engine.executeAllAsync(5);
-      } else {
-        console.log('has no listener count');
-      }
-      onTick();
-    })();
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [engine, registry.dependencies?.ILifecycleEventEmitter, run]);
+  }, [graphJson, runner, autoRun]);
 
   return {
     engine,
-    playing: run,
+    playing,
     play,
     togglePlay,
     pause

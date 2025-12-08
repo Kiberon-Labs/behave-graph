@@ -1,6 +1,6 @@
-import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
+import type { NodeSpecJSON } from '@kinforge/behave-graph';
 import type { Node, OnConnectStartParams } from 'reactflow';
-import type { NodePickerFilters } from '../components/NodePicker.js';
+import type { NodePickerFilters } from '../components/contextMenus/NodePicker.js';
 import { getSocketsByNodeTypeAndHandleType } from './getSocketsByNodeTypeAndHandleType.js';
 
 export const getNodePickerFilters = (

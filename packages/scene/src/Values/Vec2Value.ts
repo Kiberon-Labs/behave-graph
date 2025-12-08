@@ -1,4 +1,4 @@
-import type { ValueType } from '@kiberon-labs/behave-graph';
+import type { ValueType } from '@kinforge/behave-graph';
 
 import { Vec2, type Vec2JSON, vec2Mix, vec2Parse } from './Internal/Vec2.js';
 

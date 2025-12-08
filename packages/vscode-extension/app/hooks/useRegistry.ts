@@ -3,7 +3,7 @@ import {
   type IRegistry,
   ManualLifecycleEventEmitter,
   registerCoreProfile
-} from '@kiberon-labs/behave-graph';
+} from '@kinforge/behave-graph';
 
 import { useMemo } from 'react';
 

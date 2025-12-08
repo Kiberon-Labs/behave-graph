@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: behave-graph
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: behave-graph
+  template:
+    metadata:
+      labels:
+        app: behave-graph
+    spec:
+      imagePullSecrets:
+        - name: ghcr-credentials
+      containers:
+        - name: behave-graph
+          image: ghcr.io/new-horizon-organisation/behave-graph/docs:v0.0.4 # {"$imagepolicy": "flux-system:behave-graph"}
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: behave-graph
+spec:
+  selector:
+    app: behave-graph
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

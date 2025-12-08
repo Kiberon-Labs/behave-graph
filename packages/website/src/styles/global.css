@@ -5,5 +5,6 @@
 @import 'tailwindcss/utilities.css' layer(utilities);
 
 @import "reactflow/dist/style.css" layer(components);
-@source "@kiberon-labs/*";
-@source "../../node_modules/@kiberon-labs/*";
+@import "@kinforge/behave-graph-flow/global.css" layer(components);
+@source "@kinforge/*";
+@source "../../node_modules/@kinforge/*";

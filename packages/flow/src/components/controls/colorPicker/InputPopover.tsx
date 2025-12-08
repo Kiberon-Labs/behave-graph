@@ -12,7 +12,7 @@ interface IInputPopover {
 const InputPopover = ({
   defaultOpen = false,
   children,
-  trigger,
+  trigger
 }: IInputPopover) => (
   <Popover.Root defaultOpen={defaultOpen}>
     <Popover.Trigger asChild>{trigger}</Popover.Trigger>

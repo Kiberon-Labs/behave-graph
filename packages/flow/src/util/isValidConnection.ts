@@ -1,4 +1,4 @@
-import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
+import type { NodeSpecJSON } from '@kinforge/behave-graph';
 import type { Connection, ReactFlowInstance } from 'reactflow';
 
 import { getSocketsByNodeTypeAndHandleType } from './getSocketsByNodeTypeAndHandleType.js';
@@ -19,17 +19,16 @@ export const isValidConnection = (
 
   const sourceSockets = getSocketsByNodeTypeAndHandleType(
     specJSON,
-    sourceNode.type,
+    sourceNode.data?.type,
     'source'
   );
-
   const sourceSocket = sourceSockets?.find(
     (socket) => socket.name === connection.sourceHandle
   );
 
   const targetSockets = getSocketsByNodeTypeAndHandleType(
     specJSON,
-    targetNode.type,
+    targetNode.data?.type,
     'target'
   );
 

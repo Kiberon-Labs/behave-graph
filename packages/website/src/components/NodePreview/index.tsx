@@ -1,32 +1,11 @@
-import { Flow } from "@kiberon-labs/behave-graph-flow";
-import { DefaultLogger, ManualLifecycleEventEmitter, registerCoreProfile, type IRegistry } from "@kiberon-labs/behave-graph";
-import { useMemo } from "react";
-
+import { useMemo, useEffect, useState } from "react";
 export type PreviewOpts = {
     node: string
 }
 
-export const useRegistry = () => {
-    return useMemo<IRegistry>(
-        () =>
-            registerCoreProfile({
-                values: {},
-                nodes: {},
-                dependencies: {
-                    ILogger: new DefaultLogger(),
-                    ILifecycleEventEmitter: new ManualLifecycleEventEmitter(),
-                }
-            }),
-        []
-    );
-};
-
-
 
 export const Preview = ({ node }: PreviewOpts) => {
-
-
-    const registry = useRegistry();
+    const [FlowComponent, setFlowComponent] = useState<any>(null);
 
     const graph = useMemo(() => {
         return {
@@ -37,11 +16,22 @@ export const Preview = ({ node }: PreviewOpts) => {
                 }
             ]
         }
-    }, [])
+    }, [node])
 
+
+    useEffect(() => {
+        import("./component").then((module) => {
+            setFlowComponent(() =>
+                () => <module.Graph graph={graph} />
+            );
+        });
+    }, []);
+
+    if (!FlowComponent) {
+        return <div className="h-lvh not-content">Loading...</div>;
+    }
 
     return <div className="h-lvh not-content">
-        < Flow registry={registry} initialGraph={graph} examples={{}
-        } />
+        <FlowComponent />
     </div >
 }

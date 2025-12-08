@@ -1,4 +1,4 @@
-import { type Choices, EventEmitter } from '@kiberon-labs/behave-graph';
+import { type Choices, EventEmitter } from '@kinforge/behave-graph';
 import {
   type Event,
   Material,

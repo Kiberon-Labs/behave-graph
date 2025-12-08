@@ -6,11 +6,27 @@ import { LogsPanel } from '../panels/logs/index.js';
 import { MenuItemElement } from './menuItem.js';
 // import { NodeSettingsPanel } from '../panels/nodeSettings/index.js';
 import { Settings } from '../panels/systemSettings';
+import { KeymapsPanel } from '../panels/keymaps';
 import type { TabData } from 'rc-dock';
-import { useCallback, type JSX } from 'react';
+import { type JSX } from 'react';
 
-import { Archive, Download, PagePlusIn, SettingsProfiles, Upload } from 'iconoir-react';
+import {
+  Archive,
+  Download,
+  PagePlusIn,
+  Redo,
+  SettingsProfiles,
+  Undo,
+  Upload
+} from 'iconoir-react';
 import { Seperator, type IMenu, type IMenuItem } from '@/store/menubar.js';
+import { useSystem } from '@/system/index.js';
+import {
+  findTabInLayout,
+  removeTabFromLayout,
+  addFloatingTab
+} from '../layoutController/utils.js';
+import { SearchPanel } from '../panels/search/index.js';
 
 export interface IWindowButton {
   //Id of the tab
@@ -31,52 +47,47 @@ export const windowButton = ({
   id,
   title,
   icon,
-  content,
+  content
 }: IWindowButton): IMenuItem => ({
   name: name,
   render: function Toggle() {
+    const system = useSystem();
 
+    const onToggle = () => {
+      const currentLayout = system.tabStore.getState().layout;
+      const existingPanel = findTabInLayout(currentLayout, id);
 
-    // const onToggle = () => {
-    //   const existing = dockerRef.current.find(id) as TabData;
-    //   if (existing) {
-    //     //Look for the panel
-    //     if (existing.parent?.tabs.length === 1) {
-    //       //Close the panel instead
-    //       dockerRef.current.dockMove(existing.parent, null, 'remove');
-    //     } else {
-    //       //Close the tab
-    //       dockerRef.current.dockMove(existing, null, 'remove');
-    //     }
-    //   } else {
-    //     dockerRef.current.dockMove(
-    //       {
-    //         cached: true,
-    //         group: 'popout',
-    //         id,
-    //         title,
-    //         content,
-    //       },
-    //       null,
-    //       'float',
-    //       {
-    //         left: 500,
-    //         top: 300,
-    //         width: 320,
-    //         height: 400,
-    //       },
-    //     );
-    //   }
-    // };
+      if (existingPanel) {
+        // Tab exists, remove it
+        const newLayout = removeTabFromLayout(currentLayout, id);
+        system.tabStore.getState().setLayout(newLayout);
+      } else {
+        // Tab doesn't exist, add it as a floating panel
+        const tabData: TabData = {
+          id,
+          title,
+          content: () => content,
+          cached: true,
+          group: 'popout'
+        };
+
+        const newLayout = addFloatingTab(currentLayout, tabData, {
+          left: 500,
+          top: 300,
+          width: 320,
+          height: 400
+        });
+
+        system.tabStore.getState().setLayout(newLayout);
+      }
+    };
 
     return (
-      <MenuItemElement
-        // onClick={onToggle} 
-        key={title} icon={icon}>
+      <MenuItemElement onClick={onToggle} key={title} icon={icon}>
         {title}
       </MenuItemElement>
     );
-  },
+  }
 });
 
 export const defaultMenuDataFactory = (): IMenu => ({
@@ -93,9 +104,25 @@ export const defaultMenuDataFactory = (): IMenu => ({
                 New Graph
               </MenuItemElement>
             );
-          },
+          }
         },
         new Seperator(),
+        {
+          name: 'save',
+          render: ({ key, ...rest }) => (
+            <MenuItemElement key={key} {...rest}>
+              Save
+            </MenuItemElement>
+          )
+        },
+        {
+          name: 'load',
+          render: ({ key, ...rest }) => (
+            <MenuItemElement key={key} {...rest}>
+              Load
+            </MenuItemElement>
+          )
+        }
         // {
         //   name: 'upload',
         //   render: function FileLoad(rest) {
@@ -165,37 +192,84 @@ export const defaultMenuDataFactory = (): IMenu => ({
         //     );
         //   },
         // },
-      ],
+      ]
     },
     {
       title: 'Edit',
       name: 'edit',
       items: [
-        // {
-        //   name: 'undo',
-        //   render: ({key,...rest}) => <MenuItemElement key={key} icon={<Undo />} {...rest} >Undo</MenuItemElement>,
-        // },
-        // {
-        //   name: 'redo',
-        //   render: ({ key, ...rest }) => <MenuItemElement key={key} icon={<Redo />} {...rest}>Redo</MenuItemElement>,
-        // },
+        {
+          name: 'undo',
+          render: ({ key, ...rest }) => (
+            <MenuItemElement key={key} icon={<Undo />} {...rest}>
+              Undo
+            </MenuItemElement>
+          )
+        },
+        {
+          name: 'redo',
+          render: ({ key, ...rest }) => (
+            <MenuItemElement key={key} icon={<Redo />} {...rest}>
+              Redo
+            </MenuItemElement>
+          )
+        },
         new Seperator(),
         {
-          name: 'find',
-          render: ({ key, ...rest }) => {
-
-            return (
-              <MenuItemElement
-                key={key}
-                {...rest}
-              // onClick={() => dispatch.settings.setShowSearch(true)}
-              >
-                Find
-              </MenuItemElement>
-            );
-          },
+          name: 'cut',
+          render: ({ key, ...rest }) => (
+            <MenuItemElement key={key} icon={<Redo />} {...rest}>
+              Cut
+            </MenuItemElement>
+          )
         },
-      ],
+        {
+          name: 'copy',
+          render: ({ key, ...rest }) => (
+            <MenuItemElement key={key} icon={<Redo />} {...rest}>
+              Copy
+            </MenuItemElement>
+          )
+        },
+        {
+          name: 'paste',
+          render: ({ key, ...rest }) => (
+            <MenuItemElement key={key} icon={<Redo />} {...rest}>
+              Paste
+            </MenuItemElement>
+          )
+        },
+        new Seperator(),
+        windowButton({
+          name: 'find',
+          id: 'find',
+          title: 'Find',
+          content: <SearchPanel />
+        })
+      ]
+    },
+    {
+      title: 'Run',
+      name: 'run',
+      items: [
+        {
+          name: 'Start Engine',
+          render: ({ key, ...rest }) => (
+            <MenuItemElement key={key} {...rest}>
+              Start Engine
+            </MenuItemElement>
+          )
+        },
+        {
+          name: 'Stop Engine',
+          render: ({ key, ...rest }) => (
+            <MenuItemElement key={key} {...rest}>
+              Stop Engine
+            </MenuItemElement>
+          )
+        },
+        new Seperator()
+      ]
     },
     {
       name: 'window',
@@ -219,7 +293,7 @@ export const defaultMenuDataFactory = (): IMenu => ({
           id: 'logs',
           title: 'Logs',
           icon: <Archive />,
-          content: <LogsPanel />,
+          content: <LogsPanel />
         }),
         // windowButton({
         //   name: 'playControls',
@@ -238,14 +312,21 @@ export const defaultMenuDataFactory = (): IMenu => ({
           name: 'alignment',
           id: 'alignment',
           title: 'Alignment + Distribution',
-          content: <AlignmentPanel />,
+          content: <AlignmentPanel />
         }),
         windowButton({
           name: 'settings',
-          id: 'settings',
+          id: 'system:settings',
           title: 'Settings',
           icon: <SettingsProfiles />,
-          content: <Settings />,
+          content: <Settings />
+        }),
+        windowButton({
+          name: 'keymaps',
+          id: 'keymaps',
+          title: 'Keyboard Shortcuts',
+          icon: <SettingsProfiles />,
+          content: <KeymapsPanel />
         }),
         // windowButton({
         //   name: 'dropPanel',
@@ -259,7 +340,6 @@ export const defaultMenuDataFactory = (): IMenu => ({
         {
           name: 'saveLayout',
           render: function SaveLayout(rest) {
-
             // const saveLayout = useCallback(() => {
             //   const saved = dockerRef.current.saveLayout();
             //   const blob = new Blob([JSON.stringify(saved)], {
@@ -281,12 +361,11 @@ export const defaultMenuDataFactory = (): IMenu => ({
                 Save Layout
               </MenuItemElement>
             );
-          },
+          }
         },
         {
           name: 'loadLayout',
           render: function LoadLayout(rest) {
-
             // const loadLayout = useCallback(() => {
             //   const input = document.createElement('input');
             //   input.type = 'file';
@@ -316,9 +395,9 @@ export const defaultMenuDataFactory = (): IMenu => ({
                 Load Layout
               </MenuItemElement>
             );
-          },
-        },
-      ],
-    },
-  ],
+          }
+        }
+      ]
+    }
+  ]
 });

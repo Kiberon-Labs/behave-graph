@@ -1,10 +1,10 @@
 import type { NodeDefinitionsMap } from './Nodes/Registry/NodeDefinitionsMap.js';
 import type { ValueTypeMap } from './Values/ValueTypeMap.js';
 
-export interface IRegistry {
+export interface IRegistry<Deps = Record<string, unknown>> {
   readonly values: ValueTypeMap;
   readonly nodes: NodeDefinitionsMap;
-  readonly dependencies: Record<string, unknown>;
+  readonly dependencies: Deps;
 }
 
 export interface IQueryableRegistry<T> {

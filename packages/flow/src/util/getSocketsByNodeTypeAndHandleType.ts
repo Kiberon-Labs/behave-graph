@@ -1,4 +1,4 @@
-import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
+import type { NodeSpecJSON } from '@kinforge/behave-graph';
 
 export const getSocketsByNodeTypeAndHandleType = (
   nodes: NodeSpecJSON[],

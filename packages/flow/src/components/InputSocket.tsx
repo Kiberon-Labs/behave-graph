@@ -1,7 +1,4 @@
-import type {
-  InputSocketSpecJSON,
-  NodeSpecJSON
-} from '@kiberon-labs/behave-graph';
+import type { InputSocketSpecJSON, NodeSpecJSON } from '@kinforge/behave-graph';
 
 import cx from 'classnames';
 import React from 'react';
@@ -9,111 +6,29 @@ import { type Connection, Handle, Position, useReactFlow } from 'reactflow';
 
 import { colors } from '../util/colors.js';
 import { isValidConnection } from '../util/isValidConnection.js';
-import { AutoSizeInput } from './AutoSizeInput.js';
 import { NavArrowRightSolid } from 'iconoir-react';
 import { useSystem } from '@/system/provider.js';
 import { useStore } from 'zustand';
 
 export type InputSocketProps = {
+  hide: boolean;
   connected: boolean;
   value: any | undefined;
   onChange: (key: string, value: any) => void;
   specJSON: NodeSpecJSON[];
 } & InputSocketSpecJSON;
 
-const InputFieldForValue = ({
-  choices,
-  value,
-  defaultValue,
-  onChange,
-  name,
-  valueType
-}: Pick<
-  InputSocketProps,
-  'choices' | 'value' | 'defaultValue' | 'name' | 'onChange' | 'valueType'
->) => {
-  const showChoices = choices?.length;
-  //Stops 'undefined'
-  const defaultSafeValue =
-    defaultValue !== undefined ? String(defaultValue) : '';
-  const inputVal = value !== undefined ? String(value) : defaultSafeValue;
-
-  if (showChoices)
-    return (
-      <select
-        className="bg-gray-600 disabled:bg-gray-700 py-1 px-2 nodrag"
-        value={value ?? defaultValue ?? ''}
-        onChange={(e) => onChange(name, e.currentTarget.value)}
-      >
-        <>
-          {choices.map((choice) => (
-            <option key={choice.text} value={choice.value}>
-              {choice.text}
-            </option>
-          ))}
-        </>
-      </select>
-    );
-
-
-  return (
-    <>
-      {valueType === 'string' && (
-
-        <AutoSizeInput
-          type="text"
-          className="bg-gray-600 disabled:bg-gray-700 py-1 px-2 nodrag"
-          value={inputVal}
-          onChange={(e) => onChange(name, e.currentTarget.value)}
-        />
-      )}
-      {valueType === 'number' && (
-        <AutoSizeInput
-          type="number"
-          className=" bg-gray-600 disabled:bg-gray-700 py-1 px-2 nodrag"
-          value={inputVal}
-          onChange={(e) => onChange(name, e.currentTarget.value)}
-        />
-      )}
-      {valueType === 'float' && (
-        <AutoSizeInput
-          type="number"
-          className=" bg-gray-600 disabled:bg-gray-700 py-1 px-2 nodrag"
-          value={inputVal}
-          onChange={(e) => onChange(name, e.currentTarget.value)}
-        />
-      )}
-      {valueType === 'integer' && (
-        <AutoSizeInput
-          type="number"
-          className=" bg-gray-600 disabled:bg-gray-700 py-1 px-2 nodrag"
-          value={inputVal}
-          onChange={(e) => onChange(name, e.currentTarget.value)}
-        />
-      )}
-      {valueType === 'boolean' && (
-        <input
-          type="checkbox"
-          className=" bg-gray-600 disabled:bg-gray-700 py-1 px-2 nodrag"
-          value={inputVal}
-          onChange={(e) => onChange(name, e.currentTarget.checked)}
-        />
-      )}
-    </>
-  );
-};
-
 const InputSocket: React.FC<InputSocketProps> = ({
   connected,
   specJSON,
+  hide,
   ...rest
 }) => {
   const { name, valueType } = rest;
   const instance = useReactFlow();
   const sys = useSystem();
   const { valueTypeColors, icons, defaultIcon } = useStore(sys.legendStore);
-  const Icon = icons[valueType] ?? defaultIcon
-
+  const Icon = icons[valueType] ?? defaultIcon;
 
   const isFlowSocket = valueType === 'flow';
 
@@ -126,19 +41,20 @@ const InputSocket: React.FC<InputSocketProps> = ({
   const [backgroundColor, borderColor] = colors[colorName];
   const showName = isFlowSocket === false || name !== 'flow';
 
-
   return (
-    <div className="flex grow items-center justify-start h-7">
-      {isFlowSocket && (
-        <NavArrowRightSolid />
+    <div
+      className={cx(
+        'flex h-7 grow items-center justify-start',
+        hide ? 'hidden' : ''
       )}
+    >
+      {isFlowSocket && <NavArrowRightSolid />}
       {showName && <div className="capitalize mr-2">{name}</div>}
-
-      {!isFlowSocket && !connected && <InputFieldForValue {...rest} />}
 
       <Handle
         id={name}
         type="target"
+        title={valueType}
         position={Position.Left}
         className={cx(borderColor, connected ? backgroundColor : 'bg-gray-800')}
         isValidConnection={(connection: Connection) =>

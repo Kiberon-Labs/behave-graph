@@ -1,3 +1,4 @@
+import type { Variable } from '../../Values/Variables/Variable.js';
 import type { IRegistry } from '../../Registry.js';
 import type { GraphInstance } from '../Graph.js';
 import type {
@@ -10,20 +11,10 @@ import type {
   ValueJSON,
   VariableJSON
 } from './GraphJSON.js';
+import type { CustomEvent } from '../../Events/CustomEvent.js';
 
-export function writeGraphToJSON(
-  graph: GraphInstance,
-  registry: IRegistry
-): GraphJSON {
-  const graphJson: GraphJSON = {};
-
-  if (Object.keys(graph.metadata).length > 0) {
-    graphJson.metadata = graph.metadata;
-  }
-
-  // save custom events
-  Object.values(graph.customEvents).forEach((customEvent) => {
-    const customEventJson: CustomEventJSON = {
+export const serializeCustomEvent = (customEvent: CustomEvent)=>{
+     const customEventJson: CustomEventJSON = {
       name: customEvent.name,
       id: customEvent.id
     };
@@ -44,15 +35,14 @@ export function writeGraphToJSON(
     if (Object.keys(customEvent.metadata).length > 0) {
       customEventJson.metadata = customEvent.metadata;
     }
-    if (graphJson.customEvents === undefined) {
-      graphJson.customEvents = [];
-    }
-    graphJson.customEvents.push(customEventJson);
-  });
+    return customEventJson;
+  }
 
-  // save variables
-  Object.values(graph.variables).forEach((variable) => {
-    const variableJson: VariableJSON = {
+export const serializeVariable = (
+  variable: Variable,
+  registry: IRegistry
+): VariableJSON => {
+  const variableJson: VariableJSON = {
       valueTypeName: variable.valueTypeName,
       name: variable.name,
       id: variable.id,
@@ -66,11 +56,25 @@ export function writeGraphToJSON(
     if (Object.keys(variable.metadata).length > 0) {
       variableJson.metadata = variable.metadata;
     }
-    if (graphJson.variables === undefined) {
-      graphJson.variables = [];
-    }
-    graphJson.variables.push(variableJson);
-  });
+    return variableJson;
+}
+
+export function writeGraphToJSON(
+  graph: GraphInstance,
+  registry: IRegistry
+): GraphJSON {
+  const graphJson: GraphJSON = {
+  };
+
+  if (Object.keys(graph.metadata).length > 0) {
+    graphJson.metadata = graph.metadata;
+  }
+
+  // save custom events
+ graphJson.customEvents = Object.values(graph.customEvents).map((customEvent) =>serializeCustomEvent(customEvent));
+
+  // save variables
+ graphJson.variables = Object.values(graph.variables).map((variable) =>serializeVariable(variable, registry));
 
   // save nodes
   Object.entries(graph.nodes).forEach(([id, node]) => {

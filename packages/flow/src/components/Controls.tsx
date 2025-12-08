@@ -1,4 +1,4 @@
-import type { GraphJSON, NodeSpecJSON } from '@kiberon-labs/behave-graph';
+import type { GraphJSON, NodeSpecJSON } from '@kinforge/behave-graph';
 import {
   faPause,
   faPlay,
@@ -11,7 +11,6 @@ import React from 'react';
 import { ControlButton, Controls } from 'reactflow';
 
 import { ClearModal } from './modals/ClearModal.js';
-import { HelpModal } from './modals/HelpModal.js';
 import { type Examples, LoadModal } from './modals/LoadModal.js';
 import { SaveModal } from './modals/SaveModal.js';
 import { Download, Trash } from 'iconoir-react';
@@ -39,15 +38,11 @@ export const CustomControls: React.FC<CustomControlsProps> = ({
 }) => {
   const [loadModalOpen, setLoadModalOpen] = useState(false);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
-  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [clearModalOpen, setClearModalOpen] = useState(false);
 
   return (
     <>
       <Controls>
-        <ControlButton title="Help" onClick={() => setHelpModalOpen(true)}>
-          <FontAwesomeIcon icon={faQuestion} />
-        </ControlButton>
         <ControlButton title="Load" onClick={() => setLoadModalOpen(true)}>
           <FontAwesomeIcon icon={faUpload} />
         </ControlButton>
@@ -74,7 +69,7 @@ export const CustomControls: React.FC<CustomControlsProps> = ({
           onClose={() => setSaveModalOpen(false)}
         />
       )}
-      <HelpModal open={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
+
       <ClearModal
         open={clearModalOpen}
         onClose={() => setClearModalOpen(false)}

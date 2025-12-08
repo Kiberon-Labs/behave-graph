@@ -1,8 +1,8 @@
-import { NodeCategory, type NodeSpecJSON } from '@kiberon-labs/behave-graph';
+import { NodeCategory, type NodeSpecJSON } from '@kinforge/behave-graph';
 import cx from 'classnames';
 import React, { type PropsWithChildren } from 'react';
 
-import { categoryColorMap, colors } from '../util/colors.js';
+import { categoryColorMap, colors } from '../../../util/colors.js';
 
 type NodeProps = {
   title: string;
