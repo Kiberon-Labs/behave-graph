@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useStore } from 'zustand';
 import { Variable } from '@kiberon-labs/behave-graph';
 import { useSystem } from '@/system/provider';

@@ -78,7 +78,7 @@ export type TraceStore = {
   updateSpan: (nodeId: string, updates: Partial<TraceSpan>) => void;
 };
 
-export const traceStoreFactory = (system: System) => {
+export const traceStoreFactory = (_: System) => {
   let connectedEngine: Engine | undefined;
   let onStart: ((node: INode) => void) | undefined;
   let onEnd: ((node: INode) => void) | undefined;
