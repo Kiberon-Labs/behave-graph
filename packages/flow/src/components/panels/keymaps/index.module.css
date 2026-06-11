@@ -1,0 +1,78 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    width: 100%;
+    padding: 0.5rem;
+    overflow: auto;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.header {
+    padding-bottom: 0.5rem;
+}
+
+.helpText {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+.table {
+    width: 100%;
+}
+
+.actionCell {
+    width: 40%;
+}
+
+.actionInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.actionLabel {
+    font-weight: 500;
+}
+
+.actionId {
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+.keybindingCell {
+    width: 40%;
+}
+
+.keyBadge {
+    font-size: 0.875rem;
+    font-family: var(--vscode-editor-font-family);
+    background: var(--vscode-editorWidget-background);
+    border: 1px solid var(--vscode-editorWidget-border);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--component-radii-sm);
+    word-break: break-all;
+    display: inline-block;
+}
+
+.actionsCell {
+    width: 20%;
+    text-align: right;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.textfield {
+    width: 100%;
+}

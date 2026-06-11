@@ -1,0 +1,17 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "noEmit": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "lib": [],
+        "paths": {
+            "~/*":["../src/*"]
+        }
+    },
+    "include": [
+        "**/*.ts",
+        "../src/**/*.ts"
+    ]
+}

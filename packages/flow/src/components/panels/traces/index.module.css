@@ -1,0 +1,166 @@
+.root {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.title {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+}
+
+.subtitle {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: rgb(156 163 175);
+
+}
+
+.windowControls {
+    margin-left: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: rgb(156 163 175);
+
+}
+
+.windowLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.windowSelect {
+    background-color: rgb(17 24 39);
+    /* gray-900 */
+    border: 1px solid rgb(55 65 81);
+    /* gray-700 */
+    border-radius: 0.25rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+    color: rgb(229 231 235);
+    /* gray-200 */
+}
+
+.stats {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: rgb(156 163 175);
+
+}
+
+.statValue {
+    color: rgb(229 231 235);
+    /* gray-200 */
+}
+
+.empty {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgb(156 163 175);
+
+}
+
+.scroll {
+    position: relative;
+    flex: 1 1 0%;
+    overflow: auto;
+    min-height: 0;
+}
+
+.lanes {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.laneRow {
+    position: relative;
+    border-bottom: 1px solid rgb(31 41 55);
+    /* gray-800 */
+    overflow: hidden;
+}
+
+.span {
+    position: absolute;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    border-width: 1px;
+    border-style: solid;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    font-size: 11px;
+    font-family: var(--vscode-font-family);
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    pointer-events: auto;
+}
+
+.spanLabel {
+    font-weight: 500;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding-left: 4px;
+}
+
+.tooltip {
+    position: absolute;
+    left: 0.5rem;
+    bottom: 0.5rem;
+    z-index: 10;
+    pointer-events: none;
+    max-width: 70%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    border-radius: 0.25rem;
+    background-color: rgb(17 24 39);
+    /* gray-900 */
+    border: 1px solid rgb(55 65 81);
+    /* gray-700 */
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: rgb(243 244 246);
+    /* gray-100 */
+}
+
+.tooltipTitle {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tooltipDuration {
+    color: rgb(209 213 219);
+    /* gray-300 */
+}
+
+.tooltipNodeId {
+    color: rgb(107 114 128);
+    /* gray-500 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

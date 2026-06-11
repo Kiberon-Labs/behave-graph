@@ -1,0 +1,146 @@
+@import "reactflow/dist/style.css";
+@import 'rc-menu/assets/index.css';
+@import "rc-dock/dist/rc-dock-dark.css";
+
+@import "./css/vscode.css";
+@import "./css/vars.css";
+@import "./css/rc-dock.css";
+@import "./css/rc-menu.css";
+@import "./css/prosemirror.css";
+
+*{
+    box-sizing: border-box;
+}
+
+.reactflow {
+    background: #262626;
+    color: var(--colors-fg);
+    position: static !important;
+}
+
+
+.react-flow__node {
+    display: flex;
+
+    &.filtered {
+        opacity: 0.25 !important;
+    }
+}
+
+.react-flow__edge-default {
+    fill: none;
+}
+
+.react-flow__handle>* {
+    /* Don't allow blocking of the handle */
+    user-select: none;
+    pointer-events: none;
+    flex: 1;
+}
+
+.react-flow__handle {
+    display: flex;
+    align-items: center;
+    font-size: 8px;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.react-flow__handle-left {
+
+    left: -12px;
+}
+
+.react-flow__handle-right {
+
+    right: -12px;
+}
+
+.dock-content-holder {
+    color: var(--colors-fg);
+}
+
+.rc-menu-sub .rc-menu-item {
+    padding: 0.1em !important;
+}
+
+.rc-menu-item {
+    color: var(--colors-fg);
+    padding: 0 1em !important;
+}
+
+
+.rc-menu-horizontal {
+    padding: 0.2em;
+    display: flex;
+    gap: 0.4em;
+}
+
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 2rem;
+    position: relative;
+    padding: 0 0.5rem;
+}
+
+
+.dock-tab {
+    display: flex;
+    align-items: center;
+}
+
+.dock-top .dock-bar {
+    border-bottom: none;
+}
+
+.dock-panel.dock-style-main .dock-bar {
+    border-bottom-color: var(--color-neutral-stroke-subtle);
+}
+
+.dock-content-holder {
+    scrollbar-color: var(--color-neutral-canvas-subtle-bg) transparent;
+    scrollbar-width: thin;
+    border-bottom: var(--component-border-width-md) solid var(--color-neutral-stroke-subtle);
+}
+
+.dock-top .dock-ink-bar {
+    background: var(--colors-bgCanvas);
+    z-index: 0;
+    height: 100%;
+    border-radius: var(--component-radii-sm);
+}
+
+
+/* Dark scrollbars for all elements */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #4a4a4a #262626;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #262626;
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: #4a4a4a;
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #5a5a5a;
+}
+
+*::-webkit-scrollbar-corner {
+    background: #262626;
+}

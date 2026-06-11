@@ -1,0 +1,37 @@
+@import "@kiberon-labs/behave-graph-flow/entry.css";
+
+
+:root {
+    --colors-bgCanvas: var(--vscode-editor-background, #1f1f1f);
+    --colors-bgDefault: var(--vscode-editor-background, #181818);
+    --colors-bgEmphasis: var(--vscode-editor-background, #444444);
+    --colors-bgSubtle: #373737;
+    --colors-bgSurface: #292929;
+    --colors-borderDefault: #636363;
+    --colors-borderMuted: var(--vscode-foreground);
+    --colors-borderSubtle: #454545;
+    --colors-fgSubtle: #8a8a8a;
+    --colors-inputBg: var(--vscode-input-background);
+    --colors-inputBorderRest: var(--vscode-input-border);
+}
+
+body {
+    margin: 0;
+    padding: 0 !important;
+}
+
+#graph-editor {
+    height: 100vh;
+    background: var(--colors-bgCanvas)
+}
+
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+html {
+    font-family: var(--vscode-editor-font-family);
+}

@@ -1,0 +1,337 @@
+{
+  "v": "1.0.0",
+  "name": "Untitled Graph",
+  "annotations": {},
+  "data": {},
+  "flow": {
+    "nodes": [
+      {
+        "id": "0",
+        "type": "lifecycle/onStart",
+        "flows": {
+          "flow": {
+            "nodeId": "17a01a62-3493-47b8-a0f4-d464167d0390",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "17a01a62-3493-47b8-a0f4-d464167d0390",
+        "type": "flow/sequence",
+        "configuration": {
+          "numOutputs": 4
+        },
+        "flows": {
+          "1": {
+            "nodeId": "8a54435e-b4c4-46c8-9709-c6ac8f59bcde",
+            "socket": "flow"
+          },
+          "2": {
+            "nodeId": "b1934a98-252b-433c-bc1f-9ead7e816510",
+            "socket": "flow"
+          },
+          "3": {
+            "nodeId": "c8355624-dab2-4426-b6f3-21a77a2060f1",
+            "socket": "flow"
+          },
+          "4": {
+            "nodeId": "2d41f1da-6b5e-4351-9be3-97b43a2838eb",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "8a54435e-b4c4-46c8-9709-c6ac8f59bcde",
+        "type": "debug/log",
+        "parameters": {
+          "text": {
+            "value": "1"
+          }
+        }
+      },
+      {
+        "id": "b1934a98-252b-433c-bc1f-9ead7e816510",
+        "type": "debug/log",
+        "parameters": {
+          "text": {
+            "value": "2"
+          }
+        }
+      },
+      {
+        "id": "c8355624-dab2-4426-b6f3-21a77a2060f1",
+        "type": "debug/log",
+        "parameters": {
+          "text": {
+            "value": "3"
+          }
+        }
+      },
+      {
+        "id": "2d41f1da-6b5e-4351-9be3-97b43a2838eb",
+        "type": "debug/log",
+        "parameters": {
+          "text": {
+            "value": "4"
+          }
+        }
+      }
+    ],
+    "variables": [
+      {
+        "id": "0",
+        "name": "Example Variable",
+        "valueTypeName": "string",
+        "initialValue": "Hello, World!"
+      }
+    ],
+    "customEvents": [
+      {
+        "id": "0",
+        "name": "Example Event",
+        "parameters": [
+          {
+            "name": "exampleParam",
+            "valueTypeName": "string",
+            "defaultValue": "Foo"
+          }
+        ],
+        "description": "An example event for demonstration purposes.",
+        "readonly": true
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "0",
+      "type": "behaveNode",
+      "position": {
+        "x": 110,
+        "y": 695
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "lifecycle/onStart",
+        "ports": {},
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 74,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      },
+      "selected": false
+    },
+    {
+      "id": "17a01a62-3493-47b8-a0f4-d464167d0390",
+      "type": "behaveNode",
+      "position": {
+        "x": 380.5,
+        "y": 1127
+      },
+      "data": {
+        "configuration": {
+          "numOutputs": 4
+        },
+        "type": "flow/sequence",
+        "ports": {},
+        "dynamicPorts": {
+          "outputs": [
+            {
+              "name": "1",
+              "key": "1",
+              "valueType": "flow"
+            },
+            {
+              "name": "2",
+              "key": "2",
+              "valueType": "flow"
+            },
+            {
+              "name": "3",
+              "key": "3",
+              "valueType": "flow"
+            },
+            {
+              "name": "4",
+              "key": "4",
+              "valueType": "flow"
+            }
+          ]
+        }
+      },
+      "width": 120,
+      "height": 170,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 133.18352126202262,
+        "y": 190.3372976970891
+      },
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "8a54435e-b4c4-46c8-9709-c6ac8f59bcde",
+      "type": "behaveNode",
+      "position": {
+        "x": 651,
+        "y": 1559
+      },
+      "data": {
+        "configuration": {},
+        "type": "debug/log",
+        "ports": {
+          "text": "1"
+        }
+      },
+      "width": 120,
+      "height": 138,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 685.9523999805582,
+        "y": 588.1496546764942
+      },
+      "dragging": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "b1934a98-252b-433c-bc1f-9ead7e816510",
+      "type": "behaveNode",
+      "position": {
+        "x": 651,
+        "y": 1271
+      },
+      "data": {
+        "configuration": {},
+        "type": "debug/log",
+        "ports": {
+          "text": "2"
+        }
+      },
+      "width": 120,
+      "height": 138,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 680.5794022688877,
+        "y": 742.2640711524667
+      },
+      "dragging": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "c8355624-dab2-4426-b6f3-21a77a2060f1",
+      "type": "behaveNode",
+      "position": {
+        "x": 651,
+        "y": 983
+      },
+      "data": {
+        "configuration": {},
+        "type": "debug/log",
+        "ports": {
+          "text": "3"
+        }
+      },
+      "width": 120,
+      "height": 138,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 699.6732237791852,
+        "y": 896.3784876284393
+      },
+      "dragging": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "2d41f1da-6b5e-4351-9be3-97b43a2838eb",
+      "type": "behaveNode",
+      "position": {
+        "x": 651,
+        "y": 695
+      },
+      "data": {
+        "configuration": {},
+        "type": "debug/log",
+        "ports": {
+          "text": "4"
+        }
+      },
+      "width": 120,
+      "height": 138,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 687.956976639597,
+        "y": 1080.396794264595
+      },
+      "dragging": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "530de7a0-3140-4d17-b30c-46f208a934b8",
+      "source": "17a01a62-3493-47b8-a0f4-d464167d0390",
+      "target": "2d41f1da-6b5e-4351-9be3-97b43a2838eb",
+      "sourceHandle": "4",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "c153720c-140c-40e2-9c8a-794c304b4dc1",
+      "source": "17a01a62-3493-47b8-a0f4-d464167d0390",
+      "target": "c8355624-dab2-4426-b6f3-21a77a2060f1",
+      "sourceHandle": "3",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "f67ad57f-cc9b-4245-a0c7-4a054235db5c",
+      "source": "17a01a62-3493-47b8-a0f4-d464167d0390",
+      "target": "b1934a98-252b-433c-bc1f-9ead7e816510",
+      "sourceHandle": "2",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "27748f77-8a20-45af-be35-3e1142d3a5ff",
+      "source": "17a01a62-3493-47b8-a0f4-d464167d0390",
+      "target": "8a54435e-b4c4-46c8-9709-c6ac8f59bcde",
+      "sourceHandle": "1",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "a091e07d-3bb6-4004-a402-efc431c61652",
+      "source": "0",
+      "target": "17a01a62-3493-47b8-a0f4-d464167d0390",
+      "sourceHandle": "flow",
+      "targetHandle": "flow"
+    }
+  ],
+  "user": {
+    "viewport": {
+      "x": 55.08183672557624,
+      "y": -313.5214640973437,
+      "zoom": 0.5787933657009103
+    }
+  }
+}

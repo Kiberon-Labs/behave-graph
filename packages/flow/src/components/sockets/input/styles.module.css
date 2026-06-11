@@ -1,0 +1,27 @@
+.row {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: flex-start;
+    height: 1.75rem;
+}
+
+.hidden {
+    display: none;
+}
+
+.name {
+    text-transform: capitalize;
+    margin-right: 0.5rem;
+}
+
+.socket {}
+
+.socket svg {
+    stroke: currentColor;
+}
+
+.disconnected {
+    /* Tailwind `bg-gray-800` equivalent */
+    background: #333 !important;
+}

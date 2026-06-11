@@ -1,0 +1,45 @@
+.icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--vscode-icon-foreground, #cccccc);
+    padding: 0;
+    border-radius: 5px;
+    transition: background-color 0.1s ease;
+}
+
+.icon:hover:not(.disabled) {
+    background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.icon:active:not(.disabled) {
+    background-color: var(--vscode-toolbar-activeBackground);
+}
+
+.icon:focus-visible {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: -1px;
+}
+
+.icon.disabled {
+    cursor: default;
+    opacity: 0.4;
+}
+
+.icon.small {
+    width: 20px;
+    height: 20px;
+}
+
+.icon.medium {
+    width: 24px;
+    height: 24px;
+}
+
+.icon.large {
+    width: 28px;
+    height: 28px;
+}

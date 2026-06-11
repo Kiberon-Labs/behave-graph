@@ -1,0 +1,236 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    gap: 0;
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--vscode-sideBar-background, var(--colors-bgPanel));
+    flex-shrink: 0;
+}
+
+.headerTitle {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.headerRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.headerRowPadded {
+    padding: 0.25em;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+}
+
+.sectionPadded {
+    padding: 0.25em;
+}
+
+.variableList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    min-height: 0;
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+    gap: 8px;
+}
+
+.emptyStateText {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+.emptyStateHint {
+    font-size: 12px;
+    opacity: 0.5;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+}
+
+.actionsRow {
+    display: flex;
+    gap: 0.25em;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+}
+
+.listItem {
+    display: flex;
+    gap: 0.25em;
+    align-items: center;
+    padding: 0.25em;
+}
+
+.listItemContent {
+    flex: 1;
+}
+
+.tree {
+    display: block;
+}
+
+.tree vscode-tree-item {
+    --vscode-tree-item-padding: 0;
+}
+
+.treeItemContent {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.25em 0.5em;
+    width: 100%;
+}
+
+.treeItemIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    font-size: 18px;
+    opacity: 0.85;
+}
+
+.treeItemInfo {
+    flex: 1;
+}
+
+.treeItemName {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.treeItemMeta {
+    font-size: 11px;
+    opacity: 0.6;
+    line-height: 1.2;
+}
+
+
+
+.treeItemRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 12px;
+    min-height: 44px;
+}
+
+.treeItemText {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    justify-content: center;
+}
+
+.treeItemTitle {
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.treeItemID {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+.treeItemSub {
+    font-size: 11px;
+    opacity: 0.6;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.selectedEditor {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-top: 1px solid var(--vscode-panel-border, rgba(255, 255, 255, 0.1));
+    background: var(--vscode-sideBar-background, var(--colors-bgPanel));
+    flex-shrink: 0;
+}
+
+.editorHeader {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--vscode-panel-border, rgba(255, 255, 255, 0.08));
+}
+
+.editorTitle {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.editorVariableName {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.editorFields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+}
+
+.fieldLabel {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.8;
+    margin-bottom: 4px;
+}
+
+.fieldControl {
+    display: flex;
+    flex-direction: column;
+}
+
+.editorActions {
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+    gap: 0.5em;
+    padding: 12px 16px;
+    border-top: 1px solid var(--vscode-panel-border, rgba(255, 255, 255, 0.08));
+}

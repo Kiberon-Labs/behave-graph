@@ -1,0 +1,49 @@
+{
+  "name": "@kiberon-labs/behave-graph",
+  "version": "1.1.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  },
+  "scripts": {
+    "audit": "fallow",
+    "build": "tsdown",
+    "format": "oxfmt",
+    "check": "oxfmt --check",
+    "test": "vitest",
+    "lint": "oxlint",
+    "typecheck": "tsc --noEmit"
+  },
+  "author": "kiberonlabsdev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiberon-labs/behave-graph",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/kiberon-labs/behave-graph/issues",
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "fallow": "^2.89.0",
+    "oxfmt": "^0.14.0",
+    "oxlint": "^1.29.0",
+    "tsdown": "^0.16.5",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.10"
+  }
+}

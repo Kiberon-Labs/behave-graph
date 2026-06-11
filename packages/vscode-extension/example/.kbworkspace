@@ -1,0 +1,4 @@
+{
+    "plugins":"./plugins.js",
+    "registry":"./registry.ts"
+}

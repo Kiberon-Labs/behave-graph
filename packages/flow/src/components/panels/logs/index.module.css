@@ -1,0 +1,109 @@
+.toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--component-spacing-xs);
+    border-bottom: 1px solid var(--vscode-panel-border);
+    padding-bottom: var(--component-spacing-xs);
+}
+
+.searchBar {
+    display: flex;
+    gap: var(--component-spacing-xs);
+}
+
+.searchInput {
+    flex: 1;
+}
+
+.filters {
+    display: flex;
+    gap: var(--component-spacing-sm);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filterLabel {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+.levelLabel {
+    text-transform: capitalize;
+    font-size: 0.85em;
+}
+
+.autoScrollCheckbox {
+    margin-left: auto;
+}
+
+.autoScrollLabel {
+    font-size: 0.85em;
+}
+
+.logCount {
+    font-size: 0.75em;
+    opacity: 0.5;
+}
+
+.logsContainer {
+    flex: 1;
+    overflow: auto;
+    font-size: smaller;
+    padding: var(--component-spacing-xs);
+}
+
+.emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    opacity: 0.5;
+    font-size: 0.9em;
+}
+
+.logsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--component-spacing-xs);
+}
+
+.logItem {
+    border: 1px solid var(--vscode-panel-border);
+    padding: var(--component-spacing-sm);
+    border-radius: 2px;
+    background-color: var(--vscode-editor-background);
+    cursor: pointer;
+    transition: background-color 0.1s;
+}
+
+.logItem:hover {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+.logHeader {
+    display: flex;
+    gap: var(--component-spacing-xs);
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.logBadge {
+    color: var(--vscode-badge-foreground);
+    text-transform: uppercase;
+    font-size: 0.65em;
+    font-weight: bold;
+}
+
+.logTimestamp {
+    font-size: 0.75em;
+    opacity: 0.6;
+    font-family: var(--vscode-editor-font-family);
+}
+
+.logContent {
+    font-family: var(--vscode-editor-font-family);
+    font-size: 0.85em;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.4;
+}

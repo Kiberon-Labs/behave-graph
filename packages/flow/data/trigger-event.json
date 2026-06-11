@@ -1,0 +1,241 @@
+{
+  "v": "1.0.0",
+  "name": "Untitled Graph",
+  "annotations": {},
+  "data": {},
+  "flow": {
+    "nodes": [
+      {
+        "id": "f788f991-405b-4655-989b-8ad584e8a5d4",
+        "type": "customEvent/trigger",
+        "configuration": {
+          "customEventId": "0"
+        },
+        "parameters": {
+          "param": {
+            "value": "heyoo"
+          }
+        }
+      },
+      {
+        "id": "c952dcac-3773-4ddc-8df2-342c789e1777",
+        "type": "lifecycle/onStart",
+        "flows": {
+          "flow": {
+            "nodeId": "f788f991-405b-4655-989b-8ad584e8a5d4",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "1fc79763-ffd1-4385-816c-1432365954de",
+        "type": "customEvent/onTriggered",
+        "configuration": {
+          "customEventId": "0"
+        },
+        "flows": {
+          "param": {
+            "nodeId": "6f6577c7-e59a-4c33-91d6-24ffc145fe10",
+            "socket": "text"
+          },
+          "flow": {
+            "nodeId": "6f6577c7-e59a-4c33-91d6-24ffc145fe10",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "6f6577c7-e59a-4c33-91d6-24ffc145fe10",
+        "type": "debug/log",
+        "parameters": {
+          "text": {
+            "link": {
+              "nodeId": "1fc79763-ffd1-4385-816c-1432365954de",
+              "socket": "param"
+            }
+          }
+        }
+      }
+    ],
+    "variables": [],
+    "customEvents": [
+      {
+        "id": "0",
+        "name": "NewCustomEvent",
+        "parameters": [
+          {
+            "name": "param",
+            "valueTypeName": "string",
+            "defaultValue": "test"
+          }
+        ]
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "f788f991-405b-4655-989b-8ad584e8a5d4",
+      "type": "behaveNode",
+      "position": {
+        "x": 707,
+        "y": 131
+      },
+      "data": {
+        "configuration": {
+          "customEventId": "0"
+        },
+        "type": "customEvent/trigger",
+        "ports": {
+          "param": "heyoo"
+        },
+        "dynamicPorts": {
+          "inputs": [
+            {
+              "name": "param",
+              "key": "param",
+              "valueType": "string"
+            }
+          ]
+        },
+        "annotations": {
+          "ui.executing": false
+        }
+      },
+      "width": 338,
+      "height": 162,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 570.2869235456985,
+        "y": 176.79993345535345
+      },
+      "dragging": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "c952dcac-3773-4ddc-8df2-342c789e1777",
+      "type": "behaveNode",
+      "position": {
+        "x": 219,
+        "y": 131
+      },
+      "data": {
+        "configuration": {},
+        "type": "lifecycle/onStart",
+        "ports": {}
+      },
+      "width": 120,
+      "height": 74,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 277.545776238112,
+        "y": 184.80457420204525
+      },
+      "dragging": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "1fc79763-ffd1-4385-816c-1432365954de",
+      "type": "behaveNode",
+      "position": {
+        "x": 219,
+        "y": 431
+      },
+      "data": {
+        "configuration": {
+          "customEventId": "0"
+        },
+        "type": "customEvent/onTriggered",
+        "ports": {},
+        "dynamicPorts": {
+          "outputs": [
+            {
+              "name": "param",
+              "key": "param",
+              "valueType": "string"
+            }
+          ]
+        }
+      },
+      "width": 338,
+      "height": 162,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 196.35584866452376,
+        "y": -110.17789764078897
+      },
+      "dragging": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "6f6577c7-e59a-4c33-91d6-24ffc145fe10",
+      "type": "behaveNode",
+      "position": {
+        "x": 707,
+        "y": 431
+      },
+      "data": {
+        "configuration": {},
+        "type": "debug/log",
+        "ports": {},
+        "annotations": {
+          "ui.executing": false
+        }
+      },
+      "width": 120,
+      "height": 138,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 699.793548778394,
+        "y": -73.58525422734071
+      },
+      "dragging": false,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "d523bc0f-2d38-499e-87e0-a6b4a3e50823",
+      "source": "1fc79763-ffd1-4385-816c-1432365954de",
+      "target": "6f6577c7-e59a-4c33-91d6-24ffc145fe10",
+      "sourceHandle": "param",
+      "targetHandle": "text"
+    },
+    {
+      "id": "b7be58c6-8fd9-4a07-87ae-17722455fd70",
+      "source": "1fc79763-ffd1-4385-816c-1432365954de",
+      "target": "6f6577c7-e59a-4c33-91d6-24ffc145fe10",
+      "sourceHandle": "flow",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "a3eea928-9487-4f37-90a6-fc5d3cd9c00d",
+      "source": "c952dcac-3773-4ddc-8df2-342c789e1777",
+      "target": "f788f991-405b-4655-989b-8ad584e8a5d4",
+      "sourceHandle": "flow",
+      "targetHandle": "flow"
+    }
+  ],
+  "user": {
+    "viewport": {
+      "x": -71.33045875639704,
+      "y": 154.79187118138898,
+      "zoom": 0.6627415458937198
+    }
+  }
+}

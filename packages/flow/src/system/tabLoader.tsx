@@ -1,0 +1,265 @@
+import { Flow } from '@/components/Flow';
+import type { TabBase, TabData } from 'rc-dock';
+import { ErrorBoundary } from 'react-error-boundary';
+import type { System } from './system';
+import { Settings } from '@/components/panels/systemSettings';
+import { LogsPanel } from '@/components/panels/logs';
+import { VariablesPanel } from '@/components/panels/variables';
+import { NodeInputsPanel } from '@/components/panels/nodeInputs';
+import { AlignmentPanel } from '@/components/panels/alignment';
+import { SearchPanel } from '@/components/panels/search';
+import { KeymapsPanel } from '@/components/panels/keymaps';
+import { EventsPanel } from '@/components/panels/events';
+import { TracesPanel } from '@/components/panels/traces';
+import { LegendPanel } from '@/components/panels/legend';
+import { HistoryPanel } from '@/components/panels/history';
+import { HotKeys } from '@/components/hotKeys';
+import { NodePickerPanel } from '@/components/panels/nodePicker';
+import { PanelPanel } from '@/components/panels/panel';
+import { ConversationPanel } from '@/components/panels/conversation';
+import { LayersPanel } from '@/components/panels/layers';
+
+export class TabLoader {
+  public readonly tabs: Record<string, () => TabData> = {};
+
+  constructor(_system: System) {
+    this.register('graph', () => {
+      return {
+        id: 'graph',
+        closable: true,
+        cached: true,
+        group: 'graph',
+        title: 'Graph',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <HotKeys>
+              <Flow />
+            </HotKeys>
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('system:settings', () => {
+      return {
+        id: 'system:settings',
+        closable: true,
+        group: 'default',
+        title: 'System Settings',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <Settings />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('distribution', () => {
+      return {
+        id: 'distribution',
+        closable: true,
+        group: 'default',
+        title: 'Distribution + Alignment',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <AlignmentPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('variables', () => {
+      return {
+        id: 'variables',
+        closable: true,
+        title: 'Variables',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <VariablesPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('logs', () => {
+      return {
+        id: 'logs',
+        closable: true,
+        title: 'Logs',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <LogsPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+    this.register('find', () => {
+      return {
+        id: 'find',
+        closable: true,
+        title: 'Find',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <SearchPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('nodeInputs', () => {
+      return {
+        id: 'nodeInputs',
+        closable: true,
+        title: 'Node Inputs',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <NodeInputsPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('keymaps', () => {
+      return {
+        id: 'keymaps',
+        closable: true,
+        title: 'Keyboard Shortcuts',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <KeymapsPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('events', () => {
+      return {
+        id: 'events',
+        closable: true,
+        title: 'Events',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <EventsPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('traces', () => {
+      return {
+        id: 'traces',
+        closable: true,
+        title: 'Traces',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <TracesPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('legend', () => {
+      return {
+        id: 'legend',
+        closable: true,
+        title: 'Legend',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <LegendPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('history', () => {
+      return {
+        id: 'history',
+        closable: true,
+        title: 'History',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <HistoryPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('layers', () => {
+      return {
+        id: 'layers',
+        closable: true,
+        title: 'Layers',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <LayersPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('nodepicker', () => {
+      return {
+        id: 'nodepicker',
+        closable: true,
+        cached: true,
+        title: 'Add Node',
+        group: 'headless',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <NodePickerPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('panels', () => {
+      return {
+        id: 'panels',
+        closable: true,
+        title: 'Panels',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <PanelPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('conversation', () => {
+      return {
+        id: 'conversation',
+        closable: true,
+        cached: true,
+        title: 'Conversation',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <ConversationPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+  }
+
+  load(tab: TabBase): TabData | undefined {
+    if (!tab.id) {
+      return;
+    }
+    return this.tabs[tab.id]?.();
+  }
+
+  register(id: string, loader: () => TabData) {
+    this.tabs[id] = loader;
+  }
+}

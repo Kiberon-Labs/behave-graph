@@ -1,0 +1,23 @@
+.pairRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    column-gap: 2rem;
+    position: relative;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+}
+
+.valueInputRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    column-gap: 2rem;
+    position: relative;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+}

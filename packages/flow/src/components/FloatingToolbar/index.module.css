@@ -1,0 +1,45 @@
+.panel {
+  margin: 0.5rem;
+  pointer-events: auto;
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  background: var(--colors-bgSurface);
+  border: 1px solid var(--colors-borderSubtle);
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.125rem;
+  padding: 0.125rem;
+}
+
+.buttonGroup vscode-button {
+  min-width: 28px;
+  height: 28px;
+}
+
+.zoomLevel {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--colors-fg);
+  user-select: none;
+  min-width: 3rem;
+  justify-content: center;
+}
+
+.contextMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.25rem;
+  z-index: 1000;
+}

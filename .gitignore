@@ -1,0 +1,15 @@
+node_modules
+dist
+.DS_Store
+.env
+.env.*
+node-spec.json
+*.blend1
+node-spec.csv
+**/public/js
+.nx
+*.turbo
+*.tsbuildinfo
+.opencode
+*.fallow
+.agents

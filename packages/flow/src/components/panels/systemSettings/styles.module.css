@@ -1,0 +1,11 @@
+.title {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--vscode-foreground);
+}
+
+.description {
+    font-size: 0.85em;
+    color: var(--vscode-descriptionForeground);
+    opacity: 0.9;
+}

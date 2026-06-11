@@ -1,0 +1,94 @@
+{
+  "v": "1.0.0",
+  "name": "Click Demo",
+  "annotations": {},
+  "data": {},
+  "flow": {
+    "nodes": [
+      {
+        "id": "click-event-1",
+        "type": "scene/onAnyMeshClicked",
+        "flows": {
+          "flow": {
+            "nodeId": "log-click-1",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "log-click-1",
+        "type": "debug/log",
+        "parameters": {
+          "text": {
+            "link": {
+              "nodeId": "click-event-1",
+              "socket": "meshName"
+            }
+          },
+          "severity": {
+            "value": "info"
+          }
+        }
+      }
+    ],
+    "variables": [],
+    "customEvents": []
+  },
+  "nodes": [
+    {
+      "id": "click-event-1",
+      "type": "behaveNode",
+      "position": {
+        "x": 200,
+        "y": 200
+      },
+      "data": {
+        "configuration": {},
+        "type": "scene/onAnyMeshClicked",
+        "ports": {}
+      },
+      "width": 160,
+      "height": 104
+    },
+    {
+      "id": "log-click-1",
+      "type": "behaveNode",
+      "position": {
+        "x": 500,
+        "y": 200
+      },
+      "data": {
+        "configuration": {},
+        "type": "debug/log",
+        "ports": {
+          "severity": "info"
+        }
+      },
+      "width": 160,
+      "height": 136
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-flow-1",
+      "source": "click-event-1",
+      "target": "log-click-1",
+      "sourceHandle": "flow",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "edge-mesh-name-1",
+      "source": "click-event-1",
+      "target": "log-click-1",
+      "sourceHandle": "meshName",
+      "targetHandle": "text"
+    }
+  ],
+  "user": {
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  }
+}

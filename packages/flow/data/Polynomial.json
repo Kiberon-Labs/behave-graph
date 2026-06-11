@@ -1,0 +1,510 @@
+{
+  "v": "1.0.0",
+  "name": "Untitled Graph",
+  "annotations": {},
+  "data": {},
+  "flow": {
+    "nodes": [
+      {
+        "id": "0",
+        "type": "lifecycle/onStart",
+        "flows": {
+          "flow": {
+            "nodeId": "10",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "1",
+        "type": "math/float",
+        "parameters": {
+          "a": {
+            "value": 3
+          }
+        }
+      },
+      {
+        "id": "2",
+        "type": "math/pow/float",
+        "parameters": {
+          "b": {
+            "value": 1
+          },
+          "a": {
+            "link": {
+              "nodeId": "1",
+              "socket": "result"
+            }
+          }
+        }
+      },
+      {
+        "id": "3",
+        "type": "math/pow/float",
+        "parameters": {
+          "b": {
+            "value": 2
+          },
+          "a": {
+            "link": {
+              "nodeId": "1",
+              "socket": "result"
+            }
+          }
+        }
+      },
+      {
+        "id": "4",
+        "type": "math/pow/float",
+        "parameters": {
+          "b": {
+            "value": 3
+          },
+          "a": {
+            "link": {
+              "nodeId": "1",
+              "socket": "result"
+            }
+          }
+        }
+      },
+      {
+        "id": "5",
+        "type": "math/multiply/float",
+        "parameters": {
+          "b": {
+            "value": 3
+          },
+          "a": {
+            "link": {
+              "nodeId": "2",
+              "socket": "result"
+            }
+          }
+        }
+      },
+      {
+        "id": "6",
+        "type": "math/add/float",
+        "parameters": {
+          "a": {
+            "link": {
+              "nodeId": "5",
+              "socket": "result"
+            }
+          },
+          "b": {
+            "link": {
+              "nodeId": "3",
+              "socket": "result"
+            }
+          }
+        }
+      },
+      {
+        "id": "7",
+        "type": "math/negate/float",
+        "parameters": {
+          "a": {
+            "link": {
+              "nodeId": "4",
+              "socket": "result"
+            }
+          }
+        }
+      },
+      {
+        "id": "8",
+        "type": "math/add/float",
+        "parameters": {
+          "a": {
+            "link": {
+              "nodeId": "6",
+              "socket": "result"
+            }
+          },
+          "b": {
+            "link": {
+              "nodeId": "7",
+              "socket": "result"
+            }
+          }
+        }
+      },
+      {
+        "id": "9",
+        "type": "math/toString/float",
+        "parameters": {
+          "a": {
+            "link": {
+              "nodeId": "8",
+              "socket": "result"
+            }
+          }
+        }
+      },
+      {
+        "id": "10",
+        "type": "debug/log",
+        "parameters": {
+          "text": {
+            "link": {
+              "nodeId": "9",
+              "socket": "result"
+            }
+          }
+        }
+      }
+    ],
+    "variables": [],
+    "customEvents": []
+  },
+  "nodes": [
+    {
+      "id": "0",
+      "type": "behaveNode",
+      "position": {
+        "x": 1460,
+        "y": 169
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "lifecycle/onStart",
+        "ports": {},
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 78,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "1",
+      "type": "behaveNode",
+      "position": {
+        "x": 110,
+        "y": 413
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "math/float",
+        "ports": {
+          "a": 3
+        },
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 110,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "2",
+      "type": "behaveNode",
+      "position": {
+        "x": 380,
+        "y": 121
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "math/pow/float",
+        "ports": {
+          "b": 1
+        },
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 142,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "3",
+      "type": "behaveNode",
+      "position": {
+        "x": 650,
+        "y": 413
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "math/pow/float",
+        "ports": {
+          "b": 2
+        },
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 142,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "4",
+      "type": "behaveNode",
+      "position": {
+        "x": 650,
+        "y": 705
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "math/pow/float",
+        "ports": {
+          "b": 3
+        },
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 142,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "5",
+      "type": "behaveNode",
+      "position": {
+        "x": 650,
+        "y": 121
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "math/multiply/float",
+        "ports": {
+          "b": 3
+        },
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 142,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "6",
+      "type": "behaveNode",
+      "position": {
+        "x": 920,
+        "y": 267
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "math/add/float",
+        "ports": {},
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 142,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "7",
+      "type": "behaveNode",
+      "position": {
+        "x": 920,
+        "y": 705
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "math/negate/float",
+        "ports": {},
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 110,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "8",
+      "type": "behaveNode",
+      "position": {
+        "x": 1190,
+        "y": 413
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "math/add/float",
+        "ports": {},
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 142,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "9",
+      "type": "behaveNode",
+      "position": {
+        "x": 1460,
+        "y": 413
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "math/toString/float",
+        "ports": {},
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 110,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    },
+    {
+      "id": "10",
+      "type": "behaveNode",
+      "position": {
+        "x": 1730,
+        "y": 291
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "debug/log",
+        "ports": {},
+        "dynamicPorts": {}
+      },
+      "width": 120,
+      "height": 142,
+      "sourcePosition": "right",
+      "targetPosition": "left",
+      "style": {
+        "opacity": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "cc88640a-ca75-4cdb-b407-194d48176547",
+      "source": "0",
+      "sourceHandle": "flow",
+      "target": "10",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "fd70c883-eea2-433d-ad43-b3df81131307",
+      "source": "1",
+      "sourceHandle": "result",
+      "target": "2",
+      "targetHandle": "a"
+    },
+    {
+      "id": "7fece7c9-2c75-4d87-8bb6-3fc1fb131fad",
+      "source": "1",
+      "sourceHandle": "result",
+      "target": "3",
+      "targetHandle": "a"
+    },
+    {
+      "id": "9e157d9c-32f7-45c7-ba5e-48bd3b076aa6",
+      "source": "1",
+      "sourceHandle": "result",
+      "target": "4",
+      "targetHandle": "a"
+    },
+    {
+      "id": "db3d5505-8aed-4afb-9d68-d5bd0bf0f891",
+      "source": "2",
+      "sourceHandle": "result",
+      "target": "5",
+      "targetHandle": "a"
+    },
+    {
+      "id": "c4ed8119-204e-47fa-9494-065a92a99467",
+      "source": "5",
+      "sourceHandle": "result",
+      "target": "6",
+      "targetHandle": "a"
+    },
+    {
+      "id": "c1e7875b-c988-432c-b8dd-ec5249988615",
+      "source": "3",
+      "sourceHandle": "result",
+      "target": "6",
+      "targetHandle": "b"
+    },
+    {
+      "id": "76b00757-c7a8-44ad-ad38-8475e7d23590",
+      "source": "4",
+      "sourceHandle": "result",
+      "target": "7",
+      "targetHandle": "a"
+    },
+    {
+      "id": "3830fda3-4fd6-4e3c-8041-cb91841c4059",
+      "source": "6",
+      "sourceHandle": "result",
+      "target": "8",
+      "targetHandle": "a"
+    },
+    {
+      "id": "02ffdeed-4ab6-4aa4-93bc-5b9f94ca4423",
+      "source": "7",
+      "sourceHandle": "result",
+      "target": "8",
+      "targetHandle": "b"
+    },
+    {
+      "id": "f884e43d-d8ef-4b24-b1b0-a5c6283c7885",
+      "source": "8",
+      "sourceHandle": "result",
+      "target": "9",
+      "targetHandle": "a"
+    },
+    {
+      "id": "0f886169-5e4a-4409-82a8-6a6572883888",
+      "source": "9",
+      "sourceHandle": "result",
+      "target": "10",
+      "targetHandle": "text"
+    }
+  ],
+  "user": {
+    "viewport": {
+      "x": 36.09090909090912,
+      "y": 352.32590051457976,
+      "zoom": 0.3404802744425386
+    }
+  }
+}

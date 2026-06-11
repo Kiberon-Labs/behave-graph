@@ -1,0 +1,110 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.75rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.title {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.subtitle {
+    font-size: 0.85rem;
+    color: var(--vscode-descriptionForeground);
+}
+
+.addRow {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.nameInput {
+    flex: 1;
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 4px;
+    padding: 0.35rem 0.5rem;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    overflow: auto;
+}
+
+.row {
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 6px;
+    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.rowTop {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.layerName {
+    flex: 1;
+    background: transparent;
+    color: var(--vscode-editor-foreground);
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 0.2rem 0.3rem;
+}
+
+.layerName:focus {
+    border-color: var(--vscode-focusBorder);
+    outline: none;
+}
+
+.badge {
+    font-size: 0.7rem;
+    color: var(--vscode-badge-foreground);
+    background: var(--vscode-badge-background);
+    border-radius: 99px;
+    padding: 0.1rem 0.45rem;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+}
+
+.opacityLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+}
+
+.opacityLabel input[type='range'] {
+    width: 110px;
+}
+
+.actions {
+    display: flex;
+    gap: 0.4rem;
+}

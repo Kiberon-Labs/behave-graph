@@ -1,0 +1,52 @@
+name: Release docs
+on:
+  push:
+    branches: [master]
+
+
+permissions:
+  id-token: write
+  pages: write
+  contents: read
+
+
+jobs:
+
+  build:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+ 
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build docs
+        run: pnpm run build --filter @kiberon-labs/website
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: packages/website/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

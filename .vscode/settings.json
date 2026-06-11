@@ -1,0 +1,14 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "vscode.css-language-features"
+  },
+  "js/ts.suggest.autoImports": true,
+  "js/ts.tsdk.path": "node_modules\\typescript\\lib",
+  "js/ts.tsserver.log": "verbose",
+  "js/ts.tsserver.maxMemory": 8192
+}

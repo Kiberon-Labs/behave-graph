@@ -1,0 +1,402 @@
+{
+  "v": "1.0.0",
+  "name": "Untitled Graph",
+  "annotations": {},
+  "data": {},
+  "flow": {
+    "nodes": [
+      {
+        "id": "7933216f-38df-4042-994b-8c57027db3d5",
+        "type": "lifecycle/onTick",
+        "flows": {
+          "flow": {
+            "nodeId": "c647cb90-9645-4d04-9f36-ba692f947a12",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "9a2b84eb-c66f-45f0-91ba-7e69c4708952",
+        "type": "scene/get/euler",
+        "parameters": {
+          "jsonPath": {
+            "value": "cube/rotation"
+          }
+        }
+      },
+      {
+        "id": "35d25c9e-7f3a-484f-94b9-0f90d008c020",
+        "type": "math/add/euler",
+        "parameters": {
+          "b": {
+            "link": {
+              "nodeId": "43a38425-e383-44a2-b305-a79779c18589",
+              "socket": "result"
+            }
+          },
+          "a": {
+            "link": {
+              "nodeId": "9a2b84eb-c66f-45f0-91ba-7e69c4708952",
+              "socket": "value"
+            }
+          }
+        }
+      },
+      {
+        "id": "c647cb90-9645-4d04-9f36-ba692f947a12",
+        "type": "scene/set/euler",
+        "parameters": {
+          "jsonPath": {
+            "value": "cube/rotation"
+          },
+          "value": {
+            "link": {
+              "nodeId": "35d25c9e-7f3a-484f-94b9-0f90d008c020",
+              "socket": "result"
+            }
+          }
+        },
+        "flows": {
+          "flow": {
+            "nodeId": "0b3b56fe-71f0-460e-83ae-1cf04dba010a",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "43a38425-e383-44a2-b305-a79779c18589",
+        "type": "math/scale/euler",
+        "parameters": {
+          "a": {
+            "value": [
+              0,
+              1,
+              0
+            ]
+          },
+          "b": {
+            "link": {
+              "nodeId": "7933216f-38df-4042-994b-8c57027db3d5",
+              "socket": "deltaSeconds"
+            }
+          }
+        }
+      },
+      {
+        "id": "854d45c7-301c-40b8-aa3e-0ee4645f3489",
+        "type": "scene/get/euler",
+        "parameters": {
+          "jsonPath": {
+            "value": "torus/rotation"
+          }
+        }
+      },
+      {
+        "id": "73daf6b5-bfd9-4625-b719-805660217777",
+        "type": "math/add/euler",
+        "parameters": {
+          "a": {
+            "value": [
+              0.1,
+              0,
+              -0.1
+            ]
+          },
+          "b": {
+            "link": {
+              "nodeId": "854d45c7-301c-40b8-aa3e-0ee4645f3489",
+              "socket": "value"
+            }
+          }
+        }
+      },
+      {
+        "id": "0b3b56fe-71f0-460e-83ae-1cf04dba010a",
+        "type": "scene/set/euler",
+        "parameters": {
+          "jsonPath": {
+            "value": "torus/rotation"
+          },
+          "value": {
+            "link": {
+              "nodeId": "73daf6b5-bfd9-4625-b719-805660217777",
+              "socket": "result"
+            }
+          }
+        }
+      }
+    ],
+    "variables": [],
+    "customEvents": []
+  },
+  "nodes": [
+    {
+      "id": "7933216f-38df-4042-994b-8c57027db3d5",
+      "type": "behaveNode",
+      "position": {
+        "x": 126.18046192944144,
+        "y": 135.79999923706055
+      },
+      "data": {
+        "configuration": {},
+        "type": "lifecycle/onTick",
+        "ports": {}
+      },
+      "width": 120,
+      "height": 104,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 126.18046192944144,
+        "y": 135.79999923706055
+      }
+    },
+    {
+      "id": "9a2b84eb-c66f-45f0-91ba-7e69c4708952",
+      "type": "behaveNode",
+      "position": {
+        "x": 246.50835416808889,
+        "y": 401.4752317127613
+      },
+      "data": {
+        "configuration": {},
+        "type": "scene/get/euler",
+        "ports": {
+          "jsonPath": "cube/rotation"
+        },
+        "annotations": {
+          "ui.executing": false
+        }
+      },
+      "width": 120,
+      "height": 104,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 246.50835416808889,
+        "y": 401.4752317127613
+      }
+    },
+    {
+      "id": "35d25c9e-7f3a-484f-94b9-0f90d008c020",
+      "type": "behaveNode",
+      "position": {
+        "x": 566.7798401526775,
+        "y": 335.64361305869755
+      },
+      "data": {
+        "configuration": {},
+        "type": "math/add/euler",
+        "ports": {
+          "b": [
+            0,
+            0.1,
+            0
+          ]
+        },
+        "annotations": {
+          "ui.executing": false
+        }
+      },
+      "width": 120,
+      "height": 136,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 566.7798401526775,
+        "y": 335.64361305869755
+      },
+      "dragging": false
+    },
+    {
+      "id": "c647cb90-9645-4d04-9f36-ba692f947a12",
+      "type": "behaveNode",
+      "position": {
+        "x": 695.417237582175,
+        "y": 149.76164364252836
+      },
+      "data": {
+        "configuration": {},
+        "type": "scene/set/euler",
+        "ports": {
+          "jsonPath": "cube/rotation"
+        },
+        "annotations": {
+          "ui.executing": false
+        }
+      },
+      "width": 120,
+      "height": 136,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 695.417237582175,
+        "y": 149.76164364252836
+      },
+      "dragging": false
+    },
+    {
+      "id": "43a38425-e383-44a2-b305-a79779c18589",
+      "type": "behaveNode",
+      "position": {
+        "x": 349.5981634660043,
+        "y": 222.60375588848257
+      },
+      "data": {
+        "configuration": {},
+        "type": "math/scale/euler",
+        "ports": {
+          "a": [
+            0,
+            1,
+            0
+          ]
+        }
+      },
+      "width": 120,
+      "height": 136,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 349.5981634660043,
+        "y": 222.60375588848257
+      },
+      "dragging": false
+    },
+    {
+      "id": "854d45c7-301c-40b8-aa3e-0ee4645f3489",
+      "type": "behaveNode",
+      "position": {
+        "x": 553.4721270320143,
+        "y": 573.7862679499057
+      },
+      "data": {
+        "configuration": {},
+        "type": "scene/get/euler",
+        "ports": {
+          "jsonPath": "torus/rotation"
+        }
+      },
+      "width": 120,
+      "height": 104,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 553.4721270320143,
+        "y": 573.7862679499057
+      },
+      "dragging": false
+    },
+    {
+      "id": "73daf6b5-bfd9-4625-b719-805660217777",
+      "type": "behaveNode",
+      "position": {
+        "x": 847.4032303308832,
+        "y": 401.68187193938405
+      },
+      "data": {
+        "configuration": {},
+        "type": "math/add/euler",
+        "ports": {
+          "a": [
+            0.1,
+            0,
+            -0.1
+          ]
+        }
+      },
+      "width": 120,
+      "height": 136,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 847.4032303308832,
+        "y": 401.68187193938405
+      },
+      "dragging": false
+    },
+    {
+      "id": "0b3b56fe-71f0-460e-83ae-1cf04dba010a",
+      "type": "behaveNode",
+      "position": {
+        "x": 961.4949085850494,
+        "y": 161.89597187978052
+      },
+      "data": {
+        "configuration": {},
+        "type": "scene/set/euler",
+        "ports": {
+          "jsonPath": "torus/rotation"
+        }
+      },
+      "width": 120,
+      "height": 136,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 961.4949085850494,
+        "y": 161.89597187978052
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "c3410f8c-479e-4b27-919a-8fbbf4175923",
+      "source": "c647cb90-9645-4d04-9f36-ba692f947a12",
+      "target": "0b3b56fe-71f0-460e-83ae-1cf04dba010a",
+      "sourceHandle": "flow",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "087992ae-4c68-4f8c-a907-48ba5dfc5484",
+      "source": "73daf6b5-bfd9-4625-b719-805660217777",
+      "target": "0b3b56fe-71f0-460e-83ae-1cf04dba010a",
+      "sourceHandle": "result",
+      "targetHandle": "value"
+    },
+    {
+      "id": "d89f17af-641e-4915-9a02-349a11d8beee",
+      "source": "854d45c7-301c-40b8-aa3e-0ee4645f3489",
+      "target": "73daf6b5-bfd9-4625-b719-805660217777",
+      "sourceHandle": "value",
+      "targetHandle": "b"
+    },
+    {
+      "id": "1a360ac4-d9fd-4129-ac15-cd47fc5b3dfa",
+      "source": "43a38425-e383-44a2-b305-a79779c18589",
+      "target": "35d25c9e-7f3a-484f-94b9-0f90d008c020",
+      "sourceHandle": "result",
+      "targetHandle": "b"
+    },
+    {
+      "id": "c602ec99-3292-43d4-a609-5c27ed10e539",
+      "source": "7933216f-38df-4042-994b-8c57027db3d5",
+      "target": "43a38425-e383-44a2-b305-a79779c18589",
+      "sourceHandle": "deltaSeconds",
+      "targetHandle": "b"
+    },
+    {
+      "id": "a0240d58-cc03-448a-8fc5-3169cb415ec1",
+      "source": "7933216f-38df-4042-994b-8c57027db3d5",
+      "target": "c647cb90-9645-4d04-9f36-ba692f947a12",
+      "sourceHandle": "flow",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "514f084f-85ca-43cf-83b0-40569b4a00fe",
+      "source": "35d25c9e-7f3a-484f-94b9-0f90d008c020",
+      "target": "c647cb90-9645-4d04-9f36-ba692f947a12",
+      "sourceHandle": "result",
+      "targetHandle": "value"
+    },
+    {
+      "id": "672606d4-0c8a-4c36-9737-fcff4dc4d41c",
+      "source": "9a2b84eb-c66f-45f0-91ba-7e69c4708952",
+      "target": "35d25c9e-7f3a-484f-94b9-0f90d008c020",
+      "sourceHandle": "value",
+      "targetHandle": "a"
+    }
+  ],
+  "user": {
+    "viewport": {
+      "x": -80.62843345750235,
+      "y": 34.07906106637273,
+      "zoom": 0.5171279877973534
+    }
+  }
+}

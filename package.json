@@ -1,0 +1,47 @@
+{
+  "name": "@kiberon-labs/behave-graph-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simple, extensible behavior graph engine",
+  "keywords": [
+    "behavior",
+    "graph",
+    "flow"
+  ],
+  "homepage": "http://github.com/kiberon-labs/behave-graph",
+  "bugs": {
+    "url": "https://github.com/kiberon-labs/behave-graph/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiberon-labs/behave-graph"
+  },
+  "license": "ISC",
+  "author": "Kiberon Labs <admin@kiberonlabs.com>",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "check": "turbo run check",
+    "build": "turbo build",
+    "clean": "turbo clean",
+    "dev": "turbo dev",
+    
+    "test": "turbo test",
+    "test:ci": "turbo run test --filter=\"[origin/$BASE_REF...HEAD]\"",
+    "lint": "turbo run lint",
+    "lint:ci": "turbo run lint --filter=\"[origin/$BASE_REF...HEAD]\"",
+    "format": "turbo run format",
+    "changeset": "changeset",
+    "release": "npm run build -- --filter=\"[HEAD^1...HEAD]\"  && npm run changeset publish -- --provenance",
+    "vers": "npm run changeset version",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.2",
+    "vitest": "^4.0.10"
+  },
+  "packageManager": "pnpm@10.14.0"
+}

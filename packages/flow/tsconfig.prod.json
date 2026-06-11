@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "composite": false,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "~/*": [
+        "./stories/*"
+      ],
+      "@kiberon-labs/behave-graph": [
+        "../core/dist/index.d.ts"
+      ]
+    },
+  },
+  "include": [
+    "./src",
+    "./src/**/*.json",
+  ],
+  "exclude": [],
+}

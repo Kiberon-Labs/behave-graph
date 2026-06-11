@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/compiler"
+    },
+    {
+      "path": "./packages/core"
+    },
+    {
+      "path": "./packages/flow"
+    },
+    {
+      "path": "./packages/nodes/image"
+    },
+    {
+      "path": "./packages/nodes/scene"
+    },
+    {
+      "path": "./packages/suspendable"
+    },
+    {
+      "path": "./packages/vscode-extension"
+    },
+    {
+      "path": "./packages/website"
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+{
+  "v": "1.0.0",
+  "name": "Untitled Graph",
+  "annotations": {},
+  "data": {},
+  "flow": {
+    "nodes": [
+      {
+        "id": "0",
+        "type": "lifecycle/onStart",
+        "flows": {
+          "flow": {
+            "nodeId": "5c88827a-7f08-41a1-8610-62f1f847f1f2",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "5c88827a-7f08-41a1-8610-62f1f847f1f2",
+        "type": "variable/set",
+        "configuration": {
+          "variableId": "test"
+        },
+        "parameters": {
+          "value": {
+            "value": "2"
+          }
+        },
+        "flows": {
+          "flow": {
+            "nodeId": "e95938b8-22e8-44ae-92aa-95cd6e67998c",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "e95938b8-22e8-44ae-92aa-95cd6e67998c",
+        "type": "debug/log",
+        "parameters": {
+          "text": {
+            "link": {
+              "nodeId": "525be50e-f3c5-4acf-b3de-bb2f25650f94",
+              "socket": "value"
+            }
+          }
+        }
+      },
+      {
+        "id": "525be50e-f3c5-4acf-b3de-bb2f25650f94",
+        "type": "variable/get",
+        "configuration": {
+          "variableId": "test"
+        }
+      }
+    ],
+    "variables": [
+      {
+        "id": "test",
+        "name": "test",
+        "valueTypeName": "string",
+        "initialValue": "1"
+      }
+    ],
+    "customEvents": []
+  },
+  "nodes": [
+    {
+      "id": "0",
+      "type": "behaveNode",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "data": {
+        "annotations": {},
+        "configuration": {},
+        "type": "lifecycle/onStart",
+        "ports": {}
+      },
+      "width": 120,
+      "height": 74
+    },
+    {
+      "id": "5c88827a-7f08-41a1-8610-62f1f847f1f2",
+      "type": "behaveNode",
+      "position": {
+        "x": 241.0187615366221,
+        "y": -3.911119760474037
+      },
+      "data": {
+        "configuration": {
+          "variableId": "test"
+        },
+        "type": "variable/set",
+        "ports": {
+          "value": "2"
+        },
+        "dynamicPorts": {
+          "inputs": [
+            {
+              "name": "value",
+              "key": "value",
+              "valueType": "string"
+            }
+          ]
+        },
+        "annotations": {
+          "ui.executing": false
+        }
+      },
+      "width": 218,
+      "height": 162,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 241.0187615366221,
+        "y": -3.911119760474037
+      },
+      "dragging": false
+    },
+    {
+      "id": "e95938b8-22e8-44ae-92aa-95cd6e67998c",
+      "type": "behaveNode",
+      "position": {
+        "x": 579.9295166853638,
+        "y": -3.004941270771468
+      },
+      "data": {
+        "configuration": {},
+        "type": "debug/log",
+        "ports": {},
+        "annotations": {
+          "ui.executing": false
+        }
+      },
+      "width": 120,
+      "height": 138,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 579.9295166853638,
+        "y": -3.004941270771468
+      },
+      "dragging": false
+    },
+    {
+      "id": "525be50e-f3c5-4acf-b3de-bb2f25650f94",
+      "type": "behaveNode",
+      "position": {
+        "x": 243.05969888360318,
+        "y": 205.51287897278377
+      },
+      "data": {
+        "configuration": {
+          "variableId": "test"
+        },
+        "type": "variable/get",
+        "ports": {},
+        "dynamicPorts": {
+          "outputs": [
+            {
+              "name": "value",
+              "key": "value",
+              "valueType": "string"
+            }
+          ]
+        },
+        "annotations": {
+          "ui.executing": false
+        }
+      },
+      "width": 218,
+      "height": 130,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 243.05969888360318,
+        "y": 205.51287897278377
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "5d72484f-f036-401f-b980-db34b04fb4bc",
+      "source": "5c88827a-7f08-41a1-8610-62f1f847f1f2",
+      "target": "e95938b8-22e8-44ae-92aa-95cd6e67998c",
+      "sourceHandle": "flow",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "062e04d8-3013-4cc3-a074-6023f7f00f07",
+      "source": "525be50e-f3c5-4acf-b3de-bb2f25650f94",
+      "target": "e95938b8-22e8-44ae-92aa-95cd6e67998c",
+      "sourceHandle": "value",
+      "targetHandle": "text"
+    },
+    {
+      "id": "01ca255a-b971-4490-81cb-3e705a4b4014",
+      "source": "0",
+      "target": "5c88827a-7f08-41a1-8610-62f1f847f1f2",
+      "sourceHandle": "flow",
+      "targetHandle": "flow"
+    }
+  ],
+  "user": {
+    "viewport": {
+      "x": -66.40958570729731,
+      "y": 238.88586204212606,
+      "zoom": 1.267629245287132
+    }
+  }
+}

@@ -1,0 +1,10 @@
+@import "./vscode.css";
+
+#storybook-root {
+    padding: 0 !important;
+    font-family: var(--vscode-editor-font-family) !important;
+}
+
+.h-dvh {
+    height: 100dvh !important;
+}

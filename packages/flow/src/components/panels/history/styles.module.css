@@ -1,0 +1,106 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    padding: 20px;
+    color: inherit;
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.72);
+    user-select: none;
+}
+
+.countBadge {
+    font-variant-numeric: tabular-nums;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: auto;
+    background: transparent;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 6px;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 76px 52px 1fr;
+    align-items: center;
+    column-gap: 12px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    cursor: default;
+}
+
+.row:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.undo {
+    border-left: 3px solid #f14c4c;
+}
+
+.redo {
+    border-left: 3px solid #73c991;
+}
+
+.badgeCell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 0;
+}
+
+.kindBadge {
+    flex: 0 0 auto;
+}
+
+.index {
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.72);
+    opacity: 0.9;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.empty {
+    padding: 10px;
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.72);
+    opacity: 0.9;
+}
+
+.now {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 6px 0;
+    user-select: none;
+}
+
+.nowLabel {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.72);
+    text-align: center;
+}

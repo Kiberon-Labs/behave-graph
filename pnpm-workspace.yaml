@@ -1,0 +1,4 @@
+packages:
+  - packages/*
+  - packages/nodes/*
+linkWorkspacePackages: true

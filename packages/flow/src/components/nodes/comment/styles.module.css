@@ -1,0 +1,150 @@
+.commentNode {
+    background: var(--colors-bgSurface);
+    color: white;
+    border-radius: 2px;
+    border: 1px solid var(--vscode-textBlockQuote-border);
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.editorContainer {
+    background: var(--vscode-editor-background);
+    padding: 10px;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.editorContent {
+    width: 100%;
+    height: 100%;
+    min-height: 100px;
+    cursor: text;
+    overflow: auto;
+}
+
+.editorContent :global(.ProseMirror) {
+    outline: none;
+    width: 100%;
+    height: 100%;
+    color: var(--vscode-editor-foreground);
+}
+
+.editorContent :global(.ProseMirror p) {
+    margin: 0.5em 0;
+}
+
+.editorContent :global(.ProseMirror h1) {
+    font-size: 2em;
+    font-weight: bold;
+    margin: 0.67em 0;
+}
+
+.editorContent :global(.ProseMirror h2) {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 0.75em 0;
+}
+
+.editorContent :global(.ProseMirror h3) {
+    font-size: 1.17em;
+    font-weight: bold;
+    margin: 0.83em 0;
+}
+
+.editorContent :global(.ProseMirror ul),
+.editorContent :global(.ProseMirror ol) {
+    padding-left: 1.5em;
+    margin: 0.5em 0;
+}
+
+.editorContent :global(.ProseMirror code) {
+    background: var(--vscode-textCodeBlock-background);
+    padding: 0.125em 0.25em;
+    border-radius: 3px;
+    font-family: var(--vscode-editor-font-family);
+}
+
+.editorContent :global(.ProseMirror pre) {
+    background: var(--vscode-textCodeBlock-background);
+    padding: 0.75em;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+
+.editorContent :global(.ProseMirror pre code) {
+    background: none;
+    padding: 0;
+}
+
+.editorContent :global(.ProseMirror blockquote) {
+    border-left: 3px solid var(--vscode-textBlockQuote-border);
+    padding-left: 1em;
+    margin: 0.5em 0;
+    font-style: italic;
+}
+
+.bubbleMenu {
+    position: absolute;
+    top: -45px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--vscode-editorWidget-background);
+    border: 1px solid var(--vscode-editorWidget-border);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    z-index: 1000;
+    animation: fadeIn 0.15s ease;
+    pointer-events: auto;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.menuBar {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.menuBar button {
+    background: transparent;
+    border: none;
+    color: var(--vscode-foreground);
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s;
+}
+
+.menuBar button:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.menuBar button.isActive {
+    background: var(--vscode-list-activeSelectionBackground);
+    color: var(--vscode-list-activeSelectionForeground);
+}
+
+.separator {
+    width: 1px;
+    height: 20px;
+    background: var(--vscode-editorWidget-border);
+    margin: 0 4px;
+}

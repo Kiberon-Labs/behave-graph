@@ -1,0 +1,182 @@
+{
+  "v": "1.0.0",
+  "name": "Untitled Graph",
+  "annotations": {},
+  "data": {},
+  "flow": {
+    "nodes": [
+      {
+        "id": "14fcb628-e9e6-4fa3-a60f-ad47f4fef4fa",
+        "type": "lifecycle/onStart",
+        "flows": {
+          "flow": {
+            "nodeId": "1121cf2a-ee7e-458a-ba61-2e4d5b94e919",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "379068dd-b4fd-441d-97b4-27feca83cbf9",
+        "type": "lifecycle/onEnd",
+        "flows": {
+          "flow": {
+            "nodeId": "74b65551-c882-4ab2-9132-ff2b7d7edd23",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "1121cf2a-ee7e-458a-ba61-2e4d5b94e919",
+        "type": "debug/log",
+        "parameters": {
+          "text": {
+            "value": "start"
+          }
+        }
+      },
+      {
+        "id": "74b65551-c882-4ab2-9132-ff2b7d7edd23",
+        "type": "debug/log",
+        "parameters": {
+          "text": {
+            "value": "end"
+          }
+        }
+      },
+      {
+        "id": "68c61c0c-432f-430e-a493-d9320a0787bf",
+        "type": "debug/expectTrue"
+      }
+    ],
+    "variables": [],
+    "customEvents": []
+  },
+  "nodes": [
+    {
+      "id": "14fcb628-e9e6-4fa3-a60f-ad47f4fef4fa",
+      "type": "behaveNode",
+      "position": {
+        "x": 199.30134768420947,
+        "y": 380.14352146439774
+      },
+      "data": {
+        "configuration": {},
+        "type": "lifecycle/onStart",
+        "ports": {}
+      },
+      "width": 120,
+      "height": 78,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 199.30134768420947,
+        "y": 380.14352146439774
+      },
+      "dragging": false
+    },
+    {
+      "id": "379068dd-b4fd-441d-97b4-27feca83cbf9",
+      "type": "behaveNode",
+      "position": {
+        "x": 203.25061202137863,
+        "y": 496.25189297716975
+      },
+      "data": {
+        "configuration": {},
+        "type": "lifecycle/onEnd",
+        "ports": {}
+      },
+      "width": 120,
+      "height": 78,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 203.25061202137863,
+        "y": 496.25189297716975
+      },
+      "dragging": false
+    },
+    {
+      "id": "1121cf2a-ee7e-458a-ba61-2e4d5b94e919",
+      "type": "behaveNode",
+      "position": {
+        "x": 418.880444830812,
+        "y": 390.41160874103747
+      },
+      "data": {
+        "configuration": {},
+        "type": "debug/log",
+        "ports": {
+          "text": "start"
+        }
+      },
+      "width": 120,
+      "height": 142,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 418.880444830812,
+        "y": 390.41160874103747
+      },
+      "dragging": false
+    },
+    {
+      "id": "74b65551-c882-4ab2-9132-ff2b7d7edd23",
+      "type": "behaveNode",
+      "position": {
+        "x": 422.03985630054734,
+        "y": 546.0126236255004
+      },
+      "data": {
+        "configuration": {},
+        "type": "debug/log",
+        "ports": {
+          "text": "end"
+        }
+      },
+      "width": 120,
+      "height": 142,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 422.03985630054734,
+        "y": 546.0126236255004
+      },
+      "dragging": false
+    },
+    {
+      "id": "68c61c0c-432f-430e-a493-d9320a0787bf",
+      "type": "behaveNode",
+      "position": {
+        "x": 258.0859320642872,
+        "y": 619.8141751792232
+      },
+      "data": {
+        "configuration": {},
+        "type": "debug/expectTrue",
+        "ports": {}
+      },
+      "width": 133,
+      "height": 142
+    }
+  ],
+  "edges": [
+    {
+      "id": "c947b5b3-3af4-4943-bd1a-758372d710db",
+      "source": "379068dd-b4fd-441d-97b4-27feca83cbf9",
+      "target": "74b65551-c882-4ab2-9132-ff2b7d7edd23",
+      "sourceHandle": "flow",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "b0872784-12e0-4074-a401-23ddfbdca9f7",
+      "source": "14fcb628-e9e6-4fa3-a60f-ad47f4fef4fa",
+      "target": "1121cf2a-ee7e-458a-ba61-2e4d5b94e919",
+      "sourceHandle": "flow",
+      "targetHandle": "flow"
+    }
+  ],
+  "user": {
+    "viewport": {
+      "x": -386.0599519389625,
+      "y": -755.3684102406655,
+      "zoom": 2.1192939167997866
+    }
+  }
+}

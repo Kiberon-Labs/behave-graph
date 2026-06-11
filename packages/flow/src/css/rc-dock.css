@@ -1,0 +1,112 @@
+.dock {
+    border: 1px solid var(--vscode-settings-sashBorder);
+}
+
+.dock-panel {
+    color: inherit;
+    border-color: transparent;
+    border: none;
+    background: var(--colors-bgCanvas);
+}
+
+.dock-top .dock-bar {
+    border-bottom-color: var(--color-neutral-stroke-subtle);
+    padding-left: 0px;
+}
+
+.dock-tab {
+    color: var(--colors-fg);
+    background: green;
+    border-bottom: none;
+    z-index: 10;
+}
+
+.dock-tab-btn[aria-selected="true"] {
+    background: var(--colors-bgSurface);
+}
+
+.dock-tab-close-btn {
+    position: static;
+
+    &:hover {
+        background: var(--colors-bgEmphasis);
+        border-radius: 4px;
+    }
+}
+
+
+.dock-tab {
+    margin-right: 0;
+    border-right: 1px solid var(--colors-borderSubtle);
+    border-bottom: 1px solid var(--colors-borderSubtle);
+}
+
+.dock-nav-operations-hidden {
+    display: none;
+}
+
+.dock-fbox {
+    overflow: hidden;
+}
+
+.dock-nav {
+    flex-grow: 1;
+}
+
+.dock-nav-wrap {
+    cursor: move;
+    border-bottom: 1px solid var(--colors-borderDefault);
+}
+
+.dock-panel.dock-style-main .dock-tab,
+.dock-tab {
+    background: var(--color-neutral-canvas-subtle-bg);
+}
+
+.dock-fbox>.dock-panel {
+    box-shadow: 0 0 0.25rem var(--color-neutral-canvas-subtle-fg-subtle);
+}
+
+.drag-initiator {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.dock-panel,
+.dock-top .dock-bar,
+.dock-tab {
+    background: var(--vscode-editorGroupHeader-tabsBackground);
+}
+
+.dock-panel.dock-style-main .dock-bar {
+    border-bottom-color: var(--color-neutral-stroke-subtle);
+}
+
+.drag-initiator {
+    transition: width 0.2s;
+}
+
+.dock-hbox>.dock-divider {
+    width: 0.5px;
+    opacity: 0.1;
+    margin-left: -1px;
+}
+
+.dock-vbox>.dock-divider {
+    height: 0.5px;
+    opacity: 0.1;
+    margin-top: -1px;
+}
+
+.dock-divider {
+    background: var(--colors-borderMuted);
+    flex: 0 0 1px;
+}
+
+
+.dock-divider:hover {
+    background: var(--vscode-button-background, #0078d4);
+    transform: scaleX(5);
+    opacity: 1;
+}

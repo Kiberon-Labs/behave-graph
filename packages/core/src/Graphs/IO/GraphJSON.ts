@@ -1,0 +1,81 @@
+import type { Metadata } from '../../types/metadata.js';
+import type { SocketListDefinition } from '../../types/socket.js';
+
+export type ValueJSON =
+  | string
+  | boolean
+  | number
+  | number[]
+  | Record<string, any>
+  | any[];
+
+export type LinkJSON = { nodeId: string; socket: string };
+
+export type NodeParameterValueJSON = { value: ValueJSON };
+export type NodeParameterLinkJSON = { link: LinkJSON };
+export type NodeParameterJSON = NodeParameterValueJSON | NodeParameterLinkJSON;
+
+export type NodeParametersJSON = {
+  [key: string]: NodeParameterJSON;
+};
+
+export type FlowsJSON = {
+  [key: string]: LinkJSON;
+};
+
+export type NodeConfigJSON = {
+  [key: string]: ValueJSON;
+};
+
+export type NodeConfigurationJSON = {
+  [key: string]: ValueJSON;
+};
+
+export type NodeJSON = {
+  label?: string;
+  type: string;
+  id: string;
+  configuration?: NodeConfigurationJSON;
+  parameters?: NodeParametersJSON;
+  flows?: FlowsJSON;
+  metadata?: Metadata;
+};
+
+export type VariableJSON = {
+  label?: string;
+  id: string;
+  name: string;
+  valueTypeName: string;
+  initialValue: ValueJSON;
+  metadata?: Metadata;
+};
+
+export type CustomEventParameterJSON = {
+  name: string;
+  valueTypeName: string;
+  defaultValue: ValueJSON;
+};
+
+export type CustomEventJSON = {
+  label?: string;
+  id: string;
+  name: string;
+  parameters?: CustomEventParameterJSON[];
+  metadata?: Metadata;
+};
+
+export type GraphSocketJSON = SocketListDefinition & {
+  description?: string;
+};
+
+export type GraphJSON = {
+  v?: number;
+  name?: string;
+  nodes?: NodeJSON[];
+  variables?: VariableJSON[];
+  graphInputs?: GraphSocketJSON[];
+  graphOutputs?: GraphSocketJSON[];
+  customEvents?: CustomEventJSON[];
+  data?: Record<string, any>;
+  metadata?: Metadata;
+};
