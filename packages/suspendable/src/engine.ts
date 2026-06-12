@@ -8,7 +8,6 @@ import {
   type FiberListenerInner,
   type GraphInstance,
   type INode,
-  type IRegistry
 } from '@kiberon-labs/behave-graph';
 import { SuspendableFiber } from './fiber';
 import { isSuspendable, type SerializedSuspension } from './types';
@@ -77,7 +76,7 @@ export class SuspendableEngine extends Engine {
     return {
       fiberQueue: serializedFiberQueue,
       nodes: serializedNodes,
-      variables: this.var
+      variables: this.
     };
   }
 

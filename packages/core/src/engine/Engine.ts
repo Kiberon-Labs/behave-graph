@@ -14,6 +14,7 @@ import {
 import { sleep } from '../utils/sleep.js';
 import { Fiber, type FiberListenerInner } from './Fiber.js';
 import { resolveSocketValue } from './resolveSocketValue.js';
+import type { IRegistry } from '~/index.js';
 
 type NodeError = {
   node: INode;
@@ -29,6 +30,7 @@ export class Engine {
   // tracking the next node+input socket to execute.
   public readonly id = generateUuid();
   protected readonly graph: GraphInstance;
+  protected readonly registry: IRegistry;
   protected fiberQueue: Fiber[] = [];
   public readonly asyncNodes: IAsyncNode[] = [];
   public readonly eventNodes: IEventNode[] = [];
@@ -40,7 +42,8 @@ export class Engine {
   private disposed = false;
   public executionSteps = 0;
 
-  constructor(graph: GraphInstance) {
+  constructor(graph: GraphInstance, registry: IRegistry) {
+    this.registry = registry;
     this.graph = graph;
     this.nodes = graph.nodes;
     // collect all event nodes
@@ -139,7 +142,7 @@ export class Engine {
       if (outputSocket.links.length > 1) {
         throw new Error(
           'invalid for an output flow socket to have multiple downstream links:' +
-            `${node.description.typeName}.${outputSocket.name} has ${outputSocket.links.length} downlinks`
+          `${node.description.typeName}.${outputSocket.name} has ${outputSocket.links.length} downlinks`
         );
       }
       if (outputSocket.links.length === 1) {
