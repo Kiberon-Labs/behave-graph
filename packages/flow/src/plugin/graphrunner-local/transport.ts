@@ -481,7 +481,7 @@ export class LocalTransport implements ITransport {
       }
 
       // Create engine - it will now have access to lifecycle event emitter through graph instance
-      const engine = new Engine(graphInstance);
+      const engine = new Engine(graphInstance, registryToUse);
 
       // Merge execution options: message options override session defaults
       const executionOptions = {

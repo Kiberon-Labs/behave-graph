@@ -29,19 +29,28 @@ export const Sequence = makeFlowNodeDefinition({
 
     return sockets;
   },
-  initialState: undefined,
-  triggered: ({ commit, outputSocketKeys }) => {
+  // The sequence cursor lives in node state (not a closure) so that suspension
+  // mechanisms can serialize it and resume from the next un-fired output.
+  initialState: { nextIndex: null as number | null },
+  triggered: ({ commit, outputSocketKeys, state }) => {
     // these outputs are fired sequentially in an sync fashion but without delays.
     // Thus a promise is returned and it continually returns a promise until each of the sequences has been executed.
-    const sequenceIteration = (i: number) => {
-      if (i < outputSocketKeys.length) {
+    if (state.nextIndex === null) {
+      state.nextIndex = 0;
+    }
+
+    const sequenceIteration = () => {
+      const i = state.nextIndex;
+      if (i !== null && i < outputSocketKeys.length) {
         const outputKey = outputSocketKeys[i];
-        // const outputSocket = this.outputs[i];
+        state.nextIndex = i + 1;
         commit(outputKey, () => {
-          sequenceIteration(i + 1);
+          sequenceIteration();
         });
+      } else {
+        state.nextIndex = null;
       }
     };
-    sequenceIteration(0);
+    sequenceIteration();
   }
 });

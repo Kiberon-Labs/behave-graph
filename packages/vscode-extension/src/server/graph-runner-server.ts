@@ -821,12 +821,13 @@ export class GraphRunnerServer {
       };
 
       // Parse and validate graph
+      const runRegistry = {
+        ...this.state.registry,
+        dependencies
+      };
       const graphInstance = readGraphFromJSON({
         graphJson,
-        registry: {
-          ...this.state.registry,
-          dependencies
-        }
+        registry: runRegistry
       });
 
       if (this.config.enableValidation) {
@@ -841,7 +842,7 @@ export class GraphRunnerServer {
       }
 
       // Create engine
-      const engine = new Engine(graphInstance);
+      const engine = new Engine(graphInstance, runRegistry);
 
       // Create run record
       const run: GraphRun = {

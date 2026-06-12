@@ -1,5 +1,6 @@
 {
   "name": "@kiberon-labs/behave-graph-compiler",
+  "private": true,
   "version": "1.0.1",
   "type": "module",
   "types": "./dist/index.d.ts",

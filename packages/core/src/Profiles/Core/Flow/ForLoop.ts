@@ -15,20 +15,31 @@ export const ForLoop = makeFlowNodeDefinition({
     index: 'integer',
     completed: 'flow'
   },
-  initialState: undefined,
-  triggered: ({ read, write, commit }) => {
-    const startIndex = read<bigint>('startIndex');
+  // The loop cursor lives in node state (not a closure) so that suspension
+  // mechanisms can serialize it and resume the loop mid-iteration. It is kept
+  // as a number to stay JSON-serializable.
+  initialState: { nextIndex: null as number | null },
+  triggered: ({ read, write, commit, state }) => {
     const endIndex = read<bigint>('endIndex');
-    const loopBodyIteration = (i: bigint) => {
-      if (i < endIndex) {
-        write('index', i);
+
+    // a fresh run starts at startIndex; a rehydrated run resumes mid-loop
+    if (state.nextIndex === null) {
+      state.nextIndex = Number(read<bigint>('startIndex'));
+    }
+
+    const loopBodyIteration = () => {
+      const i = state.nextIndex;
+      if (i !== null && BigInt(i) < endIndex) {
+        write('index', BigInt(i));
+        state.nextIndex = i + 1;
         commit('loopBody', () => {
-          loopBodyIteration(i + BigInt(1));
+          loopBodyIteration();
         });
       } else {
+        state.nextIndex = null;
         commit('completed');
       }
     };
-    loopBodyIteration(startIndex);
+    loopBodyIteration();
   }
 });

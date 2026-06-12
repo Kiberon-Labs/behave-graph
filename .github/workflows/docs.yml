@@ -37,7 +37,7 @@ jobs:
         run: pnpm install
 
       - name: Build docs
-        run: pnpm run build --filter @kiberon-labs/website
+        run: pnpm run build --filter @kiberon-labs/behave-graph-documentation
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

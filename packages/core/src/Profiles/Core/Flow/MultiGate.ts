@@ -57,20 +57,5 @@ export const MultiGate = makeFlowNodeDefinition({
         return;
       }
     }
-
-    // these outputs are fired sequentially in an sync fashion but without delays.
-    // Thus a promise is returned and it continually returns a promise until each of the sequences has been executed.
-    const sequenceIteration = (i: number) => {
-      if (i < outputSocketKeys.length) {
-        const outputSocket = outputSocketKeys[i]!;
-        commit(outputSocket, () => {
-          sequenceIteration(i + 1);
-        });
-      }
-    };
-    sequenceIteration(0);
-
-    state.isInitialized = isInitialized;
-    state.nextIndex = nextIndex;
   }
 });
