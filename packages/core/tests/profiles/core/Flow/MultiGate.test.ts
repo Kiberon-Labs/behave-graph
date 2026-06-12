@@ -36,7 +36,9 @@ describe('MultiGate', () => {
     trigger({ triggeringSocketName: 'flow', inputVals });
     trigger({ triggeringSocketName: 'flow', inputVals });
 
-    expect(trigger({ triggeringSocketName: 'flow', inputVals })).toHaveLength(0);
+    expect(trigger({ triggeringSocketName: 'flow', inputVals })).toHaveLength(
+      0
+    );
   });
 
   it('wraps back to the first output when loop is enabled', () => {

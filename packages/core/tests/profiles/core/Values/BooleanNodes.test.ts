@@ -14,7 +14,9 @@ describe('BooleanNodes', () => {
   it('And returns the logical conjunction', async () => {
     expect((await run(Boolean_.And, { a: true, b: true })).result).toBe(true);
     expect((await run(Boolean_.And, { a: true, b: false })).result).toBe(false);
-    expect((await run(Boolean_.And, { a: false, b: false })).result).toBe(false);
+    expect((await run(Boolean_.And, { a: false, b: false })).result).toBe(
+      false
+    );
   });
 
   it('Or returns the logical disjunction', async () => {

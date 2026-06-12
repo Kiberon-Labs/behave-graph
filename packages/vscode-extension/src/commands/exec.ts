@@ -58,7 +58,7 @@ export async function execGraph({ graphjson, programOptions }: ExecGraphOpts) {
   }
 
   Logger.verbose('creating behavior graph');
-  const engine = new Engine(graph);
+  const engine = new Engine(graph, registry);
 
   // do not log at all to the verbose if not verbose is not enabled, makes a big performance difference.
   if (programOptions.logLevel === LogLevel.Verbose) {

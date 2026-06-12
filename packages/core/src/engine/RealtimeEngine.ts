@@ -2,6 +2,7 @@ import { EventEmitter } from '../Events/EventEmitter.js';
 import type { GraphInstance } from '../Graphs/Graph.js';
 import type { INode } from '../Nodes/NodeInstance.js';
 import { isEventNode, isAsyncNode } from '../Nodes/NodeInstance.js';
+import type { IRegistry } from '../types/registry.js';
 import { Engine } from './Engine.js';
 import type { Fiber } from './Fiber.js';
 
@@ -22,8 +23,8 @@ export class RealtimeEngine extends Engine {
   private deletedNodeIds = new Set<string>();
   public readonly onNodeChanged = new EventEmitter<NodeChangeEvent>();
 
-  constructor(graph: GraphInstance) {
-    super(graph);
+  constructor(graph: GraphInstance, registry: IRegistry) {
+    super(graph, registry);
   }
 
   /**

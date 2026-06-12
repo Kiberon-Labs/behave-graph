@@ -7,7 +7,12 @@ const edge = (over: Partial<Edge>): Edge =>
 
 describe('isHandleConnected', () => {
   const edges: Edge[] = [
-    edge({ source: 'n1', sourceHandle: 'out', target: 'n2', targetHandle: 'in' })
+    edge({
+      source: 'n1',
+      sourceHandle: 'out',
+      target: 'n2',
+      targetHandle: 'in'
+    })
   ];
 
   it('detects a connected source handle', () => {

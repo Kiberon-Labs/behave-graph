@@ -28,7 +28,9 @@ describe('DoN', () => {
       fireWithCount(2)
     );
     // exhausted: 4th trigger does nothing
-    expect(trigger({ triggeringSocketName: 'flow', inputVals })).toHaveLength(0);
+    expect(trigger({ triggeringSocketName: 'flow', inputVals })).toHaveLength(
+      0
+    );
   });
 
   it('resets the count when reset is triggered', () => {
@@ -38,7 +40,9 @@ describe('DoN', () => {
     trigger({ triggeringSocketName: 'flow', inputVals });
     trigger({ triggeringSocketName: 'flow', inputVals });
     // exhausted
-    expect(trigger({ triggeringSocketName: 'flow', inputVals })).toHaveLength(0);
+    expect(trigger({ triggeringSocketName: 'flow', inputVals })).toHaveLength(
+      0
+    );
 
     expect(trigger({ triggeringSocketName: 'reset', inputVals })).toHaveLength(
       0

@@ -59,9 +59,9 @@ describe('FloatNodes', () => {
     expect((await run(Float.DegreesToRadians, { a: 180 })).result).toBeCloseTo(
       Math.PI
     );
-    expect((await run(Float.RadiansToDegrees, { a: Math.PI })).result).toBeCloseTo(
-      180
-    );
+    expect(
+      (await run(Float.RadiansToDegrees, { a: Math.PI })).result
+    ).toBeCloseTo(180);
   });
 
   it('Equal and EqualTolerance', async () => {
@@ -83,7 +83,9 @@ describe('FloatNodes', () => {
       true
     );
     expect((await run(Float.LessThan, { a: 1, b: 2 })).result).toBe(true);
-    expect((await run(Float.LessThanOrEqual, { a: 2, b: 2 })).result).toBe(true);
+    expect((await run(Float.LessThanOrEqual, { a: 2, b: 2 })).result).toBe(
+      true
+    );
   });
 
   it('IsNaN and IsInf classify special values', async () => {

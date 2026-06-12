@@ -22,7 +22,11 @@ describe('FlipFlop', () => {
     // then off
     const second = trigger({ triggeringSocketName: 'flow' });
     expect(second).toEqual<RecordedWritesType>([
-      { outputType: RecordedOutputType.write, socketName: 'isOn', value: false },
+      {
+        outputType: RecordedOutputType.write,
+        socketName: 'isOn',
+        value: false
+      },
       { outputType: RecordedOutputType.commit, socketName: 'off' }
     ]);
 

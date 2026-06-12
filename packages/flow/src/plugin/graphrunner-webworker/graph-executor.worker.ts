@@ -473,7 +473,7 @@ export function initializeGraphWorker(options: GraphWorkerOptions): void {
       }
 
       // Create engine
-      const engine = new Engine(graphInstance);
+      const engine = new Engine(graphInstance, registryWithDeps);
 
       // Create run record
       const run: ActiveRun = {

@@ -17,12 +17,12 @@ describe('StringNodes', () => {
   });
 
   it('Includes detects a substring', async () => {
-    expect((await run(Str.Includes, { a: 'hello world', b: 'world' })).result).toBe(
-      true
-    );
-    expect((await run(Str.Includes, { a: 'hello world', b: 'xyz' })).result).toBe(
-      false
-    );
+    expect(
+      (await run(Str.Includes, { a: 'hello world', b: 'world' })).result
+    ).toBe(true);
+    expect(
+      (await run(Str.Includes, { a: 'hello world', b: 'xyz' })).result
+    ).toBe(false);
   });
 
   it('Length returns the string length as a bigint', async () => {

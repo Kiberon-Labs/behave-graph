@@ -476,7 +476,7 @@ export class RealtimeRunner {
       this.engine.dispose();
     }
 
-    this.engine = new Engine(this.graphInstance);
+    this.engine = new Engine(this.graphInstance, this.executionRegistry);
 
     this.engine.onNodeExecutionError.addListener(({ error }) => {
       console.error(error);

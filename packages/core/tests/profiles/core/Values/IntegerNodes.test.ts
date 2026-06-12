@@ -78,10 +78,12 @@ describe('IntegerNodes', () => {
   });
 
   it('comparison operators behave correctly', async () => {
-    expect((await run(Integer.GreaterThan, { a: 4n, b: 3n })).result).toBe(true);
-    expect((await run(Integer.GreaterThanOrEqual, { a: 3n, b: 3n })).result).toBe(
+    expect((await run(Integer.GreaterThan, { a: 4n, b: 3n })).result).toBe(
       true
     );
+    expect(
+      (await run(Integer.GreaterThanOrEqual, { a: 3n, b: 3n })).result
+    ).toBe(true);
     expect((await run(Integer.LessThan, { a: 2n, b: 3n })).result).toBe(true);
     expect((await run(Integer.LessThanOrEqual, { a: 3n, b: 3n })).result).toBe(
       true

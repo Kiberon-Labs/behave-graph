@@ -138,8 +138,14 @@ const exampleLogTime = (h: number, m: number, s: number, ms: number) =>
 [
   { type: 'info' as const, message: 'Graph compiled successfully.' },
   { type: 'verbose' as const, message: 'lifecycle/onStart fired (node 0).' },
-  { type: 'info' as const, message: 'flow/branch evaluated condition = false.' },
-  { type: 'warning' as const, message: 'Variable "Example Variable" is unused.' },
+  {
+    type: 'info' as const,
+    message: 'flow/branch evaluated condition = false.'
+  },
+  {
+    type: 'warning' as const,
+    message: 'Variable "Example Variable" is unused.'
+  },
   {
     type: 'error' as const,
     message: 'debug/log: failed to resolve socket "value" on node 3.'

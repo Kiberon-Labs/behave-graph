@@ -36,10 +36,9 @@ export function isSuspendable(node: unknown): node is ISuspendable {
     return false;
   }
   const candidate = node as Record<string, unknown>;
-  return (
-    typeof candidate.suspend === 'function' &&
-    candidate.unsuspend === 'function'
-  );
+  // ISuspendable only requires suspend(); unsuspend() belongs to
+  // IAsyncSuspendable and is checked at the point of continuation.
+  return typeof candidate.suspend === 'function';
 }
 
 export type SerializedSuspension = {
@@ -52,6 +51,12 @@ export type SerializedSuspension = {
     string,
     Record<string, { nodeId: string; socketName: string }[]>
   >;
+  /**
+   * Serialized output socket values per node. Resumed flows may read an
+   * upstream node's output (e.g. a loop's `index`) before that node is
+   * re-triggered, so the values present at suspension time must be restored.
+   */
+  socketValues: Record<string, Record<string, any>>;
   variables: Record<
     string,
     {
