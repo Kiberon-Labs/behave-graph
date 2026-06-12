@@ -129,6 +129,29 @@ defaultSys.flowStore.getState().setGraph({
   ]
 });
 
+// Seed a few example log entries so the Logs panel renders representative
+// content in stories and visual tests. Timestamps use fixed local components so
+// they render deterministically regardless of timezone.
+const exampleLogTime = (h: number, m: number, s: number, ms: number) =>
+  new Date(2024, 0, 1, h, m, s, ms);
+
+[
+  { type: 'info' as const, message: 'Graph compiled successfully.' },
+  { type: 'verbose' as const, message: 'lifecycle/onStart fired (node 0).' },
+  { type: 'info' as const, message: 'flow/branch evaluated condition = false.' },
+  { type: 'warning' as const, message: 'Variable "Example Variable" is unused.' },
+  {
+    type: 'error' as const,
+    message: 'debug/log: failed to resolve socket "value" on node 3.'
+  }
+].forEach((entry, index) => {
+  defaultSys.logsStore.getState().append({
+    type: entry.type,
+    data: { message: entry.message },
+    time: exampleLogTime(13, 45, 30 + index, 120 + index * 37)
+  });
+});
+
 export const DefaultSystemProvider = ({
   children
 }: {

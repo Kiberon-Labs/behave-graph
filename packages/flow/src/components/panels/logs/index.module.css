@@ -1,55 +1,131 @@
+/* ---- Toolbar ---------------------------------------------------------- */
+
 .toolbar {
     display: flex;
     flex-direction: column;
-    gap: var(--component-spacing-xs);
+    gap: 8px;
+    padding-bottom: 8px;
     border-bottom: 1px solid var(--vscode-panel-border);
-    padding-bottom: var(--component-spacing-xs);
 }
 
 .searchBar {
     display: flex;
-    gap: var(--component-spacing-xs);
+    gap: 6px;
+    align-items: center;
+}
+
+.searchField {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.searchIcon {
+    flex: none;
+    opacity: 0.6;
 }
 
 .searchInput {
     flex: 1;
 }
 
+.toolbarActions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.actionActive {
+    color: var(--vscode-inputOption-activeForeground, #ffffff);
+    background-color: var(--vscode-inputOption-activeBackground, rgba(53, 116, 240, 0.25));
+    outline: 1px solid var(--vscode-inputOption-activeBorder, transparent);
+}
+
+/* ---- Level filter chips ---------------------------------------------- */
+
 .filters {
     display: flex;
-    gap: var(--component-spacing-sm);
+    gap: 6px;
     align-items: center;
     flex-wrap: wrap;
+    padding: 0 2px;
 }
 
-.filterLabel {
-    font-size: 0.8em;
-    opacity: 0.7;
+.levelChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 9px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background-color: color-mix(in srgb, var(--chip-color) 18%, transparent);
+    color: var(--chip-color);
+    font-size: 0.72rem;
+    line-height: 1.5;
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.1s, background-color 0.1s;
 }
 
-.levelLabel {
+.levelChip:hover {
+    background-color: color-mix(in srgb, var(--chip-color) 28%, transparent);
+}
+
+.levelChip:focus-visible {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: 1px;
+}
+
+.levelOff {
+    background-color: transparent;
+    color: var(--vscode-descriptionForeground, #9d9d9d);
+    opacity: 0.6;
+}
+
+.levelChipIcon {
+    display: inline-flex;
+    width: 12px;
+    height: 12px;
+}
+
+.levelChipIcon svg {
+    width: 12px;
+    height: 12px;
+}
+
+.levelChipLabel {
     text-transform: capitalize;
-    font-size: 0.85em;
 }
 
-.autoScrollCheckbox {
-    margin-left: auto;
+.levelChipCount {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.8;
+    font-size: 0.9em;
 }
 
-.autoScrollLabel {
-    font-size: 0.85em;
+.levelOff .levelChipCount {
+    opacity: 0.6;
 }
 
 .logCount {
-    font-size: 0.75em;
-    opacity: 0.5;
+    margin-left: auto;
+    padding-right: 2px;
+    font-size: 0.72rem;
+    line-height: 1;
+    align-self: center;
+    color: var(--vscode-descriptionForeground, #9d9d9d);
+    font-variant-numeric: tabular-nums;
 }
+
+/* ---- Log list --------------------------------------------------------- */
 
 .logsContainer {
     flex: 1;
+    min-height: 0;
     overflow: auto;
-    font-size: smaller;
-    padding: var(--component-spacing-xs);
+    /* full-bleed list: cancel the BasePanel padding so rows span edge-to-edge */
+    margin: 0 calc(-1 * var(--component-spacing-xs, 0.25rem));
 }
 
 .emptyState {
@@ -57,53 +133,80 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    opacity: 0.5;
-    font-size: 0.9em;
+    min-height: 64px;
+    color: var(--vscode-descriptionForeground, #9d9d9d);
+    font-size: 0.85rem;
 }
 
 .logsList {
     display: flex;
     flex-direction: column;
-    gap: var(--component-spacing-xs);
+    font-family: var(--vscode-editor-font-family, monospace);
+    font-size: var(--vscode-editor-font-size, 12px);
+    line-height: 18px;
 }
 
-.logItem {
-    border: 1px solid var(--vscode-panel-border);
-    padding: var(--component-spacing-sm);
-    border-radius: 2px;
-    background-color: var(--vscode-editor-background);
-    cursor: pointer;
-    transition: background-color 0.1s;
-}
-
-.logItem:hover {
-    background-color: var(--vscode-list-hoverBackground);
-}
-
-.logHeader {
+.row {
     display: flex;
-    gap: var(--component-spacing-xs);
-    align-items: center;
-    margin-bottom: 4px;
-}
-
-.logBadge {
-    color: var(--vscode-badge-foreground);
-    text-transform: uppercase;
-    font-size: 0.65em;
-    font-weight: bold;
-}
-
-.logTimestamp {
-    font-size: 0.75em;
-    opacity: 0.6;
-    font-family: var(--vscode-editor-font-family);
-}
-
-.logContent {
-    font-family: var(--vscode-editor-font-family);
-    font-size: 0.85em;
+    align-items: baseline;
+    gap: 8px;
+    padding: 1px 8px;
+    border-left: 2px solid transparent;
+    user-select: text;
     white-space: pre-wrap;
-    word-break: break-word;
-    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.row:hover {
+    background-color: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.06));
+}
+
+.row[data-severity='warning'] {
+    border-left-color: color-mix(in srgb, var(--vscode-editorWarning-foreground, #cca700) 60%, transparent);
+}
+
+.row[data-severity='error'] {
+    border-left-color: var(--vscode-editorError-foreground, #f48771);
+    background-color: color-mix(in srgb, var(--vscode-editorError-foreground, #f48771) 8%, transparent);
+}
+
+.rowIcon {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    width: 14px;
+    height: 14px;
+    align-self: center;
+}
+
+.rowIcon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.rowTime {
+    flex: none;
+    color: var(--vscode-descriptionForeground, #9d9d9d);
+    opacity: 0.85;
+    font-variant-numeric: tabular-nums;
+}
+
+.rowMessage {
+    flex: 1;
+    min-width: 0;
+    color: var(--vscode-foreground);
+}
+
+.row[data-severity='error'] .rowMessage {
+    color: var(--vscode-editorError-foreground, #f48771);
+}
+
+.row[data-severity='verbose'] .rowMessage {
+    color: var(--vscode-descriptionForeground, #9d9d9d);
+}
+
+.highlight {
+    background-color: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 92, 0, 0.33));
+    color: inherit;
+    border-radius: 2px;
 }

@@ -1,0 +1,5 @@
+# Keep committed baselines under __screenshots__/ but ignore the failure /
+# diff artifacts vitest writes next to them when a comparison fails.
+__screenshots__/**/*-diff.png
+__screenshots__/**/*-actual.png
+__screenshots__/**/*-1.png
