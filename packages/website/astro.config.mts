@@ -4,7 +4,14 @@ import starlightLinksValidator from 'starlight-links-validator';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
-  site: 'https://behave-graph.kiberon-labs.co.za',
+  // Deployed as a GitHub Pages project site under a subpath:
+  //   https://kiberon-labs.github.io/behave-graph/
+  // `base` makes Astro/Starlight prefix every asset, stylesheet, script,
+  // favicon and internal link with `/behave-graph/`, so nothing is requested
+  // from the domain root. Override both with an env var when serving from a
+  // custom domain at the root (e.g. set SITE + BASE=/ in that environment).
+  site: process.env.SITE_URL ?? 'https://kiberon-labs.github.io',
+  base: process.env.SITE_BASE ?? '/behave-graph',
   integrations: [
     starlight({
       title: 'Behave Graphs',
