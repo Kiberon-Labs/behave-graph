@@ -33,7 +33,10 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
-          registry-url: 'https://registry.npmjs.org'
+          # NOTE: deliberately no `registry-url` here. Setting it writes an
+          # .npmrc with an _authToken=${NODE_AUTH_TOKEN} placeholder, which
+          # makes npm take the (empty) token auth path and skip the OIDC
+          # trusted-publishing exchange, failing the publish with E404.
           cache: 'pnpm'
 
       - name: Install Dependencies
@@ -41,7 +44,7 @@ jobs:
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
-        uses: changesets/action@v1.9.0 # v1.5.3
+        uses: changesets/action@v1.9.0 
         with:
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: npm run release
