@@ -21,10 +21,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kiberon-labs/behave-graph",
+    "url": "https://github.com/Kiberon-Labs/behave-graph",
     "directory": "packages/scene"
   },
-  "bugs": "https://github.com/kiberon-labs/behave-graph/issues",
+  "bugs": "https://github.com/Kiberon-Labs/behave-graph/issues",
   "devDependencies": {
     "@types/node": "^24.10.1",
     "oxfmt": "^0.14.0",

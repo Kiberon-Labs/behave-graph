@@ -66,11 +66,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kiberon-labs/behave-graph",
+    "url": "https://github.com/Kiberon-Labs/behave-graph",
     "directory": "packages/flow"
   },
   "author": "kiberonlabsdev",
-  "bugs": "https://github.com/kiberon-labs/behave-graph/issues",
+  "bugs": "https://github.com/Kiberon-Labs/behave-graph/issues",
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.15",
     "@reactflow/node-resizer": "^2.2.14",

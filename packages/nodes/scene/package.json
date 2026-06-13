@@ -17,10 +17,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kiberon-labs/behave-graph",
+    "url": "https://github.com/Kiberon-Labs/behave-graph",
     "directory": "packages/nodes/scene"
   },
-  "bugs": "https://github.com/kiberon-labs/behave-graph/issues",
+  "bugs": "https://github.com/Kiberon-Labs/behave-graph/issues",
   "devDependencies": {
     "@kiberon-labs/behave-graph-flow": "workspace:*",
     "@storybook/addon-a11y": "^10.0.8",
