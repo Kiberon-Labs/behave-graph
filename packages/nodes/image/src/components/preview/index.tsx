@@ -138,6 +138,12 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
   const system = useSystem();
   const nodeId = node.id;
 
+  // Plugin setting (registered in ui.tsx). Defaults to on when unset.
+  const showPreview = useStore(
+    system.systemSettings,
+    (s) => s['image.showPreview'] !== false
+  );
+
   const edges = useStore(system.edgeStore, (s) => s.edges);
   const imageSocketConnected = React.useMemo(() => {
     if (!nodeId) return false;
@@ -162,10 +168,10 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
   const objectUrlRef = React.useRef<string | undefined>(undefined);
 
   React.useEffect(() => {
-    if (!nodeId) return;
+    if (!nodeId || !showPreview) return;
     const unwatch = system.realtimeRunner.watchNodeOutput(nodeId, 'image');
     return () => unwatch();
-  }, [nodeId, system.realtimeRunner]);
+  }, [nodeId, showPreview, system.realtimeRunner]);
 
   React.useEffect(() => {
     return () => {
@@ -197,6 +203,14 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
       setImageSrc(url);
       if (prev && prev !== url) URL.revokeObjectURL(prev);
     };
+
+    // Previews disabled: clear any current image and skip the decode work.
+    if (!showPreview) {
+      setDirectUrl(undefined);
+      return () => {
+        cancelled = true;
+      };
+    }
 
     if (typeof imageValue === 'string' && looksLikeUrl(imageValue)) {
       setDirectUrl(imageValue);
@@ -244,9 +258,9 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
     return () => {
       cancelled = true;
     };
-  }, [imageValue]);
+  }, [imageValue, showPreview]);
 
-  if (!imageSrc) return null;
+  if (!showPreview || !imageSrc) return null;
 
   return (
     <div className="px-2 pb-2">
@@ -271,6 +285,13 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
 
 export const imagePreviewSpecific: Specific = {
   name: 'imagePreview',
-  check: (spec) => spec.type.startsWith('image/'),
+  // Match any node that produces an `image` output , value-type coupling, not a
+  // node-type prefix , so image-producing nodes from other packages (e.g. the
+  // AI package's `ai/generateImage`) get the inline preview too. The renderer
+  // watches the `image` output, so require a socket of that exact name + type.
+  check: (spec) =>
+    spec.outputs?.some(
+      (socket) => socket.name === 'image' && socket.valueType === 'image'
+    ) ?? false,
   render: ImageNodePreview
 };

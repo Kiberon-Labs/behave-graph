@@ -1,7 +1,7 @@
 import { Assert } from '../Diagnostics/Assert.js';
 import type { GraphNodes } from '../Graphs/Graph.js';
 import { Link } from '../Nodes/Link.js';
-import { type INode, isAsyncNode, isFlowNode } from '../Nodes/NodeInstance.js';
+import { type INode, isFlowNode } from '../Nodes/NodeInstance.js';
 import type { Engine } from './Engine.js';
 import { resolveSocketValue } from './resolveSocketValue.js';
 
@@ -181,31 +181,26 @@ export class Fiber {
       // first resolve all input values
       // flow socket is set to true for the one flowing in, while all others are set to false.
       this.engine.onNodeExecutionStart.emit(node);
-      if (isAsyncNode(node)) {
-        this.engine.asyncNodes.push(node);
-        await node.triggered(this.engine, link.socketName, () => {
-          // remove from the list of pending async nodes
-          const index = this.engine.asyncNodes.indexOf(node);
-          this.engine.asyncNodes.splice(index, 1);
-          this.engine.onNodeExecutionEnd.emit(node);
-          this.executionSteps++;
-        });
-        return;
+
+      // Dispatch to the handler registered for this node's kind. The built-in
+      // Flow and Async kinds are seeded by the engine; custom kinds can be
+      // registered without modifying this method (open/closed).
+      const handler = this.engine.nodeExecutionHandlers.get(node.nodeType);
+      if (handler === undefined) {
+        throw new TypeError(
+          `no execution handler registered for node kind '${node.nodeType}' (${node.description.typeName})`
+        );
       }
-      if (isFlowNode(node)) {
-        await node.triggered(this, link.socketName);
-        this.engine.onNodeExecutionEnd.emit(node);
-        this.executionSteps++;
-        return;
-      }
+      await handler({
+        fiber: this,
+        engine: this.engine,
+        node,
+        socketName: link.socketName
+      });
     } catch (error: unknown) {
       this.engine.onNodeExecutionError.emit({ node, error });
       throw error;
     }
-
-    throw new TypeError(
-      `should not get here, unhandled node ${node.description.typeName}`
-    );
   }
 
   isCompleted() {

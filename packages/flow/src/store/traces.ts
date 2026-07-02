@@ -1,6 +1,6 @@
 import type { Engine, INode } from '@kiberon-labs/behave-graph';
 import { create } from 'zustand';
-import type { System } from '@/system';
+import type { GraphSession } from '@/system/graphSession';
 
 export type TraceSpan = {
   id: number;
@@ -74,11 +74,11 @@ export type TraceStore = {
   connectEngine: (engine?: Engine) => void;
   recordNodeStart: (node: INode, startTime?: number) => void;
   recordNodeEnd: (node: INode, endTime?: number) => void;
-  addSpan: (span: Omit<TraceSpan, 'id'>) => void;
+  addSpan: (span: Omit<TraceSpan, 'id' | 'lane'> & { lane?: number }) => void;
   updateSpan: (nodeId: string, updates: Partial<TraceSpan>) => void;
 };
 
-export const traceStoreFactory = (_: System) => {
+export const traceStoreFactory = (_: GraphSession) => {
   let connectedEngine: Engine | undefined;
   let onStart: ((node: INode) => void) | undefined;
   let onEnd: ((node: INode) => void) | undefined;

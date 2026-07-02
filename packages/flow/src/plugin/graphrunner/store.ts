@@ -55,13 +55,7 @@ export interface GraphRunnerClientStore {
   messageActivity: MessageActivity[];
   maxActivityMessages: number;
 
-  // Execution state
-  currentRunId: string | null;
-  currentGraphId: string | null;
-  isExecuting: boolean;
-  isPaused: boolean;
-
-  // Execution preferences
+  // Execution preferences (global defaults applied to every run)
   clearLogsOnRun: boolean;
   clearTracesOnRun: boolean;
   enableTracing: boolean;
@@ -83,10 +77,6 @@ export interface GraphRunnerClientStore {
     message: GraphRunnerMessage
   ) => void;
   clearMessageActivity: () => void;
-  setCurrentRunId: (runId: string | null) => void;
-  setCurrentGraphId: (graphId: string | null) => void;
-  setIsExecuting: (isExecuting: boolean) => void;
-  setIsPaused: (isPaused: boolean) => void;
   setClearLogsOnRun: (clear: boolean) => void;
   setClearTracesOnRun: (clear: boolean) => void;
   setEnableTracing: (enable: boolean) => void;
@@ -117,10 +107,6 @@ export const graphRunnerClientStoreFactory = (
     nodeTypes: [],
     messageActivity: [],
     maxActivityMessages: 50,
-    currentRunId: null,
-    currentGraphId: null,
-    isExecuting: false,
-    isPaused: false,
     clearLogsOnRun: true,
     clearTracesOnRun: true,
     enableTracing: true,
@@ -188,14 +174,6 @@ export const graphRunnerClientStoreFactory = (
       }),
 
     clearMessageActivity: () => set({ messageActivity: [] }),
-
-    setCurrentRunId: (currentRunId) => set({ currentRunId }),
-
-    setCurrentGraphId: (currentGraphId) => set({ currentGraphId }),
-
-    setIsExecuting: (isExecuting) => set({ isExecuting }),
-
-    setIsPaused: (isPaused) => set({ isPaused }),
 
     setClearLogsOnRun: (clearLogsOnRun) => set({ clearLogsOnRun }),
 

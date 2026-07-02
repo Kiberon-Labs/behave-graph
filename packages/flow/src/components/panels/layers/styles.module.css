@@ -18,7 +18,7 @@
 
 .subtitle {
     font-size: 0.85rem;
-    color: var(--vscode-descriptionForeground);
+    color: var(--ds-fg-muted);
 }
 
 .addRow {
@@ -28,9 +28,9 @@
 
 .nameInput {
     flex: 1;
-    background: var(--vscode-input-background);
-    color: var(--vscode-input-foreground);
-    border: 1px solid var(--vscode-input-border);
+    background: var(--ds-input-bg);
+    color: var(--ds-input-fg);
+    border: 1px solid var(--ds-input-border);
     border-radius: 4px;
     padding: 0.35rem 0.5rem;
 }
@@ -43,7 +43,7 @@
 }
 
 .row {
-    border: 1px solid var(--vscode-panel-border);
+    border: 1px solid var(--ds-panel-border);
     border-radius: 6px;
     padding: 0.6rem;
     display: flex;
@@ -60,21 +60,21 @@
 .layerName {
     flex: 1;
     background: transparent;
-    color: var(--vscode-editor-foreground);
+    color: var(--ds-editor-fg);
     border: 1px solid transparent;
     border-radius: 4px;
     padding: 0.2rem 0.3rem;
 }
 
 .layerName:focus {
-    border-color: var(--vscode-focusBorder);
+    border-color: var(--ds-focus-border);
     outline: none;
 }
 
 .badge {
     font-size: 0.7rem;
-    color: var(--vscode-badge-foreground);
-    background: var(--vscode-badge-background);
+    color: var(--ds-badge-fg);
+    background: var(--ds-badge-bg);
     border-radius: 99px;
     padding: 0.1rem 0.45rem;
 }
@@ -87,9 +87,6 @@
 }
 
 .checkboxLabel {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
     font-size: 0.85rem;
 }
 

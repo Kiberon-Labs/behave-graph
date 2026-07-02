@@ -1,30 +1,12 @@
 @import "@kiberon-labs/behave-graph-flow/entry.css";
 
-
-:root {
-    --colors-bgCanvas: var(--vscode-editor-background, #1f1f1f);
-    --colors-bgDefault: var(--vscode-editor-background, #181818);
-    --colors-bgEmphasis: var(--vscode-editor-background, #444444);
-    --colors-bgSubtle: #373737;
-    --colors-bgSurface: #292929;
-    --colors-borderDefault: #636363;
-    --colors-borderMuted: var(--vscode-foreground);
-    --colors-borderSubtle: #454545;
-    --colors-fgSubtle: #8a8a8a;
-    --colors-inputBg: var(--vscode-input-background);
-    --colors-inputBorderRest: var(--vscode-input-border);
-}
-
-body {
-    margin: 0;
-    padding: 0 !important;
-}
-
-#graph-editor {
-    height: 100vh;
-    background: var(--colors-bgCanvas)
-}
-
+/*
+ * Re-point the editor's intermediary `--ds-*` design tokens at VS Code's
+ * injected `--vscode-*` theme variables so the editor tracks the user's active
+ * theme (dark / light / high-contrast). Only this bridge layer needs mapping —
+ * every semantic token (`--colors-*`, `--color-neutral-*`, …) cascades from it.
+ */
+@import "./theme-bridge.css";
 
 html,
 body,
@@ -33,5 +15,50 @@ body,
 }
 
 html {
-    font-family: var(--vscode-editor-font-family);
+    /* UI chrome uses VS Code's UI font, not the (monospace) editor font. */
+    font-family: var(--vscode-font-family, "Segoe UI", system-ui, sans-serif);
+    font-size: var(--vscode-font-size, 13px);
+    color: var(--vscode-foreground, #cccccc);
+}
+
+body {
+    margin: 0;
+    padding: 0 !important;
+    background: var(--vscode-editor-background, #1f1f1f);
+}
+
+#graph-editor {
+    height: 100vh;
+    background: var(--colors-bgCanvas);
+}
+
+/* Native-feeling scrollbars (VS Code overlay slider style). */
+::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--vscode-scrollbarSlider-background, rgba(121, 121, 121, 0.4));
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--vscode-scrollbarSlider-hoverBackground, rgba(100, 100, 100, 0.7));
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: var(--vscode-scrollbarSlider-activeBackground, rgba(191, 191, 191, 0.4));
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Text selection matches the editor's selection color. */
+::selection {
+    background: var(--vscode-editor-selectionBackground, #264f78);
 }

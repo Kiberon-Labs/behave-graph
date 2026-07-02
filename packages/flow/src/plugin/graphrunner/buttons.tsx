@@ -1,29 +1,34 @@
 import { VscodeButton } from '@vscode-elements/react-elements';
-import { useStore } from 'zustand';
+import { useStore, type StoreApi } from 'zustand';
 import { Play, PauseWindow, Square, ArrowRight } from 'iconoir-react';
-import type { StoreApi } from 'zustand';
+import { useGraph } from '@/system/provider';
 import type { GraphRunnerClientStore } from './store';
+import type { GraphRunController } from './runController';
 
-interface GraphRunnerButtonsProps {
-  store: StoreApi<GraphRunnerClientStore>;
-  onPlay: () => void;
-  onPause: () => void;
-  onResume: () => void;
-  onStep: () => void;
-  onStop: () => void;
-}
+/**
+ * Execution controls for the graph in the surrounding tab. Connection state
+ * comes from the shared runner connection; run state comes from this graph's own
+ * run controller, so each open graph has independent controls.
+ */
+export const GraphRunnerButtons = () => {
+  const session = useGraph();
+  const controller = session.runController;
+  if (!controller) return null;
+  return (
+    <Buttons controller={controller} connectionStore={session.editor.runner.store} />
+  );
+};
 
-export const GraphRunnerButtons = ({
-  store,
-  onPlay,
-  onPause,
-  onResume,
-  onStep,
-  onStop
-}: GraphRunnerButtonsProps) => {
-  const connectionState = useStore(store, (state) => state.connectionState);
-  const isExecuting = useStore(store, (state) => state.isExecuting);
-  const isPaused = useStore(store, (state) => state.isPaused);
+const Buttons = ({
+  controller,
+  connectionStore
+}: {
+  controller: GraphRunController;
+  connectionStore: StoreApi<GraphRunnerClientStore>;
+}) => {
+  const connectionState = useStore(connectionStore, (s) => s.connectionState);
+  const isExecuting = useStore(controller.store, (s) => s.isExecuting);
+  const isPaused = useStore(controller.store, (s) => s.isPaused);
 
   const isConnected = connectionState === 'connected';
 
@@ -34,7 +39,7 @@ export const GraphRunnerButtons = ({
           secondary
           iconOnly
           title="Play Graph"
-          onClick={onPlay}
+          onClick={() => controller.play()}
           disabled={!isConnected}
         >
           <Play />
@@ -45,7 +50,7 @@ export const GraphRunnerButtons = ({
           secondary
           iconOnly
           title="Pause Graph"
-          onClick={onPause}
+          onClick={() => controller.pause()}
           disabled={!isConnected}
         >
           <PauseWindow />
@@ -57,7 +62,7 @@ export const GraphRunnerButtons = ({
             secondary
             iconOnly
             title="Resume Graph"
-            onClick={onResume}
+            onClick={() => controller.resume()}
             disabled={!isConnected}
           >
             <Play />
@@ -66,7 +71,7 @@ export const GraphRunnerButtons = ({
             secondary
             iconOnly
             title="Step Forward"
-            onClick={onStep}
+            onClick={() => controller.step()}
             disabled={!isConnected}
           >
             <ArrowRight />
@@ -77,7 +82,7 @@ export const GraphRunnerButtons = ({
         secondary
         iconOnly
         title="Stop Graph"
-        onClick={onStop}
+        onClick={() => controller.stop()}
         disabled={!isExecuting}
       >
         <Square />

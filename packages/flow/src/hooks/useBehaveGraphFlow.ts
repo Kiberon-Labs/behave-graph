@@ -4,7 +4,7 @@ import { behaveToFlow } from '../transformers/behaveToFlow.js';
 import { flowToBehave } from '../transformers/flowToBehave.js';
 import { autoLayout } from '../util/autoLayout.js';
 import { hasPositionMetaData } from '../util/hasPositionMetaData.js';
-import { useSystem } from '@/system/provider.js';
+import { useGraph } from '@/system/provider.js';
 import { useStore } from 'zustand';
 
 /**
@@ -22,7 +22,7 @@ export const useBehaveGraphFlow = ({
   specJson: NodeSpecJSON[] | undefined;
 }) => {
   const [graphJson, setStoredGraphJson] = useState<GraphJSON | undefined>();
-  const sys = useSystem();
+  const sys = useGraph();
 
   const {
     nodes,

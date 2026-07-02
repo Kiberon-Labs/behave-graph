@@ -1,8 +1,6 @@
-import type { IMagickImage } from '@imagemagick/magick-wasm';
-import { ImageMagick } from '@imagemagick/magick-wasm';
 import { makePureInOutFunctionDesc } from '@kiberon-labs/behave-graph';
 import { ImageValue } from '../values';
-import { cloneImage } from '@/utils.js';
+import { transformImage } from '@/utils.js';
 
 export const Blur = makePureInOutFunctionDesc({
   typeName: 'image/blur',
@@ -31,13 +29,9 @@ export const Blur = makePureInOutFunctionDesc({
     const image = read<Uint8Array>('image');
     const radius = read<number>('radius');
     const sigma = read<number>('sigma');
-    const magickImage = await ImageMagick.read(
-      cloneImage(image),
-      async (image: IMagickImage) => {
-        image.blur(radius, sigma);
-        return await image.write((data) => data);
-      }
+    write(
+      'image',
+      await transformImage(image, (img) => img.blur(radius, sigma))
     );
-    write('image', magickImage);
   }
 });

@@ -40,7 +40,8 @@ export const Compose = makePureInOutFunctionDesc({
       async (image: IMagickImage) => {
         return await ImageMagick.read(bb, async (bbb: IMagickImage) => {
           image.composite(bbb, CompositeOperator[compositeOperator]);
-          return await image.write((data) => data);
+          // Copy out of the WASM-heap view before `read` disposes the image.
+          return await image.write((data) => cloneImage(data));
         });
       }
     );

@@ -8,9 +8,10 @@ import {
 } from '@vscode-elements/react-elements';
 import { Plus, TrashSolid } from 'iconoir-react';
 import styles from './styles.module.css';
-import { useSystem } from '@/system';
+import { useActiveGraph } from '@/system';
 import { useStore } from 'zustand';
 import { Icon } from '@/components/primitives/icon';
+import { PanelHeader } from '../common/PanelHeader';
 
 type ValueControlProps = {
   value: any;
@@ -43,8 +44,8 @@ export function ManageVariablesScreen({
   SelectedVarControlComponent,
   onUpdateVariable
 }: Props) {
-  const system = useSystem();
-  const icons = useStore(system.legendStore, (x) => x.icons);
+  const system = useActiveGraph()!;
+  const icons = useStore(system.editor.legendStore, (x) => x.icons);
   const variables = useStore(system.variableStore, (x) => x.variables);
 
   const handleTreeSelect = (ev: unknown) => {
@@ -62,12 +63,14 @@ export function ManageVariablesScreen({
 
   return (
     <div className={styles.root}>
-      <div className={styles.header}>
-        <div className={styles.headerTitle}>Variables</div>
-        <Icon title="New variable" onClick={onNewVariable}>
-          <Plus />
-        </Icon>
-      </div>
+      <PanelHeader
+        title="Variables"
+        actions={
+          <Icon title="New variable" onClick={onNewVariable}>
+            <Plus />
+          </Icon>
+        }
+      />
       <VscodeDivider />
 
       <div className={styles.variableList}>

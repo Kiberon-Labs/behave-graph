@@ -32,23 +32,38 @@ async function loadMagickWasmBytesNode(): Promise<ArrayBuffer> {
   ]);
 
   const require = createRequire(import.meta.url);
-  const pkgJsonPath = require.resolve('@imagemagick/magick-wasm/package.json');
-  const pkgDir = path.dirname(pkgJsonPath);
 
-  const candidates = [
-    'magick.wasm',
-    'dist/magick.wasm',
-    'build/magick.wasm',
-    'lib/magick.wasm',
-    'magick_bg.wasm',
-    'dist/magick_bg.wasm',
-    'build/magick_bg.wasm',
-    'lib/magick_bg.wasm'
-  ];
+  // Build a list of absolute candidate paths. Prefer the package's own
+  // exported `./magick.wasm` subpath (the only reliable entry, since modern
+  // `exports` maps block `./package.json`), then fall back to locating the
+  // wasm next to the resolved main entry.
+  const candidates: string[] = [];
+
+  try {
+    candidates.push(require.resolve('@imagemagick/magick-wasm/magick.wasm'));
+  } catch {
+    // Subpath not exported in this version; fall through to entry-relative.
+  }
+
+  try {
+    const entry = require.resolve('@imagemagick/magick-wasm');
+    const entryDir = path.dirname(entry);
+    for (const rel of [
+      'magick.wasm',
+      'dist/magick.wasm',
+      'build/magick.wasm',
+      'lib/magick.wasm',
+      'magick_bg.wasm',
+      'dist/magick_bg.wasm'
+    ]) {
+      candidates.push(path.join(entryDir, rel));
+    }
+  } catch {
+    // Entry not resolvable; the candidate list may still hold the subpath.
+  }
 
   let lastError: unknown;
-  for (const relPath of candidates) {
-    const absPath = path.join(pkgDir, relPath);
+  for (const absPath of candidates) {
     try {
       const buf = await fs.readFile(absPath);
       return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
@@ -58,9 +73,9 @@ async function loadMagickWasmBytesNode(): Promise<ArrayBuffer> {
   }
 
   throw new Error(
-    `Unable to locate ImageMagick WASM in @imagemagick/magick-wasm. Tried: ${candidates.join(
-      ', '
-    )}. Last error: ${String(lastError)}`
+    `Unable to locate ImageMagick WASM in @imagemagick/magick-wasm. Tried: ${
+      candidates.join(', ') || '(no candidates resolved)'
+    }. Last error: ${String(lastError)}`
   );
 }
 

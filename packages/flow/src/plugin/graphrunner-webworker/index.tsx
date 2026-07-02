@@ -12,7 +12,6 @@ import { webWorkerGraphRunnerStoreFactory } from './store.js';
 import { WebWorkerGraphRunnerPanel } from './panel.js';
 import { MenuItemElement } from '../../components/menubar/menuItem.js';
 import { ErrorBoundary } from 'react-error-boundary';
-import { setupClientEventListeners } from '../graphrunner/actions.js';
 
 export * from './worker-transport.js';
 export * from './store.js';
@@ -76,19 +75,14 @@ export async function webWorkerGraphRunnerPluginLoader(
     }
   });
 
-  // Register the graph runner client plugin
-  // This will create the graphRunnerClientStore and decorate it on the system
+  // Register the graph runner client plugin. With skipAutoConnect:false the
+  // plugin calls runner.connect(), which wires the persistent client event
+  // listeners (trace/logs/lifecycle) on this same client , so we must NOT wire
+  // them again here, or every trace span would be recorded twice.
   await system.registerPlugin(graphRunnerClientPlugin, {
     client,
     skipAutoConnect: false
   });
-
-  // Setup persistent event listeners for trace, logs, and run completion
-  // Access the store from the system after it's been registered by the plugin
-  const graphRunnerStore = system.runner.store;
-  if (graphRunnerStore) {
-    setupClientEventListeners(client, system, graphRunnerStore);
-  }
 
   // Register the web worker graph runner panel
   system.tabLoader.register('webWorkerGraphRunner', () => {

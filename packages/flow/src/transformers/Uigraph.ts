@@ -1,4 +1,4 @@
-import type { System } from '@/system/system';
+import type { GraphSession } from '@/system/graphSession';
 import { annotatedTitle, uiVersion } from '@/annotations';
 import type { UIGraphJSON } from '@/types/graph';
 
@@ -18,7 +18,7 @@ function getStringAnnotation(
 /**
  * Assembles the full UI graph definition for saving.
  */
-export function buildUIGraphJSON(system: System): UIGraphJSON {
+export function buildUIGraphJSON(system: GraphSession): UIGraphJSON {
   system.flowStore.getState().invalidateCache();
 
   const flow = system.flowStore.getState().getGraph();
@@ -34,8 +34,9 @@ export function buildUIGraphJSON(system: System): UIGraphJSON {
   const graphVersion =
     getStringAnnotation(annotations, uiVersion) ?? DEFAULT_UI_GRAPH_VERSION;
   const graphName =
-    getStringAnnotation(annotations, annotatedTitle) ??
-    flow.name ??
+    system.metaStore.getState().name ||
+    getStringAnnotation(annotations, annotatedTitle) ||
+    flow.name ||
     DEFAULT_UI_GRAPH_NAME;
 
   const viewports = system.graph.viewports.length

@@ -28,9 +28,16 @@ export * from './Values/Variables/Variable.js';
 export * from './engine/Engine.js';
 export * from './engine/RealtimeEngine.js';
 export * from './engine/Fiber.js';
+export * from './engine/NodeExecutionHandler.js';
+export * from './engine/ExecutionContext.js';
+export * from './engine/runSubgraph.js';
+export * from './Profiles/Core/Subgraphs/abstractions.js';
 export * from './Graphs/IO/readGraphFromJSON.js';
 export * from './Graphs/IO/writeGraphToJSON.js';
 export * from './Graphs/IO/writeNodeSpecsToJSON.js';
+
+// manifest
+export * from './Manifest/index.js';
 
 // registry
 export * from './Nodes/Registry/NodeCategory.js';

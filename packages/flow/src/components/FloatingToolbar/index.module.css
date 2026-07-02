@@ -7,10 +7,10 @@
   display: flex;
   gap: 0.5rem;
   padding: 0.25rem;
-  background: var(--colors-bgSurface);
-  border: 1px solid var(--colors-borderSubtle);
+  background: var(--ds-widget-bg, #292929);
+  border: 1px solid var(--ds-border-subtle, #454545);
   border-radius: 0.375rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.36);
 }
 
 .buttonGroup {
@@ -28,9 +28,9 @@
   display: flex;
   align-items: center;
   padding: 0 0.5rem;
-  font-size: 0.85rem;
+  font-size: var(--fs-label, 0.8rem);
   font-weight: 500;
-  color: var(--colors-fg);
+  color: var(--ds-fg);
   user-select: none;
   min-width: 3rem;
   justify-content: center;

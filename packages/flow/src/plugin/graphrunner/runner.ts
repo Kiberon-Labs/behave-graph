@@ -2,8 +2,8 @@ import type { System } from '../../system/system';
 import type { StoreApi } from 'zustand';
 import type { GraphRunnerClientStore } from './store';
 import { GraphRunnerClient } from './client';
-import { buildUIGraphJSON } from '../../transformers/Uigraph';
 import { setupClientEventListeners } from './actions';
+import type { GraphRunController } from './runController';
 
 declare module '@/system/system' {
   interface System {
@@ -11,13 +11,30 @@ declare module '@/system/system' {
   }
 }
 
+/**
+ * Shared connection to the graph runner server. Owns the client, connection
+ * lifecycle and server metadata; per-graph run state and run lifecycle live on
+ * {@link GraphRunController}. Incoming server messages are dispatched back to the
+ * owning controller via {@link GraphRunner.runIndex}, keyed by run id, so
+ * multiple graphs can run concurrently and independently.
+ */
 export class GraphRunner {
   private system: System;
   public readonly store: StoreApi<GraphRunnerClientStore>;
+  /** runId -> the controller that started it. */
+  public readonly runIndex = new Map<string, GraphRunController>();
 
   constructor(system: System, store: StoreApi<GraphRunnerClientStore>) {
     this.system = system;
     this.store = store;
+  }
+
+  registerRun(runId: string, controller: GraphRunController): void {
+    this.runIndex.set(runId, controller);
+  }
+
+  unregisterRun(runId: string): void {
+    this.runIndex.delete(runId);
   }
 
   /**
@@ -54,8 +71,9 @@ export class GraphRunner {
 
       await theClient.connect();
 
-      // Setup persistent event listeners for trace, logs, and run completion
-      setupClientEventListeners(theClient, this.system, this.store);
+      // Setup persistent event listeners for trace, logs, and run completion.
+      // Messages are routed to the originating session by run id.
+      setupClientEventListeners(theClient, this);
 
       setConnectionState('connected');
       setConnectionInfo({
@@ -167,192 +185,4 @@ export class GraphRunner {
     }
   }
 
-  /**
-   * Run a graph remotely
-   */
-  async runRemotely(
-    graphId: string,
-    options?: { graph?: unknown; inputs?: unknown }
-  ): Promise<void> {
-    const {
-      client,
-      setCurrentRunId,
-      setCurrentGraphId,
-      setIsExecuting,
-      setIsPaused,
-      isExecuting,
-      enableTracing
-    } = this.store.getState();
-
-    if (!client) {
-      this.system.notifications.error('No graph runner connection');
-      throw new Error('No graph runner connection');
-    }
-    //already running
-    if (isExecuting) {
-      return;
-    }
-
-    try {
-      const runId = await client.runGraph(graphId, {
-        ...options,
-        trace: enableTracing
-      });
-
-      setCurrentRunId(runId);
-      setCurrentGraphId(graphId);
-      setIsExecuting(true);
-      setIsPaused(false);
-
-      this.system.notifications.info(`Graph execution started: ${graphId}`);
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      setIsPaused(false);
-      this.system.notifications.error(`Failed to run graph: ${errorMessage}`);
-      setIsExecuting(false);
-      setCurrentRunId(null);
-      setCurrentGraphId(null);
-      throw error;
-    }
-  }
-
-  /**
-   * Stop the current graph execution
-   */
-  async stop(): Promise<void> {
-    const {
-      client,
-      currentRunId,
-      setIsExecuting,
-      setCurrentRunId,
-      setCurrentGraphId,
-      setIsPaused
-    } = this.store.getState();
-
-    if (!client || !currentRunId) {
-      return;
-    }
-
-    try {
-      await client.stopGraph(currentRunId);
-      this.system.notifications.info('Stopping graph execution');
-      setIsExecuting(false);
-      setCurrentRunId(null);
-      setCurrentGraphId(null);
-      setIsPaused(false);
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      this.system.notifications.error(`Failed to stop graph: ${errorMessage}`);
-    }
-  }
-
-  /**
-   * Play the current graph
-   */
-  async play(): Promise<void> {
-    const { clearLogsOnRun, clearTracesOnRun } = this.store.getState();
-
-    // Clear logs if enabled
-    if (clearLogsOnRun) {
-      this.system.logsStore.getState().clear();
-    }
-
-    // Clear traces if enabled
-    if (clearTracesOnRun) {
-      this.system.traceStore.getState().clear();
-    }
-
-    const graphId = 'current';
-    const uiGraphData = buildUIGraphJSON(this.system);
-    const graphData = uiGraphData.flow;
-
-    try {
-      await this.runRemotely(graphId, { graph: graphData });
-    } catch {
-      // Error already handled in runRemotely
-    }
-  }
-
-  /**
-   * Pause the current graph execution
-   */
-  async pause(): Promise<void> {
-    const { client, currentRunId, setIsPaused } = this.store.getState();
-
-    if (!client || !currentRunId) {
-      return;
-    }
-
-    try {
-      // Check if the client's transport is LocalTransport with pause support
-      const transport = (client as any).transport;
-      if (transport && typeof transport.pauseExecution === 'function') {
-        transport.pauseExecution(currentRunId);
-        setIsPaused(true);
-        this.system.notifications.info('Execution paused');
-      } else {
-        // Fallback to stop for remote transports
-        await this.stop();
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      this.system.notifications.error(`Failed to pause graph: ${errorMessage}`);
-    }
-  }
-
-  /**
-   * Resume paused execution
-   */
-  async resume(): Promise<void> {
-    const { client, currentRunId, setIsPaused } = this.store.getState();
-
-    if (!client || !currentRunId) {
-      return;
-    }
-
-    try {
-      const transport = (client as any).transport;
-      if (transport && typeof transport.resumeExecution === 'function') {
-        setIsPaused(false);
-        this.system.notifications.info('Resuming execution');
-        await transport.resumeExecution(currentRunId);
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      this.system.notifications.error(
-        `Failed to resume graph: ${errorMessage}`
-      );
-    }
-  }
-
-  /**
-   * Execute one step forward
-   */
-  async step(): Promise<void> {
-    const { client, currentRunId, setIsPaused } = this.store.getState();
-
-    if (!client || !currentRunId) {
-      return;
-    }
-
-    try {
-      const transport = (client as any).transport;
-      if (transport && typeof transport.stepExecution === 'function') {
-        setIsPaused(true); // Ensure we stay paused after stepping
-        await transport.stepExecution(currentRunId);
-      } else {
-        this.system.notifications.info(
-          'Step execution not supported for this transport'
-        );
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      this.system.notifications.error(`Failed to step graph: ${errorMessage}`);
-    }
-  }
 }

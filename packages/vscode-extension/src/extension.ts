@@ -2,7 +2,9 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { GraphProvider } from './graphProvider.js';
-import { execGraph } from './commands/exec.js';
+import { executeGraphFile } from './commands/exec.js';
+import { ExecutableGraphTracker } from './executableGraphs.js';
+import { globalSettingsPath, localSettingsPath } from './settings.js';
 import {
   BehaveGraphMcpServer,
   EditorBridge,
@@ -10,8 +12,17 @@ import {
   BehaveGraphMcpDefinitionProvider
 } from './mcp/index.js';
 
-/** Shared editor bridge — singleton for the extension lifetime. */
+/** Shared editor bridge , singleton for the extension lifetime. */
 let editorBridge: EditorBridge | undefined;
+
+/** Tracks which graphs are subgraph-style (drives Execute Graph greying). */
+let executableGraphTracker: ExecutableGraphTracker | undefined;
+
+/** The executable-graph tracker, so the editor can eagerly re-evaluate the
+ *  graph it is opening (un-greying Execute Graph without the full scan). */
+export function getExecutableGraphTracker(): ExecutableGraphTracker | undefined {
+  return executableGraphTracker;
+}
 
 /** MCP server instance (tool definitions, transport-agnostic). */
 let mcpServer: BehaveGraphMcpServer | undefined;
@@ -83,7 +94,7 @@ async function startMcp(
       console.error('[MCP] Failed to start HTTP transport:', err);
       vscode.window.showWarningMessage(
         `Behave Graph MCP HTTP server failed to start on port ${settings.httpPort}. ` +
-          `Is the port already in use?`
+        `Is the port already in use?`
       );
       httpTransport = undefined;
     }
@@ -123,6 +134,31 @@ async function stopMcp(): Promise<void> {
 }
 
 // -----------------------------------------------------------
+// Editor settings file commands
+// -----------------------------------------------------------
+
+const DEFAULT_SETTINGS_CONTENT = `${JSON.stringify(
+  { settings: {}, conversions: [] },
+  null,
+  2
+)}\n`;
+
+/** Open a settings file, creating it with an empty template if it doesn't exist. */
+async function openSettingsFile(filePath: string): Promise<void> {
+  const uri = vscode.Uri.file(filePath);
+  try {
+    await vscode.workspace.fs.stat(uri);
+  } catch {
+    await vscode.workspace.fs.writeFile(
+      uri,
+      new TextEncoder().encode(DEFAULT_SETTINGS_CONTENT)
+    );
+  }
+  const doc = await vscode.workspace.openTextDocument(uri);
+  await vscode.window.showTextDocument(doc);
+}
+
+// -----------------------------------------------------------
 // Extension activation / deactivation
 // -----------------------------------------------------------
 
@@ -136,35 +172,53 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(GraphProvider.register(context));
 
+  // Track which graphs are subgraph-style so the Execute Graph menu item can be
+  // greyed out for graphs without an input/output contract.
+  executableGraphTracker = new ExecutableGraphTracker(context);
+
+  // Warm up esbuild (used to transpile registry.ts / plugin.ts on demand) so the
+  // first graph that needs it doesn't pay the service cold-start latency.
+  void import('esbuild')
+    .then((es) => es.transform('', { loader: 'ts' }))
+    .catch(() => {});
+
   /**
-   * Performs a single execution of the graph
+   * Execute a subgraph-style graph: prompt for inputs, run it, and write the
+   * outputs to a <DATE>-<RUNID>.json next to the graph file.
    */
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'kiberon-labs-behave-graph.executeGraph',
-      async function (uri) {
-        const data = await vscode.workspace.fs.readFile(uri);
-        const text = new TextDecoder().decode(data);
+      async (uri: vscode.Uri) => {
+        if (!uri) return;
+        await executeGraphFile(uri);
+      }
+    )
+  );
 
-        const result = await execGraph({
-          graphjson: text,
-          programOptions: {
-            limitSeconds: 10
-          }
-        });
-
-        //Create a new tab and display the result
-        const document = await vscode.workspace.openTextDocument({
-          content: JSON.stringify(result, null, 2),
-          language: 'json'
-        });
-        await vscode.window.showTextDocument(document);
+  // Commands to open the editor settings files (rc-style local + global).
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'kiberon-labs-behave-graph.openGlobalSettings',
+      () => openSettingsFile(globalSettingsPath())
+    ),
+    vscode.commands.registerCommand(
+      'kiberon-labs-behave-graph.openLocalSettings',
+      async () => {
+        const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!folder) {
+          vscode.window.showErrorMessage(
+            'Open a workspace folder to edit local editor settings.'
+          );
+          return;
+        }
+        await openSettingsFile(localSettingsPath(folder));
       }
     )
   );
 
   // -------------------------------------------------------
-  // MCP Server — start transports based on settings
+  // MCP Server , start transports based on settings
   // -------------------------------------------------------
   const bridge = getEditorBridge();
   const settings = getMcpSettings();
@@ -200,7 +254,7 @@ export function activate(context: vscode.ExtensionContext) {
           : 'VS Code provider: off';
         vscode.window.showInformationMessage(
           `MCP Server | ${httpStatus} | ${providerStatus} | ` +
-            `Editors: ${editorCount} | Active: ${activeUri ?? 'none'}`
+          `Editors: ${editorCount} | Active: ${activeUri ?? 'none'}`
         );
       }
     )

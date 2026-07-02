@@ -5,7 +5,7 @@ import {
   VscodeSingleSelect
 } from '@vscode-elements/react-elements';
 
-import { useSystem } from '@/system/provider';
+import { useGraph } from '@/system/provider';
 import type { SpecificRenderProps } from '@/store/specific';
 import type { NodeSpecJSON } from '@kiberon-labs/behave-graph';
 
@@ -20,7 +20,7 @@ export function getVariableSetSpecific() {
 }
 
 const VariableSetSpecific: React.FC<SpecificRenderProps> = ({ node }) => {
-  const system = useSystem();
+  const system = useGraph();
   const variables = useStore(system.variableStore, (s) => s.variables);
 
   const options = useMemo(() => {

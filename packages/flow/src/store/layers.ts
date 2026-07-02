@@ -1,4 +1,4 @@
-import type { System } from '@/system';
+import type { GraphSession } from '@/system/graphSession';
 import { create } from 'zustand';
 
 const DEFAULT_LAYER_ID = 'default';
@@ -51,7 +51,7 @@ const createLayerId = (): string => {
   return `layer-${Date.now()}-${suffix}`;
 };
 
-export const layerStoreFactory = (system: System) => {
+export const layerStoreFactory = (session: GraphSession) => {
   const store = create<LayerStore>((set, get) => ({
     defaultLayerId: DEFAULT_LAYER_ID,
     layers: {
@@ -250,7 +250,7 @@ export const layerStoreFactory = (system: System) => {
     }
   }));
 
-  system.nodeStore.subscribe((nodeState) => {
+  session.nodeStore.subscribe((nodeState) => {
     const nodeIds = nodeState.nodes.map((node) => node.id);
     store.getState().pruneNodeAssignments(nodeIds);
   });

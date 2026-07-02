@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useStore } from 'zustand';
-import { useSystem } from '@/system/provider';
+import { useGraph } from '@/system/provider';
 import type { SocketGeneratorRenderProps } from '@/store/socketGenerator';
 import type { Socket } from '@/types';
 import type { IBehaveNode } from '@/types/nodes.js';
@@ -19,7 +19,7 @@ export function getCustomEventOnTriggeredGenerator() {
 const CustomEventOnTriggeredGenerator: React.FC<SocketGeneratorRenderProps> = ({
   node
 }) => {
-  const system = useSystem();
+  const system = useGraph();
   const customEvents = useStore(system.eventsStore, (s) => s.customEvents);
 
   const customEventId = node.data.configuration?.customEventId;

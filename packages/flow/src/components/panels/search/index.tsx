@@ -11,7 +11,7 @@ import {
   VscodeCollapsible,
   VscodeBadge
 } from '@vscode-elements/react-elements';
-import { useRefFromStore, useSystem } from '@/system';
+import { useRefFromStore, useActiveGraph } from '@/system';
 import type { Node } from 'reactflow';
 import { Search } from 'iconoir-react';
 import Fuse from 'fuse.js';
@@ -36,7 +36,7 @@ export const SearchPanel = () => {
   const [nodeType, setNodeType] = React.useState('');
   const [searchResults, setSearchResults] = React.useState<SearchResult[]>([]);
 
-  const sys = useSystem();
+  const sys = useActiveGraph()!;
   const graphNodes = useStore(sys.nodeStore, (s) => s.nodes);
   const reactflow = useRefFromStore(sys.refStore, 'reactflow');
 

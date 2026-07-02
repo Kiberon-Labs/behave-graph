@@ -3,12 +3,15 @@ import type { Connection, ReactFlowInstance } from 'reactflow';
 import { getSocketsByNodeTypeAndHandleType } from './getSocketsByNodeTypeAndHandleType.js';
 import { isHandleConnected } from './isHandleConnected.js';
 import { mergeSockets } from './mergeSockets.js';
+import { resolveConverter } from './autoConvert.js';
+import type { ConversionRule } from '@/store/conversions';
 import type { IBehaveNode } from '@/types/nodes.js';
 
 export const isValidConnection = (
   connection: Connection,
   instance: ReactFlowInstance,
-  specJSON: NodeSpecJSON[]
+  specJSON: NodeSpecJSON[],
+  options?: { autoConvert?: boolean; conversions?: ConversionRule[] }
 ) => {
   if (connection.source === null || connection.target === null) return false;
 
@@ -60,5 +63,23 @@ export const isValidConnection = (
     return false;
   }
 
-  return sourceSocket.valueType === targetSocket.valueType;
+  if (sourceSocket.valueType === targetSocket.valueType) return true;
+
+  // Different value types are allowed when auto-convert can splice in a
+  // converter node (handled on connect).
+  if (
+    options?.autoConvert &&
+    sourceSocket.valueType !== 'flow' &&
+    targetSocket.valueType !== 'flow' &&
+    resolveConverter(
+      specJSON,
+      sourceSocket.valueType,
+      targetSocket.valueType,
+      options.conversions
+    )
+  ) {
+    return true;
+  }
+
+  return false;
 };

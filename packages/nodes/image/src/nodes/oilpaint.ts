@@ -1,7 +1,6 @@
-import type { IMagickImage } from '@imagemagick/magick-wasm';
-import { ImageMagick } from '@imagemagick/magick-wasm';
 import { makePureInOutFunctionDesc } from '@kiberon-labs/behave-graph';
 import { ImageValue } from '../values';
+import { transformImage } from '@/utils.js';
 
 export const Oilpaint = makePureInOutFunctionDesc({
   typeName: 'image/oilpaint',
@@ -24,9 +23,6 @@ export const Oilpaint = makePureInOutFunctionDesc({
   exec: async ({ read, write }) => {
     const image = read<Uint8Array>('image');
     const radius = read<number>('radius');
-    await ImageMagick.read(image, async (image: IMagickImage) => {
-      image.oilPaint(radius);
-      await image.write((data) => write('image', data));
-    });
+    write('image', await transformImage(image, (img) => img.oilPaint(radius)));
   }
 });

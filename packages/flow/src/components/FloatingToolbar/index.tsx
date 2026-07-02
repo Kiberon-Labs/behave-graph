@@ -5,7 +5,7 @@ import {
   VscodeContextMenu
 } from '@vscode-elements/react-elements';
 import { ZoomIn, ZoomOut, AlignLeft, LayoutRight } from 'iconoir-react';
-import { useSystem } from '@/system/provider';
+import { useGraph } from '@/system/provider';
 import { useStore } from 'zustand';
 import styles from './index.module.css';
 import { useRefFromStore } from '@/system';
@@ -13,10 +13,10 @@ import type { ToolbarButton } from '@/store/toolbar';
 import type { AlignmentAxis, AlignmentType } from '@/plugin/alignment';
 
 export const FloatingToolbar: React.FC = () => {
-  const system = useSystem();
-  const visible = useStore(system.toolbarStore, (x) => x.visible);
-  const customGroups = useStore(system.toolbarStore, (x) => x.groups);
-  const reactFlowInstance = useRefFromStore(system.refStore, 'reactflow');
+  const session = useGraph();
+  const visible = useStore(session.editor.toolbarStore, (x) => x.visible);
+  const customGroups = useStore(session.editor.toolbarStore, (x) => x.groups);
+  const reactFlowInstance = useRefFromStore(session.refStore, 'reactflow');
   const { zoom } = useViewport();
   const currentZoom = Math.round(zoom * 100);
   const [alignMenuOpen, setAlignMenuOpen] = useState(false);
@@ -27,16 +27,16 @@ export const FloatingToolbar: React.FC = () => {
 
   const publishAlignment = useCallback(
     (type: AlignmentType, axis: AlignmentAxis) => {
-      system.pubsub.publishSync('alignment:align', { type, axis });
+      session.pubsub.publishSync('alignment:align', { type, axis });
     },
-    [system]
+    [session]
   );
 
   const publishDistribution = useCallback(
     (type: AlignmentType, axis: AlignmentAxis) => {
-      system.pubsub.publishSync('alignment:distribute', { type, axis });
+      session.pubsub.publishSync('alignment:distribute', { type, axis });
     },
-    [system]
+    [session]
   );
 
   const handleZoomIn = useCallback(() => {

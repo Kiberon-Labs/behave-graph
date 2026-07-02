@@ -18,7 +18,7 @@ import {
 import { useBehaveGraphFlow } from '../hooks/useBehaveGraphFlow.js';
 import { useFlowHandlers } from '../hooks/useFlowHandlers.js';
 import { useWasdPan } from '../hooks/useWasdPan.js';
-import { useSystem } from '@/system/provider.js';
+import { useGraph } from '@/system/provider.js';
 import { useStore } from 'zustand';
 import {
   NodeContextMenu,
@@ -32,7 +32,7 @@ import {
   SelectionContextMenu,
   type ISelectionContextMenuProps
 } from './contextMenus/selection.js';
-import { registerDefaultSocketGenerators } from '@/generators/registerDefaultGenerators';
+import { registerDefaults } from '@/generators/registerDefaults';
 import { FloatingToolbar } from './FloatingToolbar';
 import { layerId } from '@/annotations';
 
@@ -63,25 +63,36 @@ const isNodeVisibleInLayers = (
 };
 
 export const Flow: React.FC = () => {
-  const system = useSystem();
-  const getGraphJson = useStore(system.flowStore, (x) => x.getGraph);
-  const specJson = useStore(system.specStore, (x) => x.specs);
-  const showGrid = useStore(system.systemSettings, (x) => x.showGrid);
-  const showMinimap = useStore(system.systemSettings, (x) => x.showMinimap);
-  const snapToGrid = useStore(system.systemSettings, (x) => x.snapGrid);
-  const gridSize = useStore(system.systemSettings, (x) => x.gridSize);
-  const edgeTypes = useStore(system.flowStore, (x) => x.edgeTypes);
-  const nodeTypes = useStore(system.flowStore, (x) => x.nodeTypes);
-  const layers = useStore(system.layerStore, (x) => x.layers);
-  const nodeLayers = useStore(system.layerStore, (x) => x.nodeLayers);
-  const defaultLayerId = useStore(system.layerStore, (x) => x.defaultLayerId);
+  const session = useGraph();
+  const editor = session.editor;
+  const getGraphJson = useStore(session.flowStore, (x) => x.getGraph);
+  const specJson = useStore(editor.specStore, (x) => x.specs);
+  const showGrid = useStore(editor.systemSettings, (x) => x.showGrid);
+  const showMinimap = useStore(editor.systemSettings, (x) => x.showMinimap);
+  const snapToGrid = useStore(editor.systemSettings, (x) => x.snapGrid);
+  const gridSize = useStore(editor.systemSettings, (x) => x.gridSize);
+  const edgeTypes = useStore(session.flowStore, (x) => x.edgeTypes);
+  const nodeTypes = useStore(session.flowStore, (x) => x.nodeTypes);
+  const layers = useStore(session.layerStore, (x) => x.layers);
+  const nodeLayers = useStore(session.layerStore, (x) => x.nodeLayers);
+  const defaultLayerId = useStore(session.layerStore, (x) => x.defaultLayerId);
 
   const ref = useRef<HTMLDivElement>(null);
-  const setRef = useStore(system.refStore, (x) => x.setRef);
+  const setRef = useStore(session.refStore, (x) => x.setRef);
+
+  // When this canvas is interacted with, mark its graph as focused so the shared
+  // side-panels (Variables, Traces, ...) bind to it. Lets two graphs be open at
+  // once without a singular "active graph" , focus simply follows interaction.
+  const focusThisGraph = useCallback(() => {
+    const active = editor.activeGraph.getState();
+    if (active.activeGraphId !== session.id) {
+      active.setActiveGraph(session.id);
+    }
+  }, [editor, session.id]);
 
   const getReactFlowInstance = useCallback(
-    () => system.refStore.getState().getRef('reactflow'),
-    [system.refStore]
+    () => session.refStore.getState().getRef('reactflow'),
+    [session.refStore]
   );
 
   useWasdPan({ getReactFlowInstance });
@@ -98,13 +109,11 @@ export const Flow: React.FC = () => {
 
   const graph = useMemo(() => getGraphJson(), []);
 
+  // Editor-level built-in content. Idempotent per editor, so opening multiple
+  // graph tabs (each a Flow canvas) registers it once rather than per mount.
   useEffect(() => {
-    const cleanupGenerators = registerDefaultSocketGenerators(system);
-
-    return () => {
-      cleanupGenerators();
-    };
-  }, [system]);
+    registerDefaults(editor);
+  }, [editor]);
 
   const { nodes, edges, onNodesChange, onEdgesChange } = useBehaveGraphFlow({
     initialGraphJson: graph,
@@ -253,8 +262,10 @@ export const Flow: React.FC = () => {
   return (
     <>
       <ReactFlow
+        id={session.id}
         style={{ flex: 1 }}
         ref={ref}
+        onPointerDownCapture={focusThisGraph}
         onInit={setReactflowRef}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}

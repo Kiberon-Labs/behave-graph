@@ -15,12 +15,15 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "behaveGraph": {
+    "manifest": "./dist/behave-graph.manifest.json"
+  },
   "publishConfig": {
     "provenance": true,
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && behave-graph-manifest dist/manifest.source.js --out dist",
     "check": "oxfmt --check",
     "format": "oxfmt",
     "test": "vitest --passWithNoTests",

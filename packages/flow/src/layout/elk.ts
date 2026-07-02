@@ -1,11 +1,27 @@
 import type { System } from '@/system';
-import ELK, {
-  type ElkExtendedEdge,
-  type ElkNode,
-  type ElkPort
+import type {
+  ElkExtendedEdge,
+  ElkNode,
+  ElkPort
 } from 'elkjs/lib/elk.bundled.js';
 import type { Edge, Node } from 'reactflow';
 import { pinned } from '@/annotations';
+
+/**
+ * elkjs is ~1.4 MB — by far the largest dependency in the editor bundle, yet it
+ * is only used when the user explicitly runs an ELK layout. Load it lazily (a
+ * dynamic import the bundler code-splits into a separate chunk) so it stays out
+ * of the initial webview load. The instance is created once and reused.
+ */
+let elkPromise:
+  | Promise<{ layout: (graph: ElkNode) => Promise<ElkNode> }>
+  | undefined;
+const getElk = () => {
+  elkPromise ??= import('elkjs/lib/elk.bundled.js').then(
+    (m) => new m.default()
+  );
+  return elkPromise;
+};
 
 const layoutOptions = {
   // 'elk.algorithm': 'layered',
@@ -19,8 +35,6 @@ export type LayoutAlgorithm =
   | 'org.eclipse.elk.layered'
   | 'org.eclipse.elk.force'
   | 'org.eclipse.elk.rectpacking';
-
-const elk = new ELK();
 
 const getLayoutedNodes = async (
   nodes: Node[],
@@ -107,6 +121,7 @@ const getLayoutedNodes = async (
     )
   };
 
+  const elk = await getElk();
   const layoutedGraph = await elk.layout(graph);
 
   const layoutedNodes = nodes.map((node) => {

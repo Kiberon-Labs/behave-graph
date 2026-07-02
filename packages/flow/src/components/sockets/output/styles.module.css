@@ -3,7 +3,7 @@
   flex-grow: 1;
   align-items: center;
   justify-content: flex-end;
-  height: 1.75rem;
+  height: 1.375rem;
 }
 
 .hidden {
@@ -22,6 +22,5 @@
 }
 
 .disconnected {
-  /* Tailwind `bg-gray-800` equivalent */
-  background: #333 !important;
+  background: var(--ds-widget-bg, #333) !important;
 }

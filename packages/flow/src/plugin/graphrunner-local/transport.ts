@@ -26,29 +26,43 @@ import type {
   RemoveLinkMessage,
   DirectExecuteNodeMessage
 } from '../graphrunner/types.js';
-import type { ITransport, TransportState } from '../graphrunner/transport.js';
+import type {
+  ITransport,
+  IExecutionControl,
+  TransportState
+} from '../graphrunner/transport.js';
 import {
   Engine,
   type GraphInstance,
   type ILifecycleEventEmitter,
   readGraphFromJSON,
   validateGraph,
-  ManualLifecycleEventEmitter,
   DefaultLogger,
   type ILogger,
   Link,
-  makeGraphApi
+  makeGraphApi,
+  runSubgraph,
+  DEFAULT_SUBGRAPH_MAX_DEPTH
 } from '@kiberon-labs/behave-graph';
-import type { IRegistry } from '@kiberon-labs/behave-graph';
+import type {
+  IRegistry,
+  IGraphApi,
+  GraphJSON
+} from '@kiberon-labs/behave-graph';
 import type { StoreApi } from 'zustand';
 import type { LocalGraphRunnerStore } from './store.js';
 import { sleep } from '@kiberon-labs/behave-graph';
 import {
+  setupTracing,
   setupVariableChangeTracking,
+  prepareRegistryWithDependencies,
   handleGetServerVariables,
   handleGetServerEvents,
   handleGetSocketConstraints,
-  handleGetNodeTypes
+  handleGetNodeTypes,
+  executeGraphLifecycle,
+  type ActiveRun as BaseActiveRun,
+  type MessageContext
 } from './execution-utils.js';
 import {
   SessionManager,
@@ -58,31 +72,20 @@ import {
 } from '../graphrunner/session.js';
 import { createNode } from '@kiberon-labs/behave-graph';
 
-interface ActiveRun {
-  runId: string;
-  graphId: string;
+/**
+ * Local run record. Extends the shared {@link BaseActiveRun} (used by both the
+ * local and worker runners) with the session + tick bookkeeping that only the
+ * local, interactively-controllable transport needs.
+ */
+interface ActiveRun extends BaseActiveRun {
   sessionId: string;
-  engine: Engine;
-  graphInstance: GraphInstance;
-  registry: IRegistry;
-  status: RunStatus;
-  startedAt: number;
-  performance: {
-    nodesExecuted: number;
-    eventsEmitted: number;
-    variableChanges: number;
-  };
-  // Step execution control
-  isPaused: boolean;
-  executionPhase: 'start' | 'tick' | 'end' | 'completed';
-  currentTick: number;
   maxTicks: number;
 }
 
 /**
  * Local transport that executes graphs in the browser using the Engine
  */
-export class LocalTransport implements ITransport {
+export class LocalTransport implements ITransport, IExecutionControl {
   private state: TransportState = 'disconnected';
   private messageHandlers: Array<(message: ServerGraphRunnerMessage) => void> =
     [];
@@ -94,6 +97,7 @@ export class LocalTransport implements ITransport {
   private store: StoreApi<LocalGraphRunnerStore> | null = null;
   private variables: ServerVariable[];
   private serverEvents: ServerEvent[];
+  private resolveGraph?: (id: string) => GraphJSON | undefined;
 
   constructor(
     registry: IRegistry,
@@ -102,6 +106,10 @@ export class LocalTransport implements ITransport {
       variables?: ServerVariable[];
       serverEvents?: ServerEvent[];
       sessionFactory?: SessionFactory;
+      /**
+       * Resolve a referenced graph's JSON by id, enabling Call Subgraph nodes.
+       */
+      resolveGraph?: (id: string) => GraphJSON | undefined;
     }
   ) {
     this.registry = registry;
@@ -109,6 +117,7 @@ export class LocalTransport implements ITransport {
     this.variables = options?.variables ?? [];
     this.serverEvents = options?.serverEvents ?? [];
     this.sessionManager = new SessionManager(options?.sessionFactory);
+    this.resolveGraph = options?.resolveGraph;
   }
 
   /**
@@ -438,29 +447,40 @@ export class LocalTransport implements ITransport {
         };
       }
 
-      if (
-        !registryToUse.dependencies?.ILifecycleEventEmitter ||
-        !registryToUse.dependencies?.ILogger
-      ) {
-        // Create a new registry with required dependencies injected
-        registryToUse = {
-          ...registryToUse,
-          dependencies: {
-            ...registryToUse.dependencies,
-            ILifecycleEventEmitter:
-              registryToUse.dependencies?.ILifecycleEventEmitter ||
-              new ManualLifecycleEventEmitter(),
-            ILogger: transportLogger
+      // Inject the lifecycle event emitter (if absent) and the forwarding logger
+      // , shared with the worker runner.
+      registryToUse = prepareRegistryWithDependencies(
+        registryToUse,
+        transportLogger
+      );
+
+      // Inject the subgraph resolver so Call Subgraph nodes can run referenced
+      // graphs. runSubgraph builds a cycle/depth-guarded IGraphApi for nested
+      // calls; the active graph id seeds the call stack so a graph calling back
+      // to the active graph (or itself) is detected as a cycle and refused.
+      if (this.resolveGraph) {
+        const resolveGraph = this.resolveGraph;
+        const activeGraphId = message.graphId;
+        const graphApi: IGraphApi = {
+          getGraph: (id) => resolveGraph(id),
+          runGraph: (id, inputs) => {
+            const childGraph = resolveGraph(id);
+            return childGraph
+              ? runSubgraph({
+                graphJson: childGraph,
+                registry: registryToUse,
+                inputs,
+                resolveGraph,
+                graphId: id,
+                stack: [activeGraphId],
+                maxDepth: DEFAULT_SUBGRAPH_MAX_DEPTH
+              })
+              : Promise.resolve({});
           }
         };
-      } else {
-        // Replace the existing logger with the transport logger
         registryToUse = {
           ...registryToUse,
-          dependencies: {
-            ...registryToUse.dependencies,
-            ILogger: transportLogger
-          }
+          dependencies: { ...registryToUse.dependencies, IGraphApi: graphApi }
         };
       }
 
@@ -541,31 +561,12 @@ export class LocalTransport implements ITransport {
         sendError: (code, msg, details) => this.sendError(code, msg, details)
       });
 
-      // Set up tracing
+      // Set up tracing , shared with the worker runner so the trace event shape
+      // and timestamps stay consistent across runners.
       if (executionOptions.trace) {
-        engine.onNodeExecutionStart.addListener((node) => {
-          run.performance.nodesExecuted++;
-          this.notifyMessage({
-            type: 'trace',
-            runId,
-            graphId: message.graphId,
-            nodeId: node.id,
-            event: 'start',
-            data: { typeName: node.description.typeName },
-            timestamp: Date.now() - run.startedAt
-          });
-        });
-
-        engine.onNodeExecutionEnd.addListener((node) => {
-          this.notifyMessage({
-            type: 'trace',
-            runId,
-            graphId: message.graphId,
-            nodeId: node.id,
-            event: 'end',
-            data: { typeName: node.description.typeName },
-            timestamp: Date.now() - run.startedAt
-          });
+        setupTracing(run, message.graphId, {
+          sendMessage: this.notifyMessage.bind(this),
+          sendError: (code, msg, details) => this.sendError(code, msg, details)
         });
       }
 
@@ -600,124 +601,64 @@ export class LocalTransport implements ITransport {
     autoEnd: boolean,
     session: Session
   ): Promise<void> {
-    try {
-      // Get lifecycle event emitter from the registry dependencies
-      const eventEmitter = run.registry.dependencies?.ILifecycleEventEmitter as
-        | ILifecycleEventEmitter
-        | undefined;
+    const ctx: MessageContext = {
+      sendMessage: this.notifyMessage.bind(this),
+      sendError: (code, message, details) =>
+        this.sendError(code, message, details)
+    };
 
-      // Execute start event
-      if (run.executionPhase === 'start') {
-        if (
-          eventEmitter?.startEvent &&
-          eventEmitter.startEvent.listenerCount > 0
-        ) {
-          eventEmitter.startEvent.emit();
-          await this.executeWithPauseSupport(run);
-        }
-        run.executionPhase = 'tick';
-      }
+    // Tick timing: the session's custom strategy if provided, else a sleep based
+    // on the configured tick interval.
+    const tickStrategy =
+      session.config.tickStrategy ||
+      this.createSleepTickStrategy(
+        session.config.executionSettings?.tickInterval ?? this.getTickInterval()
+      );
 
-      // Execute tick events (runs indefinitely until stopped)
-      if (run.executionPhase === 'tick') {
-        if (
-          eventEmitter?.tickEvent &&
-          eventEmitter.tickEvent.listenerCount > 0
-        ) {
-          // Get tick strategy hook or create default
-          const tickStrategy =
-            session.config.tickStrategy ||
-            this.createSleepTickStrategy(
-              session.config.executionSettings?.tickInterval ??
-                this.getTickInterval()
-            );
-
-          while (!run.isPaused && run.status === 'running') {
-            eventEmitter.tickEvent.emit();
-            await this.executeWithPauseSupport(run);
-            run.currentTick++;
-
-            if (run.isPaused || run.status !== 'running') {
-              return; // Exit early if paused or stopped
-            }
-
-            // Call the tick strategy hook to handle timing
-            await tickStrategy();
-          }
-        } else {
-          // No tick event listeners, move to end phase
-          run.executionPhase = 'end';
-        }
-      }
-
-      // Execute end event
-      if (run.executionPhase === 'end' && !run.isPaused) {
-        if (eventEmitter?.endEvent && eventEmitter.endEvent.listenerCount > 0) {
-          eventEmitter.endEvent.emit();
-          await this.executeWithPauseSupport(run);
-        }
-        run.executionPhase = 'completed';
-      }
-
-      // Only complete if not paused
-      if (!run.isPaused && !autoEnd) {
-        // Run completed successfully
-        run.status = 'completed';
-        const elapsedMs = Date.now() - run.startedAt;
-        const result = null; // Placeholder for result
-
-        // Call session hook for run completed
-        if (session.config.hooks?.onRunCompleted) {
-          await session.config.hooks.onRunCompleted(
-            session,
-            run.runId,
-            graphId,
-            result
-          );
-        }
-
-        this.notifyMessage({
-          type: 'completed',
-          runId: run.runId,
-          graphId,
-          completedAt: Date.now(),
-          elapsedMs,
-          result,
-          performance: run.performance
-        });
-
-        // Cleanup
-        run.engine.dispose();
-        this.activeRuns.delete(run.runId);
-        this.sessionManager.removeRunFromSession(run.sessionId, run.runId);
-        this.updateStoreActiveRuns();
-        this.updateStoreExecutionState(false, false);
-      }
-    } catch (error) {
-      run.status = 'error';
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-
-      // Call session hook for run error
-      if (session.config.hooks?.onRunError) {
-        await session.config.hooks.onRunError(
-          session,
-          run.runId,
-          graphId,
-          error instanceof Error ? error : new Error(errorMessage)
-        );
-      }
-
-      this.sendError('NODE_EXECUTION_ERROR', errorMessage, {
-        runId: run.runId,
-        graphId
-      });
-
-      run.engine.dispose();
+    // Tear the run down and re-sync the panel's running / active-runs state.
+    const cleanup = (): void => {
       this.activeRuns.delete(run.runId);
       this.sessionManager.removeRunFromSession(run.sessionId, run.runId);
       this.updateStoreActiveRuns();
       this.updateStoreExecutionState(false, false);
+    };
+
+    try {
+      await executeGraphLifecycle(run, graphId, ctx, {
+        autoEnd,
+        // Pause-aware executor that also honours the local step-delay / speed.
+        executeStep: () => this.executeWithPauseSupport(run),
+        tickStrategy,
+        onComplete: async () => {
+          if (session.config.hooks?.onRunCompleted) {
+            await session.config.hooks.onRunCompleted(
+              session,
+              run.runId,
+              graphId,
+              null
+            );
+          }
+          cleanup();
+        },
+        onError: async (error) => {
+          if (session.config.hooks?.onRunError) {
+            await session.config.hooks.onRunError(
+              session,
+              run.runId,
+              graphId,
+              error
+            );
+          }
+          this.sendError('NODE_EXECUTION_ERROR', error.message, {
+            runId: run.runId,
+            graphId
+          });
+          cleanup();
+        }
+      });
+    } catch {
+      // The error was already reported + cleaned up by the onError hook; this
+      // method is fire-and-forget, so swallow the lifecycle's rethrow.
     }
   }
 
@@ -881,6 +822,10 @@ export class LocalTransport implements ITransport {
         run.engine.dispose();
         this.activeRuns.delete(run.runId);
         this.sessionManager.removeRunFromSession(run.sessionId, run.runId);
+        // Keep the panel's running/active-runs state in sync when stepping
+        // reaches the end of the graph.
+        this.updateStoreActiveRuns();
+        this.updateStoreExecutionState(false, false);
       }
     }
   }

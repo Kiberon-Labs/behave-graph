@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--vscode-panel-border);
+  border-bottom: 1px solid var(--ds-panel-border);
 }
 
 .title {
@@ -20,7 +20,7 @@
 }
 
 .count {
-  color: var(--vscode-descriptionForeground);
+  color: var(--ds-fg-muted);
   font-size: 0.9rem;
 }
 
@@ -35,14 +35,14 @@
 
 .idCell code {
   font-size: 0.85rem;
-  color: var(--vscode-textPreformat-foreground);
-  background-color: var(--vscode-textCodeBlock-background);
+  color: var(--ds-preformat-fg);
+  background-color: var(--ds-code-bg);
   padding: 0.125rem 0.375rem;
   border-radius: 3px;
 }
 
 .groupCell {
-  color: var(--vscode-descriptionForeground);
+  color: var(--ds-fg-muted);
   font-size: 0.9rem;
 }
 
@@ -54,8 +54,8 @@
 .badge {
   display: inline-block;
   padding: 0.125rem 0.5rem;
-  background-color: var(--vscode-badge-background);
-  color: var(--vscode-badge-foreground);
+  background-color: var(--ds-badge-bg);
+  color: var(--ds-badge-fg);
   border-radius: 10px;
   font-size: 0.75rem;
   font-weight: 500;

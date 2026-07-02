@@ -1,14 +1,198 @@
 :root {
-    --colors-bgCanvas: #1f1f1f;
-    --colors-bgDefault: #181818;
-    --colors-bgEmphasis: #444444;
-    --colors-bgSubtle: #373737;
-    --colors-bgSurface: #292929;
-    --colors-borderDefault: #636363;
-    --colors-borderMuted: #2e2e2e;
-    --colors-borderSubtle: #454545;
-    --colors-fg: #fff;
-    --colors-fgSubtle: #8a8a8a;
-    --colors-inputBg: red;
-    --colors-inputBorderRest: red;
+    /* ───────────────────────────────────────────────────────────────────────
+       Theme bridge (--ds-*)
+
+       These are the design system's *intermediary* tokens. Every component and
+       semantic token resolves colors/fonts through this layer — nothing in the
+       flow package references `--vscode-*` directly anymore. The values here are
+       the canonical (VS Code dark) defaults, so the editor looks right when run
+       standalone (Storybook, web, tests).
+
+       Inside the VS Code extension these tokens are re-declared to point at the
+       live `--vscode-*` theme variables (see the extension's theme-bridge.css),
+       which makes the whole editor follow the user's active VS Code theme. This
+       is the ONLY file that needs to enumerate the design tokens; the extension
+       mapping overrides just this layer and everything below cascades.
+       ─────────────────────────────────────────────────────────────────────── */
+
+    /* Fonts */
+    --ds-font-ui: "Segoe UI", system-ui, sans-serif;
+    --ds-font-mono: "Consolas", "Courier New", monospace;
+    --ds-font-mono-size: 14px;
+
+    /* Foreground */
+    --ds-fg: #cccccc;
+    --ds-fg-muted: #9d9d9d;
+    --ds-icon-fg: #cccccc;
+    --ds-editor-fg: #cccccc;
+    --ds-widget-fg: #cccccc;
+
+    /* Surfaces */
+    --ds-editor-bg: #1f1f1f;
+    --ds-widget-bg: #202020;
+    --ds-sidebar-bg: #181818;
+    --ds-tabs-bg: #181818;
+    --ds-tab-inactive-bg: #181818;
+    --ds-section-header-bg: #181818;
+    --ds-section-header-fg: #cccccc;
+    --ds-section-header-border: #2b2b2b;
+
+    /* Borders / focus / sashes */
+    --ds-border: #313131;
+    --ds-border-subtle: #454545;
+    --ds-border-muted: rgba(255, 255, 255, 0.09);
+    --ds-panel-border: #2b2b2b;
+    --ds-focus-border: #0078d4;
+    --ds-sash-hover-border: #0078d4;
+    --ds-sash-border: #2b2b2b;
+
+    /* Buttons */
+    --ds-button-bg: #0078d4;
+    --ds-button-fg: #ffffff;
+    --ds-button-hover-bg: #026ec1;
+    --ds-button-secondary-bg: #313131;
+    --ds-button-border: #313131;
+
+    /* Inputs */
+    --ds-input-bg: #313131;
+    --ds-input-border: #3c3c3c;
+    --ds-input-fg: #cccccc;
+    --ds-input-option-active-bg: rgba(36, 137, 219, 0.51);
+    --ds-input-option-active-border: #2488db;
+    --ds-input-option-active-fg: #ffffff;
+
+    /* Lists */
+    --ds-list-active-bg: #04395e;
+    --ds-list-active-fg: #ffffff;
+    --ds-list-hover-bg: #2a2d2e;
+
+    /* Toolbar / badges */
+    --ds-toolbar-active-bg: rgba(99, 102, 103, 0.31);
+    --ds-toolbar-hover-bg: rgba(90, 93, 94, 0.31);
+    --ds-badge-bg: #616161;
+    --ds-badge-fg: #f8f8f8;
+
+    /* Text variants */
+    --ds-preformat-fg: #d0d0d0;
+    --ds-blockquote-bg: #2b2b2b;
+    --ds-blockquote-border: #616161;
+    --ds-code-bg: #2b2b2b;
+
+    /* Editor / status states */
+    --ds-inactive-selection-bg: #3a3d41;
+    --ds-find-match-bg: rgba(234, 92, 0, 0.33);
+    --ds-error: #f14c4c;
+    --ds-warning: #cca700;
+    --ds-success: #89d185;
+    --ds-error-bg: #5a1d1d;
+    --ds-error-border: #be1100;
+    --ds-error-fg: #cccccc;
+    --ds-info-bg: #063b49;
+    --ds-info-border: #007acc;
+
+    /* Charts / git / terminal accents */
+    --ds-chart-blue: #59a4f9;
+    --ds-git-added: #81b88b;
+    --ds-git-modified: #e2c08d;
+    --ds-terminal-cyan: #11a8cd;
+
+    /* Menus (cascade onto the surfaces above when no host value exists) */
+    --ds-menu-bg: var(--ds-widget-bg);
+    --ds-menu-fg: var(--ds-fg);
+    --ds-menu-border: var(--ds-border);
+    --ds-menu-selection-bg: var(--ds-list-hover-bg);
+    --ds-menu-selection-fg: var(--ds-fg);
+
+    /* Graph node category accents + shape (the left-edge bar on a node header,
+       keyed by category in util/colors.ts). Default values track the editor's
+       syntax-style palette; an alternate theme can recolor these to its own
+       palette without touching the node components. */
+    --ds-node-red: #d16969;
+    --ds-node-green: #89d185;
+    --ds-node-lime: #b5cea8;
+    --ds-node-purple: #c586c0;
+    --ds-node-blue: #4fc1ff;
+    --ds-node-radius: 4px;
+
+    /* ───────────────────────────────────────────────────────────────────────
+       Semantic tokens
+
+       Curated surface/text aliases consumed across the editor. They resolve
+       through the bridge layer above, so theming is handled in one place.
+       ─────────────────────────────────────────────────────────────────────── */
+    --colors-bgCanvas: var(--ds-editor-bg);
+    --colors-bgDefault: var(--ds-sidebar-bg);
+    --colors-bgPanel: var(--ds-sidebar-bg);
+    --colors-bgSecondary: var(--ds-widget-bg);
+    --colors-bgEmphasis: var(--ds-toolbar-hover-bg);
+    --colors-bgSubtle: var(--ds-widget-bg);
+    --colors-bgSurface: var(--ds-widget-bg);
+
+    --colors-border: var(--ds-border);
+    --colors-borderDefault: var(--ds-border);
+    --colors-borderMuted: var(--ds-border-muted);
+    --colors-borderSubtle: var(--ds-border-subtle);
+
+    --colors-fg: var(--ds-fg);
+    --colors-text: var(--ds-fg);
+    --colors-fgSubtle: var(--ds-fg-muted);
+
+    --colors-inputBg: var(--ds-input-bg);
+    --colors-inputBorderRest: var(--ds-input-border);
+
+    --colors-error: var(--ds-error);
+    --colors-success: var(--ds-success);
+
+    --chip-color: var(--ds-badge-bg);
+
+    /* Legacy design-system aliases referenced across many components. */
+    --color-neutral-stroke-subtle: var(--ds-border-subtle);
+    --color-neutral-stroke-default: var(--ds-border);
+    --color-neutral-canvas-subtle-bg: var(--ds-tabs-bg);
+    --color-neutral-canvas-default-bg: var(--ds-editor-bg);
+    --color-neutral-background-strong: var(--ds-code-bg);
+    --color-neutral-canvas-minimal-fg-default: var(--ds-fg);
+    --color-neutral-canvas-minimal-fg-subtle: var(--ds-fg-muted);
+    --color-neutral-canvas-subtle-fg-subtle: rgba(0, 0, 0, 0.36);
+    --color-danger-surface-default-idle-bg: var(--ds-error-bg);
+    --color-danger-surface-default-idle-fg-default: var(--ds-error);
+
+    /* ───────────────────────────────────────────────────────────────────────
+       Non-themed scale tokens (sizing/spacing/typography ramps). These are not
+       host-theme-aware, so they hold literal values.
+       ─────────────────────────────────────────────────────────────────────── */
+
+    /* Shared type scale (compact, VSCode-settings density) */
+    --fs-section: 0.7rem;   /* uppercase group headers */
+    --fs-label: 0.8rem;     /* control labels / list rows */
+    --fs-desc: 0.72rem;     /* secondary descriptions */
+    --fs-body: 0.8125rem;   /* node + general body text */
+
+    /* Shared spacing scale */
+    --space-0: 0.125rem;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+
+    /* Component scale */
+    --component-spacing-xs: var(--space-1);
+    --component-spacing-sm: var(--space-2);
+    --component-spacing-md: var(--space-3);
+    --component-radii-sm: 4px;
+    --component-radii-md: 6px;
+    --component-border-width-md: 1px;
+
+    /* Sizes scale (N × 0.25rem) */
+    --sizes-2: 0.5rem;
+    --sizes-4: 1rem;
+
+    /* Font tokens. NOTE: --font-body-* are consumed via the `font:` shorthand,
+       so they must be complete font values, not bare sizes. */
+    --fontSizes-small: var(--fs-desc, 0.72rem);
+    --font-body-sm: 400 0.8rem/1.4 var(--ds-font-ui);
+    --font-body-xs: 400 0.72rem/1.4 var(--ds-font-ui);
+
+    /* Shadows */
+    --shadows-contextMenu: 0 2px 8px rgba(0, 0, 0, 0.36);
+    --shadows-focus: 0 0 0 1px var(--ds-focus-border);
 }

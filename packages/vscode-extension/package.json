@@ -83,11 +83,22 @@
       },
       {
         "command": "kiberon-labs-behave-graph.executeGraph",
-        "title": "Execute Graph"
+        "title": "Execute Graph",
+        "enablement": "resourcePath in behaveGraph.executableGraphs"
       },
       {
         "command": "kiberon-labs-behave-graph.mcpStatus",
         "title": "Show MCP Server Status",
+        "category": "Graph Engine"
+      },
+      {
+        "command": "kiberon-labs-behave-graph.openLocalSettings",
+        "title": "Open Local Editor Settings",
+        "category": "Graph Engine"
+      },
+      {
+        "command": "kiberon-labs-behave-graph.openGlobalSettings",
+        "title": "Open Global Editor Settings",
         "category": "Graph Engine"
       }
     ],

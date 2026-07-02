@@ -1,0 +1,23 @@
+{
+  "settings": {
+    "autoConvert": true,
+    "generatorLocation": "panel",
+    "showGrid": true,
+    "snapGrid": false,
+    "gridSize": 15,
+    "edgeType": "Bezier",
+    "layoutType": "Dagre"
+  },
+  "conversions": [
+    {
+      "from": "integer",
+      "to": "string",
+      "nodeType": "math/toString/integer"
+    },
+    {
+      "from": "float",
+      "to": "string",
+      "nodeType": "math/toString/float"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ import {
   VscodeTextfield
 } from '@vscode-elements/react-elements';
 
-import { useSystem } from '@/system';
+import { useActiveGraph } from '@/system';
 import { BasePanel } from '../base';
 import styles from './styles.module.css';
 import type { ExtendedCustomEventJSON } from '@/store/events';
@@ -28,13 +28,13 @@ export const EditEventPanel: React.FC<EditEventPanelProps> = ({
   eventUiId,
   onBack
 }) => {
-  const system = useSystem();
+  const system = useActiveGraph()!;
 
   const rawEvents = useStore(system.eventsStore, (s) => s.customEvents);
 
   const controls = useStore(system.controlStore, (s) => s.controls);
   const defaultControl = useStore(system.controlStore, (s) => s.defaultControl);
-  const registry = useStore(system.registry);
+  const registry = useStore(system.editor.registry);
 
   const valueTypeOptions = useMemo(
     () => Object.keys(controls).sort((a, b) => a.localeCompare(b)),

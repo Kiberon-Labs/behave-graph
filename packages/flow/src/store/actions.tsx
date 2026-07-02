@@ -1,4 +1,4 @@
-import type { System } from '@/system';
+import type { GraphSession } from '@/system/graphSession';
 import { Graph } from 'graphlib';
 import { create } from 'zustand';
 import copyToClipboard from 'copy-to-clipboard';
@@ -87,7 +87,7 @@ export type ActionStore = {
  * @param sys
  * @returns
  */
-const convertToGraph = (sys: System) => {
+const convertToGraph = (sys: GraphSession) => {
   const nodes = sys.nodeStore.getState().nodes;
   const edges = sys.edgeStore.getState().edges;
 
@@ -119,7 +119,7 @@ const createNodeLookup = (nodes: string[]) => {
   );
 };
 
-const applyFilters = (sys: System, lookup: Record<string, boolean>) => {
+const applyFilters = (sys: GraphSession, lookup: Record<string, boolean>) => {
   sys.nodeStore.getState().setNodes((nodes) => {
     const newNodes = nodes.map((x) => {
       if (!lookup[x.id]) {
@@ -140,13 +140,13 @@ const applyFilters = (sys: System, lookup: Record<string, boolean>) => {
   });
 };
 
-export const actionStoreFactory = (sys: System) =>
+export const actionStoreFactory = (sys: GraphSession) =>
   create<ActionStore>((set, get) => ({
     actions: {
       save: async () => {
         try {
           const uiGraph = buildUIGraphJSON(sys);
-          sys.pubsub.publish('graph:saved', uiGraph);
+          sys.editor.pubsub.publish('graph:saved', uiGraph);
           return uiGraph;
         } catch (err) {
           sys.notifications.error('Failed to save graph');

@@ -7,7 +7,7 @@ import {
 import { NodeResizer } from '@reactflow/node-resizer';
 import { useCallback, type ComponentType } from 'react';
 import { VscodeButton } from '@vscode-elements/react-elements';
-import { useSystem } from '@/system/provider';
+import { useGraph } from '@/system/provider';
 import type { IGroupNode } from '@/types/nodes';
 
 const lineStyle = { borderColor: 'white' };
@@ -15,7 +15,7 @@ const padding = 25;
 
 function GroupNode(props: NodeProps<IGroupNode['data']>) {
   const { id, data } = props;
-  const system = useSystem();
+  const system = useGraph();
   const { minWidth, minHeight, hasChildNodes } = useStore((store) => {
     const childNodes = Array.from(store.nodeInternals.values()).filter(
       (n) => n.parentId === id
@@ -70,7 +70,7 @@ function GroupNode(props: NodeProps<IGroupNode['data']>) {
             style={{
               width: '32px',
               height: '28px',
-              border: '1px solid var(--vscode-input-border)',
+              border: '1px solid var(--ds-input-border)',
               borderRadius: '4px',
               cursor: 'pointer',
               backgroundColor: 'transparent'

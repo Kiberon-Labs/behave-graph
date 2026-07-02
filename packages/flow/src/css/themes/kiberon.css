@@ -1,0 +1,127 @@
+/*
+ * Kiberon Labs theme — an alternate, opt-in theme for the flow editor.
+ *
+ * Like the VS Code theme (the extension's theme-bridge.css), this re-declares
+ * the design system's intermediary `--ds-*` bridge tokens — every semantic token
+ * (`--colors-*`, `--color-neutral-*`, …) cascades from that layer, so overriding
+ * `--ds-*` re-themes the whole editor. Unlike the VS Code mapping, this does NOT
+ * replace the default: it's scoped to a container, so it only applies where you
+ * opt in, and coexists with the built-in theme.
+ *
+ * Values are the Kiberon Labs design system's DARK tokens (the brand-canonical
+ * appearance), lifted from @kiberon-labs/ui (../ds): css/theme.css `.dark`,
+ * css/brand.css (`--kl-*` crystal palette), and css/typography.css. Each line
+ * notes the source token. Values are inlined (self-contained) so the theme needs
+ * no extra package or import.
+ *
+ * Activate by adding the scope to the editor's root container (or <html>):
+ *     <div data-flow-theme="kiberon"> … </div>
+ *     // or: class="flow-theme-kiberon"
+ *
+ * Fonts: the brand uses Geist / Geist Mono. Load them in the host app (e.g.
+ * @fontsource/geist); the stacks below fall back to Inter / system fonts when
+ * Geist isn't present, so the theme degrades gracefully.
+ */
+[data-flow-theme="kiberon"],
+.flow-theme-kiberon {
+    /* Fonts — typography.css --font-sans / --font-mono */
+    --ds-font-ui: "Geist", "Inter", system-ui, -apple-system, sans-serif;
+    --ds-font-mono: "Geist Mono", "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+
+    /* Foreground — theme.css .dark foreground / muted-foreground */
+    --ds-fg: #e3e3e3;
+    --ds-fg-muted: #a8a8a8;
+    --ds-icon-fg: #e3e3e3;
+    --ds-editor-fg: #e3e3e3;
+    --ds-widget-fg: #e3e3e3;
+
+    /* Surfaces — background (canvas) / sidebar / card / secondary */
+    --ds-editor-bg: #090909;          /* --background */
+    --ds-widget-bg: #1f1f1f;          /* --secondary (raised widgets) */
+    --ds-sidebar-bg: #0e0e0e;         /* --sidebar-background / --card */
+    --ds-tabs-bg: #0e0e0e;            /* --sidebar-background */
+    --ds-tab-inactive-bg: #0e0e0e;    /* --sidebar-background */
+    --ds-section-header-bg: #0e0e0e;  /* --sidebar-background */
+    --ds-section-header-fg: #e3e3e3;  /* --foreground */
+    --ds-section-header-border: #1f1f1f; /* --border */
+
+    /* Borders / focus / sashes — border / input / ring (--kl purple) */
+    --ds-border: #1f1f1f;             /* --border */
+    --ds-border-subtle: #2d2d2d;      /* --secondary-active (slightly lifted) */
+    --ds-border-muted: rgba(227, 227, 227, 0.06);
+    --ds-panel-border: #1f1f1f;       /* --border */
+    --ds-focus-border: #876adb;       /* --ring */
+    --ds-sash-hover-border: #876adb;  /* --ring */
+    --ds-sash-border: #1f1f1f;        /* --border */
+
+    /* Buttons — primary (purple) + secondary neutral */
+    --ds-button-bg: #7b5dcd;          /* --primary */
+    --ds-button-fg: #e3e1ed;          /* --primary-foreground */
+    --ds-button-hover-bg: #7052be;    /* --primary-hover */
+    --ds-button-secondary-bg: #1f1f1f;/* --secondary */
+    --ds-button-border: #1f1f1f;      /* --border */
+
+    /* Inputs */
+    --ds-input-bg: #1f1f1f;           /* --secondary (raised field) */
+    --ds-input-border: #2d2d2d;       /* neutral stroke */
+    --ds-input-fg: #e3e3e3;           /* --foreground */
+    --ds-input-option-active-bg: rgba(123, 93, 205, 0.5);  /* --primary wash */
+    --ds-input-option-active-border: #7b5dcd;              /* --primary */
+    --ds-input-option-active-fg: #e3e1ed;                  /* --primary-foreground */
+
+    /* Lists — purple selection wash, neutral hover */
+    --ds-list-active-bg: rgba(123, 93, 205, 0.3);  /* --primary wash */
+    --ds-list-active-fg: #e3e3e3;                   /* --foreground */
+    --ds-list-hover-bg: #252525;                    /* --accent-hover */
+
+    /* Toolbar / badges */
+    --ds-toolbar-active-bg: rgba(227, 227, 227, 0.08);
+    --ds-toolbar-hover-bg: #252525;   /* --accent-hover */
+    --ds-badge-bg: #2d2d2d;           /* --accent-active (neutral chip) */
+    --ds-badge-fg: #e3e3e3;           /* --foreground */
+
+    /* Text variants — code / preformat / blockquote */
+    --ds-preformat-fg: #e3e3e3;       /* --foreground */
+    --ds-blockquote-bg: #141414;      /* --muted */
+    --ds-blockquote-border: #2d2d2d;
+    --ds-code-bg: #141414;            /* --muted */
+
+    /* Editor / status states */
+    --ds-inactive-selection-bg: rgba(123, 93, 205, 0.15); /* dim --primary */
+    --ds-find-match-bg: rgba(254, 204, 92, 0.28);         /* --kl-gold highlight */
+    --ds-error: #ff6578;              /* --destructive */
+    --ds-warning: #ff7f30;            /* warning (legible on dark) */
+    --ds-success: #4beb8f;            /* --success */
+    --ds-error-bg: #310005;           /* --destructive-subtle */
+    --ds-error-border: #ff6578;       /* --destructive */
+    --ds-error-fg: #fbe4e4;           /* --destructive-subtle-foreground */
+    --ds-info-bg: #001135;            /* --info-subtle */
+    --ds-info-border: #006bea;        /* --info */
+
+    /* Charts / git / terminal accents */
+    --ds-chart-blue: #1e7eff;         /* --chart-2 */
+    --ds-git-added: #4beb8f;          /* --success */
+    --ds-git-modified: #fecc5c;       /* --kl-gold */
+    --ds-terminal-cyan: #1e7eff;      /* --info (no cyan in palette) */
+
+    /* Menus — popover surface */
+    --ds-menu-bg: #0e0e0e;            /* --popover */
+    --ds-menu-fg: #e3e3e3;            /* --popover-foreground */
+    --ds-menu-border: #1f1f1f;        /* --border */
+    --ds-menu-selection-bg: #252525;  /* --accent-hover */
+    --ds-menu-selection-fg: #e3e3e3;  /* --foreground */
+
+    /* Graph node accents — the crystal palette (brand.css --kl-*); rounder
+       cards to match the Kiberon card radius (--radius 0.5rem). */
+    --ds-node-red: #ee397a;           /* --kl-pink */
+    --ds-node-green: #4beb8f;         /* --success */
+    --ds-node-lime: #fecc5c;          /* --kl-gold */
+    --ds-node-purple: #9462f4;        /* --kl-purple */
+    --ds-node-blue: #627af4;          /* --kl-blue */
+    --ds-node-radius: 0.5rem;         /* --radius */
+
+    /* Brand-faithful focus ring + floating shadow (override the cascade) */
+    --shadows-focus: 0 0 0 2px #876adb; /* theme.css --shadow-focus */
+    --shadows-contextMenu: 0px 0px 0px 1px #23292f, 0px 6px 12px -3px #01040966,
+        0px 6px 18px 0px #01040966; /* theme.css .dark --shadow-floating-small */
+}

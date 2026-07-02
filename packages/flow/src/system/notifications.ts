@@ -3,6 +3,20 @@ import type { Renderable, Toast } from 'react-hot-toast';
 
 export type NotificationType = 'info' | 'success' | 'error' | 'loading';
 
+
+export interface NotificationData {
+  type: NotificationType;
+  message: string;
+  options?: {
+    id?: string;
+    duration?: number;
+    position?: any;
+    icon?: Renderable;
+    style?: React.CSSProperties;
+    className?: string;
+    ariaLive?: any;
+  };
+}
 export interface NotificationOptions {
   /**
    * Toast ID for programmatic dismissal

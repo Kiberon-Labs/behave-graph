@@ -1,0 +1,32 @@
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+/* One card per boundary param so the name field gets its own full-width line
+   instead of collapsing next to the type select. */
+.param {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.4rem;
+    border: 1px solid var(--ds-border-subtle, #454545);
+    border-radius: var(--component-radii-sm, 4px);
+    background: var(--ds-widget-bg, #202020);
+}
+
+.topRow {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.name {
+    flex: 1;
+    min-width: 0;
+}
+
+.type {
+    width: 100%;
+}

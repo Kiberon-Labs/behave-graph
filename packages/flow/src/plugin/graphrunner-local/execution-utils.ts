@@ -262,39 +262,79 @@ export function setupVariableChangeTracking(
 /**
  * Execute a graph through its lifecycle phases
  */
+/**
+ * The single graph-execution lifecycle shared by both runners (the in-browser
+ * local transport and the web-worker runner). It drives the start → tick → end →
+ * completed phase machine and emits the `completed` / error messages; runner-
+ * specific behaviour (how fibers are stepped, tick timing, and what to do on
+ * completion/error) is injected via {@link ExecuteGraphLifecycleOptions} hooks so
+ * neither runner keeps its own copy of this logic.
+ */
+export interface ExecuteGraphLifecycleOptions {
+  /** Tick timing when no {@link tickStrategy} is given. Defaults to 50ms. */
+  tickInterval?: number;
+  /**
+   * When false, the run is left alive at the completed phase instead of being
+   * finalized (no `completed` message / dispose). Defaults to true.
+   */
+  autoEnd?: boolean;
+  /**
+   * Run the engine's pending fibers for the current phase. Defaults to
+   * `run.engine.executeAllAsync()`; the local runner injects a pause-aware
+   * executor that also honours its step-delay / speed settings.
+   */
+  executeStep?: () => Promise<void>;
+  /** Timing between tick iterations. Defaults to `sleep(tickInterval)`. */
+  tickStrategy?: () => Promise<void>;
+  /** Invoked after each tick iteration. */
+  onStepComplete?: () => Promise<void>;
+  /**
+   * Invoked after a natural completion — the run is marked completed, the
+   * `completed` message has been sent, and the engine disposed. Lets a runner
+   * run session hooks and sync its own state (e.g. the local panel's status).
+   */
+  onComplete?: () => void | Promise<void>;
+  /**
+   * Invoked on error (after the run is marked errored, before the engine is
+   * disposed and the error rethrown). Replaces the default `sendError`.
+   */
+  onError?: (error: Error) => void | Promise<void>;
+}
+
 export async function executeGraphLifecycle(
   run: ActiveRun,
   graphId: string,
   ctx: MessageContext,
-  options?: {
-    tickInterval?: number;
-    onStepComplete?: () => Promise<void>;
-    autoEnd?: boolean;
-  }
+  options?: ExecuteGraphLifecycleOptions
 ): Promise<void> {
+  const executeStep =
+    options?.executeStep ?? (() => run.engine.executeAllAsync());
+  const tickStrategy =
+    options?.tickStrategy ?? (() => sleep((options?.tickInterval ?? 50) / 1000));
+
   try {
     const eventEmitter = run.registry.dependencies?.ILifecycleEventEmitter as
       | ILifecycleEventEmitter
       | undefined;
 
-    // Execute start event
+    // Start phase
     if (run.executionPhase === 'start') {
       if (
         eventEmitter?.startEvent &&
         eventEmitter.startEvent.listenerCount > 0
       ) {
         eventEmitter.startEvent.emit();
-        await run.engine.executeAllAsync();
+        await executeStep();
       }
       run.executionPhase = 'tick';
     }
 
-    // Execute tick events
+    // Tick phase — for graphs with tick listeners this runs until paused/stopped.
     if (run.executionPhase === 'tick') {
       if (eventEmitter?.tickEvent && eventEmitter.tickEvent.listenerCount > 0) {
         while (!run.isPaused && run.status === 'running') {
           eventEmitter.tickEvent.emit();
-          await run.engine.executeAllAsync();
+          await executeStep();
           run.currentTick++;
 
           if (options?.onStepComplete) {
@@ -305,24 +345,30 @@ export async function executeGraphLifecycle(
             return;
           }
 
-          await sleep((options?.tickInterval ?? 50) / 1000);
+          await tickStrategy();
         }
       } else {
         run.executionPhase = 'end';
       }
     }
 
-    // Execute end event
+    // End phase
     if (run.executionPhase === 'end' && !run.isPaused) {
       if (eventEmitter?.endEvent && eventEmitter.endEvent.listenerCount > 0) {
         eventEmitter.endEvent.emit();
-        await run.engine.executeAllAsync();
+        await executeStep();
       }
       run.executionPhase = 'completed';
     }
 
-    // Complete if not paused
-    if (!run.isPaused && !options?.autoEnd) {
+    // Finalize once the run has actually reached the completed phase (i.e. it ran
+    // out of fibers to execute) and isn't paused. autoEnd defaults to true, so a
+    // normal run completes; pass autoEnd=false to keep it alive for manual control.
+    if (
+      run.executionPhase === 'completed' &&
+      !run.isPaused &&
+      (options?.autoEnd ?? true)
+    ) {
       run.status = 'completed';
       const elapsedMs = Date.now() - run.startedAt;
 
@@ -337,14 +383,19 @@ export async function executeGraphLifecycle(
       });
 
       run.engine.dispose();
+      await options?.onComplete?.();
     }
   } catch (error) {
     run.status = 'error';
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    ctx.sendError('NODE_EXECUTION_ERROR', errorMessage, {
-      runId: run.runId,
-      graphId
-    });
+    const err = error instanceof Error ? error : new Error(String(error));
+    if (options?.onError) {
+      await options.onError(err);
+    } else {
+      ctx.sendError('NODE_EXECUTION_ERROR', err.message, {
+        runId: run.runId,
+        graphId
+      });
+    }
     run.engine.dispose();
     throw error;
   }

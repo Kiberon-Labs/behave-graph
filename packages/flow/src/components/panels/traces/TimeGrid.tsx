@@ -12,7 +12,7 @@ const TICK_STYLE: React.CSSProperties = {
 
 const LABEL_STYLE: React.CSSProperties = {
   fontSize: '10px',
-  color: 'var(--vscode-descriptionForeground)',
+  color: 'var(--ds-fg-muted)',
   padding: '2px 4px',
   whiteSpace: 'nowrap'
 };
@@ -32,8 +32,8 @@ export const TimeGrid = memo(function TimeGrid({
         position: 'sticky',
         top: 0,
         height: 24,
-        background: 'var(--vscode-editor-background)',
-        borderBottom: '1px solid var(--vscode-panel-border)',
+        background: 'var(--ds-editor-bg)',
+        borderBottom: '1px solid var(--ds-panel-border)',
         zIndex: 10,
         padding: `0 ${padding}px`
       }}

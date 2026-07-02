@@ -32,7 +32,7 @@ pnpm test:visual:update
 
 ## How it works
 
-- Config: [`vitest.visual.config.ts`](../../vitest.visual.config.ts) — browser
+- Config: [`vitest.visual.config.ts`](../../vitest.visual.config.ts) , browser
   mode, Playwright/Chromium, headless, fixed `900x700` viewport.
 - Test files: `tests/visual/**/*.visual.test.tsx`.
 - Each panel is rendered inside a fixed-size `640x480` frame on the editor
@@ -60,5 +60,5 @@ When a new panel is added under `src/components/panels`, add one entry to the
 ```
 
 Then run `pnpm test:visual:update` to create the baseline, eyeball the generated
-PNG, and commit it. Keep it to a single representative snapshot per panel — the
+PNG, and commit it. Keep it to a single representative snapshot per panel , the
 unit tests under `tests/util` and `tests/components` cover finer-grained logic.

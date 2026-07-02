@@ -3,9 +3,9 @@ import { useStore } from 'zustand';
 import { configureSockets } from '@/util/sockets';
 import { isHandleConnected } from '@/util/isHandleConnected';
 import type { IBehaveNode } from '@/types/nodes';
-import type { System } from '@/system';
+import type { GraphSession } from '@/system/graphSession';
 
-export function useNodeInputsData(system: System) {
+export function useNodeInputsData(system: GraphSession) {
   const selectedNodeId = useStore(
     system.selectionStore,
     (x) => x.selectedNodeId
@@ -14,13 +14,13 @@ export function useNodeInputsData(system: System) {
   const edges = useStore(system.edgeStore, (x) => x.edges);
   const controls = useStore(system.controlStore, (x) => x.controls);
   const defaultControl = useStore(system.controlStore, (x) => x.defaultControl);
-  const generators = useStore(system.socketGeneratorStore, (s) => s.generators);
+  const generators = useStore(system.editor.socketGeneratorStore, (s) => s.generators);
   const generatorLocation = useStore(
-    system.systemSettings,
+    system.editor.systemSettings,
     (s) => s.generatorLocation
   );
 
-  const allSpecsJson = useStore(system.specStore, (x) => x.specs);
+  const allSpecsJson = useStore(system.editor.specStore, (x) => x.specs);
 
   const selectedNodes = useMemo(() => {
     return nodes.filter(
@@ -97,49 +97,26 @@ export function useNodeInputsData(system: System) {
   const outputsWithInfo = useMemo(() => {
     if (!selectedNode || !nodeSpec) return [];
 
-    const { pairs, valueOutputs } = configureSockets(
+    // `valueOutputs` already contains every non-flow output. (The `pairs` from
+    // configureSockets also carry these value outputs in their second slot ,
+    // iterating both would render each value output twice and collide on the
+    // React key, e.g. `provider` / `agent`.)
+    const { valueOutputs } = configureSockets(
       selectedNode.data.configuration,
       nodeSpec,
       selectedNode.data.dynamicPorts
     );
 
-    const outputs: Array<{
-      name: string;
-      valueType: string;
-      connected: boolean;
-    }> = [];
-
-    // Collect flow-paired outputs (non-flow)
-    for (const [, output] of pairs) {
-      if (output && output.valueType !== 'flow') {
-        outputs.push({
-          name: output.name,
-          valueType: output.valueType,
-          connected: isHandleConnected(
-            edges,
-            selectedNode.id,
-            output.name,
-            'source'
-          )
-        });
-      }
-    }
-
-    // Value-only outputs
-    for (const output of valueOutputs) {
-      outputs.push({
-        name: output.name,
-        valueType: output.valueType,
-        connected: isHandleConnected(
-          edges,
-          selectedNode.id,
-          output.name,
-          'source'
-        )
-      });
-    }
-
-    return outputs;
+    return valueOutputs.map((output) => ({
+      name: output.name,
+      valueType: output.valueType,
+      connected: isHandleConnected(
+        edges,
+        selectedNode.id,
+        output.name,
+        'source'
+      )
+    }));
   }, [selectedNode, nodeSpec, edges]);
 
   const matchingGenerators = useMemo(() => {

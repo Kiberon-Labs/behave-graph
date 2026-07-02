@@ -1,5 +1,50 @@
 import type { BoxBase, LayoutBase, PanelBase, TabData } from 'rc-dock';
 
+/**
+ * Tab-id convention for graph tabs. The default graph uses the bare id `graph`
+ * (session id `graph`); every other graph uses `graph:<sessionId>`. These three
+ * helpers are the single source of truth for the convention.
+ */
+export const GRAPH_TAB_PREFIX = 'graph:';
+export const DEFAULT_GRAPH_ID = 'graph';
+
+export function isGraphTabId(id: string | undefined): id is string {
+  return !!id && (id === DEFAULT_GRAPH_ID || id.startsWith(GRAPH_TAB_PREFIX));
+}
+
+export function sessionIdFromTabId(tabId: string): string {
+  return tabId === DEFAULT_GRAPH_ID
+    ? DEFAULT_GRAPH_ID
+    : tabId.slice(GRAPH_TAB_PREFIX.length);
+}
+
+export function tabIdForSession(sessionId: string): string {
+  return sessionId === DEFAULT_GRAPH_ID
+    ? DEFAULT_GRAPH_ID
+    : `${GRAPH_TAB_PREFIX}${sessionId}`;
+}
+
+/** Collect the session ids of every graph tab present in a layout. */
+export function collectGraphSessionIds(layout: LayoutBase): Set<string> {
+  const ids = new Set<string>();
+  const visit = (base?: BoxBase | PanelBase) => {
+    if (!base) return;
+    const panel = base as PanelBase;
+    if (panel.tabs) {
+      for (const tab of panel.tabs) {
+        if (isGraphTabId(tab.id)) ids.add(sessionIdFromTabId(tab.id!));
+      }
+    }
+    const box = base as BoxBase;
+    if (box.children) box.children.forEach(visit);
+  };
+  visit(layout.dockbox);
+  visit(layout.floatbox);
+  visit(layout.maxbox);
+  visit(layout.windowbox);
+  return ids;
+}
+
 export function recurseFindGraphPanel(
   base: BoxBase | PanelBase
 ): PanelBase | null {

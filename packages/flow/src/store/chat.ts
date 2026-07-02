@@ -5,12 +5,24 @@ export interface AgentConfig {
   systemPrompt?: string;
 }
 
+/**
+ * A renderable attachment on a chat message. The producer supplies a ready-to-use
+ * `url` (a data: or object URL), so the panel stays free of any image-decoding.
+ */
+export interface ChatAttachment {
+  type: 'image';
+  url: string;
+  alt?: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
+  /** Optional non-text attachments (e.g. images sent with a multimodal message). */
+  attachments?: ChatAttachment[];
 }
 
 export type ChatStore = {

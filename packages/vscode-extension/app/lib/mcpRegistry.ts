@@ -17,7 +17,7 @@ import type {
 import type { MessageHandler } from './messageHandler';
 
 // ---------------------------------------------------------------
-// Handler type — what plugins provide for each tool
+// Handler type , what plugins provide for each tool
 // ---------------------------------------------------------------
 
 /**

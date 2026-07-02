@@ -13,7 +13,7 @@ type TraceLaneProps = {
  * Renders a single lane's spans.
  *
  * Event handling for hover/click is delegated to the parent scroll
- * container via `data-*` attributes — no per-span closures needed.
+ * container via `data-*` attributes , no per-span closures needed.
  */
 export const TraceLane = memo(function TraceLane({
   laneData,

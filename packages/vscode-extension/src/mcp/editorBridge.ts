@@ -1,5 +1,5 @@
 /**
- * Editor bridge — routes MCP tool calls to the active webview editor.
+ * Editor bridge , routes MCP tool calls to the active webview editor.
  *
  * The bridge maintains a reference to the currently-active editor's
  * MessageHandler and uses the postMessageWithResponse pattern to send

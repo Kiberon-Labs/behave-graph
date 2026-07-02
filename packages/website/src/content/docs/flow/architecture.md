@@ -252,7 +252,7 @@ interface GraphJSON {
 }
 ```
 
-This is the **pure execution graph**—no UI metadata, ready for runtime.
+This is the **pure execution graph**,no UI metadata, ready for runtime.
 
 ### UI Graph (Authoring)
 

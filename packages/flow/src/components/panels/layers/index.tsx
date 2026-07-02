@@ -1,7 +1,11 @@
 import { BasePanel } from '@/components/panels/base';
 import { layerId } from '@/annotations';
-import { useSystem } from '@/system/provider';
-import { VscodeButton, VscodeDivider } from '@vscode-elements/react-elements';
+import { useActiveGraph } from '@/system/provider';
+import {
+  VscodeButton,
+  VscodeCheckbox,
+  VscodeDivider
+} from '@vscode-elements/react-elements';
 import { useMemo, useState } from 'react';
 import { useStore } from 'zustand';
 import styles from './styles.module.css';
@@ -25,7 +29,7 @@ const clampOpacityFromPercent = (percent: number): number => {
 };
 
 export function LayersPanel() {
-  const system = useSystem();
+  const system = useActiveGraph()!;
 
   const layers = useStore(system.layerStore, (state) => state.layers);
   const nodeLayers = useStore(system.layerStore, (state) => state.nodeLayers);
@@ -180,18 +184,19 @@ export function LayersPanel() {
                 </div>
 
                 <div className={styles.controls}>
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={layer.visible}
-                      onChange={(event) =>
-                        system.layerStore
-                          .getState()
-                          .setLayerVisibility(layer.id, event.target.checked)
-                      }
-                    />
-                    Visible
-                  </label>
+                  <VscodeCheckbox
+                    className={styles.checkboxLabel}
+                    checked={layer.visible}
+                    label="Visible"
+                    onChange={(event: any) =>
+                      system.layerStore
+                        .getState()
+                        .setLayerVisibility(
+                          layer.id,
+                          Boolean(event?.target?.checked)
+                        )
+                    }
+                  />
 
                   <label className={styles.opacityLabel}>
                     Opacity

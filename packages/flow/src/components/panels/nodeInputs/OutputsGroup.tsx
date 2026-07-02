@@ -30,6 +30,7 @@ export const OutputsGroup: React.FC<OutputsGroupProps> = ({
           <div key={output.name} className={styles.inputWithToggle}>
             {onToggleOutput && (
               <Icon
+                className={styles.inputToggle}
                 onClick={() => onToggleOutput(output.name)}
                 title={isHidden ? 'Show output on node' : 'Hide output on node'}
               >
@@ -42,18 +43,7 @@ export const OutputsGroup: React.FC<OutputsGroupProps> = ({
                   <div className={styles.inputName} title={output.valueType}>
                     {output.name}
                   </div>
-                  <div className={styles.inputSubtext}>
-                    {output.connected ? 'Connected' : output.valueType}
-                  </div>
-                </div>
-                <div>
-                  {output.connected ? (
-                    <div className={styles.connectedMessage}>
-                      Socket is connected
-                    </div>
-                  ) : (
-                    <div className={styles.connectedMessage}>Not connected</div>
-                  )}
+                  <div className={styles.inputSubtext}>{output.valueType}</div>
                 </div>
               </div>
             </div>

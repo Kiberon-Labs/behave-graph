@@ -43,6 +43,11 @@ export * from './store/specific';
 export * from './store/socketGenerator';
 export * from './store/documentation';
 export * from './store/toolbar';
+export * from './store/conversions';
+export * from './store/commands';
+export * from './store/contextMenu';
+export * from './store/settingsSchema';
+export { registerDefaults } from './generators/registerDefaults';
 
 export * from './annotations/index';
 
@@ -50,6 +55,9 @@ export * from './types/graph';
 
 //================== Plugins =================//
 export * from './system/plugin';
+export * from './manifest/index.js';
 export * from './plugin/docs/index.js';
 export * from './plugin/graphrunner/index.js';
 export * from './plugin/graphrunner-local/index.js';
+export * from './plugin/graphrunner-webworker/index.js';
+export * from './plugin/realtime/realtimeRunner.js';

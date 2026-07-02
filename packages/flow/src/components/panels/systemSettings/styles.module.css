@@ -1,11 +1,138 @@
-.title {
-    font-size: 0.9em;
-    font-weight: 600;
-    color: var(--vscode-foreground);
+/* Compact, VSCode-settings-like layout */
+
+.searchRow {
+    padding-bottom: var(--space-2, 0.5rem);
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Label + reset affordance on one line (non-toggle rows) */
+.labelRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+/* Small dot next to a label whose value differs from its default */
+.modified {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 0.4rem;
+    border-radius: 50%;
+    background: var(--ds-focus-border, #0078d4);
+    vertical-align: middle;
+}
+
+/* Ghost icon button to restore a setting's default */
+.reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    padding: 0.15rem;
+    background: transparent;
+    border: none;
+    border-radius: var(--component-radii-sm, 4px);
+    color: var(--ds-fg-muted);
+    cursor: pointer;
+}
+
+.reset:hover {
+    background: var(--ds-toolbar-hover-bg, rgba(90, 93, 94, 0.31));
+    color: var(--ds-fg);
+}
+
+/* A single setting row */
+.setting {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: var(--space-1, 0.25rem) 0;
+}
+
+/* Toggle settings put the control inline with the label */
+.toggle {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle .body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.label {
+    font-size: var(--fs-label, 0.8rem);
+    color: var(--ds-fg);
+    line-height: 1.3;
 }
 
 .description {
-    font-size: 0.85em;
-    color: var(--vscode-descriptionForeground);
-    opacity: 0.9;
+    font-size: var(--fs-desc, 0.72rem);
+    line-height: 1.35;
+    color: var(--ds-fg-muted);
+}
+
+.divider {
+    margin: 0.25rem 0;
+}
+
+/* Conversions editor */
+.conversions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+    padding-left: 0.5rem;
+    border-left: 1px solid var(--ds-sash-border, var(--ds-border, #2b2b2b));
+}
+
+.conversionsLabel {
+    font-size: var(--fs-desc, 0.72rem);
+    color: var(--ds-fg-muted);
+}
+
+.empty {
+    font-size: var(--fs-desc, 0.72rem);
+    color: var(--ds-fg-muted);
+    opacity: 0.8;
+}
+
+.rule {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.ruleText {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ruleNode {
+    opacity: 0.65;
+}
+
+/* Stack the add-rule inputs vertically so nothing overflows the panel */
+.addForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.addForm vscode-single-select,
+.addForm vscode-button {
+    width: 100%;
 }

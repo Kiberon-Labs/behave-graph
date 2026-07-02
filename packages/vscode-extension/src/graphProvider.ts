@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { FileSystem } from './capabilities/fs.js';
@@ -6,9 +7,16 @@ import { MessageHandler } from './messageHandler.js';
 import { GraphDocument } from './document.js';
 import { disposeAll } from './dispose.js';
 import { getNonce } from './nonce.js';
+import { loadEditorPlugin } from './editorPlugin.js';
+import { getExecutableGraphTracker } from './extension.js';
 import { ServerManager } from './server/manager.js';
 import type { UIGraphJSON } from '@kiberon-labs/behave-graph-flow';
 import { getEditorBridge } from './extension.js';
+import {
+  resolveEditorSettings,
+  writeEditorSettings,
+  type EditorSettingsFile
+} from './settings.js';
 import type { McpToolsChangedMessage } from './mcp/types.js';
 
 const PREFIX = path.join('build');
@@ -155,28 +163,36 @@ export class GraphProvider
       enableScripts: true
     };
 
+    // Eagerly re-evaluate this graph's executability so Execute Graph un-greys
+    // as soon as it opens, without waiting for the full workspace scan.
+    void getExecutableGraphTracker()?.refresh(document.uri);
+
     // Get the directory of the document for resolving relative paths
     const documentDir =
       document.uri.scheme === 'untitled'
         ? (vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd())
         : path.dirname(document.uri.fsPath);
 
-    // Check if plugin.js exists in the workspace
-    let pluginUri: vscode.Uri | undefined;
-    const pluginPath = path.join(documentDir, 'plugin.js');
+    // Load an adjacent editor plugin (plugin.js/.mjs/.ts/.tsx). TypeScript is
+    // transpiled on demand, and the result is inlined into the webview so no
+    // build step or extra resource roots are needed.
+    let pluginScript: string | undefined;
     try {
-      await vscode.workspace.fs.stat(vscode.Uri.file(pluginPath));
-      pluginUri = webviewPanel.webview.asWebviewUri(
-        vscode.Uri.file(pluginPath)
+      const loaded = await loadEditorPlugin(documentDir);
+      if (loaded) {
+        pluginScript = loaded.code;
+        console.log(`Loaded editor plugin from ${loaded.sourcePath}`);
+      }
+    } catch (err) {
+      console.error('Failed to load editor plugin:', err);
+      vscode.window.showWarningMessage(
+        `Behave Graph: failed to load editor plugin , ${err instanceof Error ? err.message : String(err)}`
       );
-      console.log(`Found plugin.js at ${pluginPath}`);
-    } catch {
-      // plugin.js doesn't exist, that's okay
     }
 
     webviewPanel.webview.html = this.getHtmlForWebview(
       webviewPanel.webview,
-      pluginUri
+      pluginScript
     );
 
     // Create a dedicated server for this document in IPC mode
@@ -209,6 +225,21 @@ export class GraphProvider
 
     new FileSystem(entry);
 
+    // Editor settings file: project-local file lives at the workspace folder,
+    // falling back to the document's directory.
+    const settingsSaveDir =
+      vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ??
+      documentDir;
+
+    // Persist editor settings sent from the webview to the local rc file.
+    messageHandler.on('saveSettings', async (body: EditorSettingsFile) => {
+      try {
+        await writeEditorSettings(settingsSaveDir, body);
+      } catch (err) {
+        console.error('Failed to write editor settings file', err);
+      }
+    });
+
     // Register this editor with the MCP bridge so MCP tools can
     // send commands to this webview.
     const bridge = getEditorBridge();
@@ -238,6 +269,14 @@ export class GraphProvider
     webviewPanel.webview.onDidReceiveMessage((e) => {
       switch (e.type) {
         case 'ready':
+          // Resolve the cascading editor settings (local → global) and push
+          // them to the webview to apply.
+          void resolveEditorSettings(documentDir)
+            .then((merged) => messageHandler.postMessage('settings', merged))
+            .catch((err) =>
+              console.error('Failed to resolve editor settings', err)
+            );
+
           if (document.uri.scheme === 'untitled') {
             messageHandler.postMessage('init', {
               untitled: true,
@@ -340,11 +379,16 @@ export class GraphProvider
    */
   private getHtmlForWebview(
     webview: vscode.Webview,
-    pluginUri?: vscode.Uri
+    pluginScript?: string
   ): string {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const manifest = require(
-      path.join(this._context.extensionPath, PREFIX, '.vite', 'manifest.json')
+    // Read the vite manifest fresh on every open. `require()` caches by path in
+    // the extension host, so after the webview assets are rebuilt (new hashes)
+    // it would keep serving the old, now-deleted file names.
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        path.join(this._context.extensionPath, PREFIX, '.vite', 'manifest.json'),
+        'utf8'
+      )
     );
     const mainScript = manifest['index.html']['file'];
 
@@ -387,9 +431,12 @@ export class GraphProvider
 			<body>
 	            <noscript>You need to enable JavaScript to run this app.</noscript>
 				<div id="root"></div>${
-          pluginUri
+          pluginScript
             ? `
-				<script nonce="${nonce}" src="${pluginUri}"></script>`
+				<script nonce="${nonce}">${pluginScript.replace(
+            /<\/script/gi,
+            '<\\/script'
+          )}</script>`
             : ''
         }
 				<script  type="module" nonce="${nonce}" src="${scriptUri}"></script>

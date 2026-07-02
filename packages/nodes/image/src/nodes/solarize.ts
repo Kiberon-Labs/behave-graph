@@ -1,8 +1,6 @@
-import type { IMagickImage } from '@imagemagick/magick-wasm';
-import { ImageMagick } from '@imagemagick/magick-wasm';
 import { makePureInOutFunctionDesc } from '@kiberon-labs/behave-graph';
 import { ImageValue } from '../values';
-import { cloneImage } from '@/utils.js';
+import { transformImage } from '@/utils.js';
 
 export const Solarize = makePureInOutFunctionDesc({
   typeName: 'image/solarize',
@@ -25,13 +23,6 @@ export const Solarize = makePureInOutFunctionDesc({
   exec: async ({ read, write }) => {
     const image = read<Uint8Array>('image');
     const factor = read<number>('factor');
-    const magickImage = await ImageMagick.read(
-      cloneImage(image),
-      async (image: IMagickImage) => {
-        image.solarize(factor);
-        return await image.write((data) => data);
-      }
-    );
-    write('image', magickImage);
+    write('image', await transformImage(image, (img) => img.solarize(factor)));
   }
 });

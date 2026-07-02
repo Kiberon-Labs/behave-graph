@@ -1,0 +1,68 @@
+{
+  "name": "@kiberon-labs/behave-graph-nodes-ai",
+  "version": "0.1.0",
+  "type": "module",
+  "source": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "check": "oxfmt --check",
+    "format": "oxfmt",
+    "test": "vitest --passWithNoTests",
+    "dev": "tsdown --watch src",
+    "typecheck": "tsc",
+    "lint": "oxlint",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kiberon-Labs/behave-graph",
+    "directory": "packages/nodes/ai"
+  },
+  "bugs": "https://github.com/Kiberon-Labs/behave-graph/issues",
+  "author": "kiberonlabsdev",
+  "devDependencies": {
+    "@kiberon-labs/behave-graph": "workspace:*",
+    "@storybook/addon-a11y": "^10.0.8",
+    "@storybook/addon-docs": "^10.0.8",
+    "@storybook/addon-vitest": "^10.0.8",
+    "@storybook/react-vite": "^10.0.8",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.6",
+    "oxfmt": "^0.14.0",
+    "oxlint": "^1.29.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "storybook": "^10.0.8",
+    "tsdown": "^0.16.5",
+    "vite": "^7.2.4",
+    "vitest": "^4.0.10"
+  },
+  "dependencies": {
+    "ai": "^6.0.0",
+    "@ai-sdk/openai": "^3.0.0",
+    "@ai-sdk/anthropic": "^3.0.0",
+    "zustand": "^5.0.8"
+  },
+  "license": "ISC",
+  "peerDependencies": {
+    "@kiberon-labs/behave-graph": "workspace:*",
+    "@kiberon-labs/behave-graph-flow": "workspace:*"
+  }
+}

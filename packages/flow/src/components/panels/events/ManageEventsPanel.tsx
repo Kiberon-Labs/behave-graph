@@ -7,11 +7,12 @@ import {
 } from '@vscode-elements/react-elements';
 import { Plus, Edit } from 'iconoir-react';
 
-import { useSystem } from '@/system';
+import { useActiveGraph } from '@/system';
 import styles from './styles.module.css';
 import { BasePanel } from '../base';
 import type { GraphJSON } from '@kiberon-labs/behave-graph';
 import { Icon } from '@/components/primitives/icon';
+import { PanelHeader } from '../common/PanelHeader';
 
 type CustomEventJSON = NonNullable<GraphJSON['customEvents']>[number];
 
@@ -29,7 +30,7 @@ interface ManageEventsPanelProps {
 export const ManageEventsPanel: React.FC<ManageEventsPanelProps> = ({
   onSelectEvent
 }) => {
-  const system = useSystem();
+  const system = useActiveGraph()!;
   const rawEvents = useStore(system.eventsStore, (s) => s.customEvents);
 
   const persistedEvents = useMemo(() => Object.values(rawEvents), [rawEvents]);
@@ -49,12 +50,14 @@ export const ManageEventsPanel: React.FC<ManageEventsPanelProps> = ({
   return (
     <BasePanel>
       <div className={styles.root}>
-        <div className={styles.header}>
-          <h2 className={styles.headerTitle}>Custom Events</h2>
-          <Icon title="New event" onClick={addNewEvent}>
-            <Plus />
-          </Icon>
-        </div>
+        <PanelHeader
+          title="Custom Events"
+          actions={
+            <Icon title="New event" onClick={addNewEvent}>
+              <Plus />
+            </Icon>
+          }
+        />
         <VscodeDivider />
         <div className={styles.content}>
           {persistedEvents.length === 0 ? (

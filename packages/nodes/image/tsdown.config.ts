@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown';
 
 export default defineConfig({
-  entry: ['./src/index.ts', './src/ui.tsx'],
+  entry: ['./src/index.ts', './src/ui.tsx', './src/manifest.source.ts'],
   outDir: 'dist',
   target: 'es2022',
   sourcemap: true,

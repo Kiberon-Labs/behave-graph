@@ -43,6 +43,7 @@ export const InputsGroup: React.FC<InputsGroupProps> = ({
           <div key={input.name} className={styles.inputWithToggle}>
             {onToggleInput && (
               <Icon
+                className={styles.inputToggle}
                 onClick={() => onToggleInput(input.name)}
                 title={isHidden ? 'Show input on node' : 'Hide input on node'}
               >

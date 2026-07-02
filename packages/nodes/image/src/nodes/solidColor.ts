@@ -5,11 +5,7 @@ import {
 } from '@imagemagick/magick-wasm';
 import { makePureInOutFunctionDesc } from '@kiberon-labs/behave-graph';
 import { ImageValue } from '../values';
-
-function clampInt(value: number, min: number, max: number): number {
-  const truncated = Number.isFinite(value) ? Math.trunc(value) : min;
-  return Math.min(max, Math.max(min, truncated));
-}
+import { clampInt, cloneImage } from '@/utils.js';
 
 export const SolidColorImage = makePureInOutFunctionDesc({
   typeName: 'image/solidColor',
@@ -55,16 +51,17 @@ export const SolidColorImage = makePureInOutFunctionDesc({
 
     const r = clampInt(read<number>('r'), 0, 255);
     const g = clampInt(read<number>('g'), 0, 255);
-    const b = clampInt(read<number>('b'), 200, 255);
+    const b = clampInt(read<number>('b'), 0, 255);
     const a = clampInt(read<number>('a'), 0, 255);
 
     const color = new MagickColor(r, g, b, a);
     const image = MagickImage.create(color, width, height);
 
     try {
-      const data = await image.write(MagickFormat.Png, async (image) => {
-        return image;
-      });
+      // Copy the bytes out of the WASM-heap view before `dispose()` frees them.
+      const data = await image.write(MagickFormat.Png, async (bytes) =>
+        cloneImage(bytes)
+      );
       write('image', data);
     } catch (err) {
       console.error('Error creating solid color image:', err);

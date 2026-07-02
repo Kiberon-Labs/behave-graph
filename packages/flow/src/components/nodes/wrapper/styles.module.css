@@ -26,8 +26,8 @@
 }
 
 .nodeWrapper.executing {
-    border-color: var(--vscode-focusBorder);
-    box-shadow: 0 0 8px var(--vscode-focusBorder);
+    border-color: var(--ds-focus-border);
+    box-shadow: 0 0 8px var(--ds-focus-border);
     animation: pulse-border 1s ease-in-out infinite;
 }
 
@@ -37,7 +37,7 @@
 
 .nodeWrapper.pinned {
     cursor: not-allowed;
-    border-color: var(--vscode-editorWarning-foreground);
+    border-color: var(--ds-warning);
 }
 
 .smallIcon {
@@ -49,11 +49,11 @@
 
     0%,
     100% {
-        box-shadow: 0 0 8px var(--vscode-focusBorder);
+        box-shadow: 0 0 8px var(--ds-focus-border);
     }
 
     50% {
-        box-shadow: 0 0 16px var(--vscode-focusBorder);
+        box-shadow: 0 0 16px var(--ds-focus-border);
     }
 }
 
@@ -103,7 +103,7 @@
 .descriptionIcon {
     display: flex;
     align-items: center;
-    color: var(--vscode-descriptionForeground);
+    color: var(--ds-fg-muted);
     opacity: 0.7;
     cursor: help;
 }

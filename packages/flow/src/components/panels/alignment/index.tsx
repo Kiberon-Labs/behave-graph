@@ -14,8 +14,8 @@ import {
   CompAlignTopSolid
 } from 'iconoir-react';
 import { VscodeButton } from '@vscode-elements/react-elements';
-import { useSystem } from '@/system/provider';
-import type { System } from '@/system';
+import { useActiveGraph } from '@/system/provider';
+import type { GraphSession } from '@/system';
 import styles from './index.module.css';
 import { BasePanel } from '../base';
 
@@ -38,7 +38,7 @@ const partitionSelectedNodes = (nodes: Node[]) => {
 };
 
 const handleChange =
-  (system: System) => (updater: (selectedNodes: Node[]) => void) => {
+  (system: GraphSession) => (updater: (selectedNodes: Node[]) => void) => {
     const { nodes, setNodes } = system.nodeStore.getState();
 
     const { selectedNodes, unselectedNodes } = partitionSelectedNodes(nodes);
@@ -130,7 +130,7 @@ export const distribute =
   };
 
 export function AlignmentPanel() {
-  const graphEditor = useSystem();
+  const graphEditor = useActiveGraph()!;
   const updateNodes = handleChange(graphEditor);
 
   return (

@@ -26,8 +26,7 @@ export type SuspendedLoopState = {
  */
 export class SuspendableForLoop
   extends FlowNode
-  implements ISuspendable<SuspendedLoopState>
-{
+  implements ISuspendable<SuspendedLoopState> {
   public static Description = new NodeDescription(
     'flow/suspendableForLoop',
     'Flow',
@@ -100,7 +99,7 @@ export type SuspendedWaitState = {
 
 /**
  * An async node that parks the fiber on a pending promise until externally
- * signalled — the asynchronous counterpart to a flow node. Unlike flow nodes
+ * signalled , the asynchronous counterpart to a flow node. Unlike flow nodes
  * (which resume by re-triggering with restored state), an async node is
  * resumed through `fiber.continue()` -> `unsuspend(continuanceData)`, which
  * delivers the awaited data and commits the downstream flow.
@@ -110,8 +109,7 @@ export type SuspendedWaitState = {
  */
 export class WaitForSignal
   extends AsyncNode
-  implements IAsyncSuspendable<unknown, SuspendedWaitState>
-{
+  implements IAsyncSuspendable<unknown, SuspendedWaitState> {
   public static Description = new NodeDescription(
     'test/waitForSignal',
     'Flow',
@@ -163,7 +161,7 @@ export class WaitForSignal
     this.notifyParked?.();
     // park the fiber until the engine is suspended (the promise never
     // resolves; the suspension snapshot captures this node as the resume point)
-    return new Promise<void>(() => {});
+    return new Promise<void>(() => { });
   }
 
   suspend(): SuspendedWaitState {

@@ -1,0 +1,118 @@
+{
+  "v": "1.0.0",
+  "name": "Sum (subgraph)",
+  "annotations": {},
+  "data": {},
+  "flow": {
+    "nodes": [
+      {
+        "id": "in",
+        "type": "graph/input",
+        "configuration": {
+          "parameters": [
+            { "name": "a", "valueTypeName": "float" },
+            { "name": "b", "valueTypeName": "float" }
+          ]
+        },
+        "flows": { "flow": { "nodeId": "out", "socket": "flow" } }
+      },
+      {
+        "id": "add",
+        "type": "math/add/float",
+        "parameters": {
+          "a": { "link": { "nodeId": "in", "socket": "a" } },
+          "b": { "link": { "nodeId": "in", "socket": "b" } }
+        }
+      },
+      {
+        "id": "out",
+        "type": "graph/output",
+        "configuration": {
+          "parameters": [{ "name": "sum", "valueTypeName": "float" }]
+        },
+        "parameters": {
+          "sum": { "link": { "nodeId": "add", "socket": "result" } }
+        }
+      }
+    ],
+    "variables": [],
+    "customEvents": [],
+    "graphInputs": [
+      { "key": "a", "valueType": "float" },
+      { "key": "b", "valueType": "float" }
+    ],
+    "graphOutputs": [{ "key": "sum", "valueType": "float" }]
+  },
+  "nodes": [
+    {
+      "id": "in",
+      "type": "behaveNode",
+      "position": { "x": 0, "y": 80 },
+      "data": {
+        "type": "graph/input",
+        "configuration": {
+          "parameters": [
+            { "name": "a", "valueTypeName": "float" },
+            { "name": "b", "valueTypeName": "float" }
+          ]
+        },
+        "ports": {}
+      },
+      "width": 150,
+      "height": 150
+    },
+    {
+      "id": "add",
+      "type": "behaveNode",
+      "position": { "x": 280, "y": 40 },
+      "data": { "type": "math/add/float", "configuration": {}, "ports": {} },
+      "width": 150,
+      "height": 150
+    },
+    {
+      "id": "out",
+      "type": "behaveNode",
+      "position": { "x": 560, "y": 80 },
+      "data": {
+        "type": "graph/output",
+        "configuration": {
+          "parameters": [{ "name": "sum", "valueTypeName": "float" }]
+        },
+        "ports": {}
+      },
+      "width": 150,
+      "height": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "e:in:flow->out:flow",
+      "source": "in",
+      "sourceHandle": "flow",
+      "target": "out",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e:in:a->add:a",
+      "source": "in",
+      "sourceHandle": "a",
+      "target": "add",
+      "targetHandle": "a"
+    },
+    {
+      "id": "e:in:b->add:b",
+      "source": "in",
+      "sourceHandle": "b",
+      "target": "add",
+      "targetHandle": "b"
+    },
+    {
+      "id": "e:add:result->out:sum",
+      "source": "add",
+      "sourceHandle": "result",
+      "target": "out",
+      "targetHandle": "sum"
+    }
+  ],
+  "user": { "viewport": { "x": 0, "y": 0, "zoom": 1 } }
+}

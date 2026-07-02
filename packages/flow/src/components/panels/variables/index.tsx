@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useSystem } from '@/system/provider';
+import { useActiveGraph } from '@/system/provider';
 import { useStore } from 'zustand';
 import { CreateVariableScreen } from './CreateVariableScreen';
 import { ManageVariablesScreen } from './ManageVariablesScreen';
@@ -8,7 +8,7 @@ import { BasePanel } from '../base';
 type VariablesPanelScreen = 'manage' | 'create';
 
 export function VariablesPanel() {
-  const system = useSystem();
+  const system = useActiveGraph()!;
   const variables = useStore(system.variableStore, (x) => x.variables);
   const setVariable = useStore(system.variableStore, (x) => x.setVariable);
   const removeVariable = useStore(

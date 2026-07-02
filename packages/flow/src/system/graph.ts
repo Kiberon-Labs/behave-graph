@@ -1,5 +1,5 @@
 import type { Viewport } from 'reactflow';
-import type { System } from './system';
+import type { GraphSession } from './graphSession';
 import type { Edge } from 'reactflow';
 import type { UIGraphJSON } from '@/types/graph';
 
@@ -9,12 +9,10 @@ import type { UIGraphJSON } from '@/types/graph';
  */
 export class Graph {
   public readonly viewports: Viewport[] = [];
-  private sys: System;
+  private sys: GraphSession;
 
-  protected annotations: { [key: string]: any } = {};
-
-  constructor(system: System) {
-    this.sys = system;
+  constructor(session: GraphSession) {
+    this.sys = session;
   }
 
   setViewport(index: number, viewport: Viewport) {
@@ -83,13 +81,14 @@ export class Graph {
   }
 
   serialize(): UIGraphJSON {
+    const meta = this.sys.metaStore.getState();
     return {
       v: '1.0.0',
-      name: 'Untitled Graph',
+      name: meta.name,
       user: {
         viewport: this.viewports[0] || { x: 0, y: 0, zoom: 1 }
       },
-      annotations: this.annotations,
+      annotations: { ...meta.metadata },
       data: {
         layers: this.sys.layerStore.getState().serialize()
       },
@@ -100,14 +99,11 @@ export class Graph {
   }
 
   getAnnotations() {
-    return { ...this.annotations };
+    return { ...this.sys.metaStore.getState().metadata };
   }
 
   setAnnotations(annotations: { [key: string]: any }) {
-    this.annotations = {
-      ...this.annotations,
-      ...annotations
-    };
+    this.sys.metaStore.getState().mergeMetadata(annotations);
     this.sys.pubsub.publish('graphAnnotationsChanged', this.getAnnotations());
   }
 
@@ -115,7 +111,8 @@ export class Graph {
     //Load nodes
     this.sys.nodeStore.getState().setNodes(data.nodes);
     this.sys.edgeStore.getState().setEdges(data.edges);
-    this.annotations = data.annotations || {};
+    this.sys.metaStore.getState().setMetadata(data.annotations || {});
+    if (data.name) this.sys.metaStore.getState().setName(data.name);
     this.sys.layerStore.getState().deserialize(data.data?.layers);
 
     // Restore viewport

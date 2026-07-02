@@ -1,0 +1,65 @@
+{
+  "name": "Tool use",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "lifecycle/onStart",
+      "metadata": { "positionX": "-220", "positionY": "360" },
+      "flows": { "flow": { "nodeId": "setup", "socket": "flow" } }
+    },
+    {
+      "id": "provider",
+      "type": "ai/provider",
+      "metadata": { "positionX": "-220", "positionY": "-40" },
+      "parameters": { "kind": { "value": "openrouter" } }
+    },
+    {
+      "id": "tool",
+      "type": "ai/tool",
+      "metadata": { "positionX": "-220", "positionY": "160" },
+      "parameters": {
+        "name": { "value": "get_current_time" },
+        "description": { "value": "Returns the current time as a string." },
+        "parameters": { "value": "{\"type\":\"object\",\"properties\":{}}" }
+      }
+    },
+    {
+      "id": "agent",
+      "type": "ai/agent",
+      "metadata": { "positionX": "160", "positionY": "40" },
+      "parameters": {
+        "provider": { "link": { "nodeId": "provider", "socket": "provider" } },
+        "tool": { "link": { "nodeId": "tool", "socket": "tool" } },
+        "model": { "value": "meta-llama/llama-3.3-70b-instruct:free" },
+        "systemPrompt": {
+          "value": "You can call tools. Use get_current_time when asked about the time."
+        }
+      }
+    },
+    {
+      "id": "setup",
+      "type": "ai/setupConversation",
+      "metadata": { "positionX": "520", "positionY": "240" },
+      "parameters": {
+        "agent": { "link": { "nodeId": "agent", "socket": "agent" } }
+      }
+    },
+    {
+      "id": "onToolCall",
+      "type": "ai/onToolCall",
+      "metadata": { "positionX": "160", "positionY": "440" },
+      "flows": { "flow": { "nodeId": "toolResult", "socket": "flow" } }
+    },
+    {
+      "id": "toolResult",
+      "type": "ai/toolResult",
+      "metadata": { "positionX": "520", "positionY": "440" },
+      "parameters": {
+        "callId": { "link": { "nodeId": "onToolCall", "socket": "callId" } },
+        "result": { "value": "It is 3:00 PM." }
+      }
+    }
+  ],
+  "variables": [],
+  "customEvents": []
+}

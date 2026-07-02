@@ -114,11 +114,11 @@ describe('async node suspension (vs flow nodes)', () => {
     // flow nodes are captured generically from node state
     expect(suspension.nodes['loop']).toEqual({ nextIndex: 1 });
 
-    // event nodes hold live listeners — never serialized
+    // event nodes hold live listeners , never serialized
     expect(suspension.nodes['0']).toBeUndefined();
 
     // async nodes can hold timers, so they are only captured when they opt in
-    // via ISuspendable. time/delay has node state but no suspend() — excluded.
+    // via ISuspendable. time/delay has node state but no suspend() , excluded.
     expect(suspension.nodes['orphanDelay']).toBeUndefined();
   });
 });

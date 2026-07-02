@@ -28,6 +28,9 @@ import { LifecycleOnStart } from './Lifecycle/LifecycleOnStart.js';
 import { LifecycleOnTick } from './Lifecycle/LifecycleOnTick.js';
 import { Easing } from './Logic/Easing.js';
 import { stringSplit } from './Logic/split.js';
+import { GraphInput } from './Subgraphs/GraphInput.js';
+import { GraphOutput } from './Subgraphs/GraphOutput.js';
+import { CallSubgraph } from './Subgraphs/CallSubgraph.js';
 import { Delay } from './Time/Delay.js';
 import * as TimeNodes from './Time/TimeNodes.js';
 import * as BooleanNodes from './Values/BooleanNodes.js';
@@ -74,6 +77,11 @@ export const getCoreNodesMap = memo<Record<string, NodeDefinition>>(() => {
     // custom events
     OnCustomEvent.Description,
     TriggerCustomEvent.Description,
+
+    // subgraphs
+    GraphInput.Description,
+    GraphOutput.Description,
+    CallSubgraph.Description,
 
     // variables
     VariableGet,

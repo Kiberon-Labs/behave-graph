@@ -1,0 +1,104 @@
+/*
+ * VS Code theme bridge.
+ *
+ * The flow editor's design system is built on an intermediary `--ds-*` token
+ * layer (see @kiberon-labs/behave-graph-flow's css/vars.css), whose default
+ * values are the VS Code dark theme. This file re-declares ONLY that layer,
+ * pointing each token at the live `--vscode-*` variable VS Code injects on
+ * <html>, so the editor follows the user's active theme (dark / light /
+ * high-contrast). Every semantic token (`--colors-*`, `--color-neutral-*`, …)
+ * resolves through `--ds-*`, so overriding this layer is enough — there is no
+ * need to restate the higher-level tokens here.
+ *
+ * The hex/rgba fallbacks only apply when the app runs outside a VS Code webview
+ * (e.g. local dev), and mirror the canonical defaults in css/vars.css.
+ */
+:root {
+    /* Fonts */
+    --ds-font-ui: var(--vscode-font-family, "Segoe UI", system-ui, sans-serif);
+    --ds-font-mono: var(--vscode-editor-font-family, "Consolas", "Courier New", monospace);
+    --ds-font-mono-size: var(--vscode-editor-font-size, 14px);
+
+    /* Foreground */
+    --ds-fg: var(--vscode-foreground, #cccccc);
+    --ds-fg-muted: var(--vscode-descriptionForeground, #9d9d9d);
+    --ds-icon-fg: var(--vscode-icon-foreground, #cccccc);
+    --ds-editor-fg: var(--vscode-editor-foreground, #cccccc);
+    --ds-widget-fg: var(--vscode-editorWidget-foreground, #cccccc);
+
+    /* Surfaces */
+    --ds-editor-bg: var(--vscode-editor-background, #1f1f1f);
+    --ds-widget-bg: var(--vscode-editorWidget-background, #202020);
+    --ds-sidebar-bg: var(--vscode-sideBar-background, #181818);
+    --ds-tabs-bg: var(--vscode-editorGroupHeader-tabsBackground, #181818);
+    --ds-tab-inactive-bg: var(--vscode-tab-inactiveBackground, #181818);
+    --ds-section-header-bg: var(--vscode-sideBarSectionHeader-background, #181818);
+    --ds-section-header-fg: var(--vscode-sideBarSectionHeader-foreground, #cccccc);
+    --ds-section-header-border: var(--vscode-sideBarSectionHeader-border, #2b2b2b);
+
+    /* Borders / focus / sashes */
+    --ds-border: var(--vscode-widget-border, #313131);
+    --ds-border-subtle: var(--vscode-editorWidget-border, #454545);
+    --ds-border-muted: var(--vscode-editorGroup-border, rgba(255, 255, 255, 0.09));
+    --ds-panel-border: var(--vscode-panel-border, #2b2b2b);
+    --ds-focus-border: var(--vscode-focusBorder, #0078d4);
+    --ds-sash-hover-border: var(--vscode-sash-hoverBorder, #0078d4);
+    --ds-sash-border: var(--vscode-settings-sashBorder, #2b2b2b);
+
+    /* Buttons */
+    --ds-button-bg: var(--vscode-button-background, #0078d4);
+    --ds-button-fg: var(--vscode-button-foreground, #ffffff);
+    --ds-button-hover-bg: var(--vscode-button-hoverBackground, #026ec1);
+    --ds-button-secondary-bg: var(--vscode-button-secondaryBackground, #313131);
+    --ds-button-border: var(--vscode-button-border, #313131);
+
+    /* Inputs */
+    --ds-input-bg: var(--vscode-input-background, #313131);
+    --ds-input-border: var(--vscode-input-border, #3c3c3c);
+    --ds-input-fg: var(--vscode-input-foreground, #cccccc);
+    --ds-input-option-active-bg: var(--vscode-inputOption-activeBackground, rgba(36, 137, 219, 0.51));
+    --ds-input-option-active-border: var(--vscode-inputOption-activeBorder, #2488db);
+    --ds-input-option-active-fg: var(--vscode-inputOption-activeForeground, #ffffff);
+
+    /* Lists */
+    --ds-list-active-bg: var(--vscode-list-activeSelectionBackground, #04395e);
+    --ds-list-active-fg: var(--vscode-list-activeSelectionForeground, #ffffff);
+    --ds-list-hover-bg: var(--vscode-list-hoverBackground, #2a2d2e);
+
+    /* Toolbar / badges */
+    --ds-toolbar-active-bg: var(--vscode-toolbar-activeBackground, rgba(99, 102, 103, 0.31));
+    --ds-toolbar-hover-bg: var(--vscode-toolbar-hoverBackground, rgba(90, 93, 94, 0.31));
+    --ds-badge-bg: var(--vscode-badge-background, #616161);
+    --ds-badge-fg: var(--vscode-badge-foreground, #f8f8f8);
+
+    /* Text variants */
+    --ds-preformat-fg: var(--vscode-textPreformat-foreground, #d0d0d0);
+    --ds-blockquote-bg: var(--vscode-textBlockQuote-background, #2b2b2b);
+    --ds-blockquote-border: var(--vscode-textBlockQuote-border, #616161);
+    --ds-code-bg: var(--vscode-textCodeBlock-background, #2b2b2b);
+
+    /* Editor / status states */
+    --ds-inactive-selection-bg: var(--vscode-editor-inactiveSelectionBackground, #3a3d41);
+    --ds-find-match-bg: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 92, 0, 0.33));
+    --ds-error: var(--vscode-editorError-foreground, #f14c4c);
+    --ds-warning: var(--vscode-editorWarning-foreground, #cca700);
+    --ds-success: var(--vscode-charts-green, #89d185);
+    --ds-error-bg: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+    --ds-error-border: var(--vscode-inputValidation-errorBorder, #be1100);
+    --ds-error-fg: var(--vscode-inputValidation-errorForeground, #cccccc);
+    --ds-info-bg: var(--vscode-inputValidation-infoBackground, #063b49);
+    --ds-info-border: var(--vscode-inputValidation-infoBorder, #007acc);
+
+    /* Charts / git / terminal accents */
+    --ds-chart-blue: var(--vscode-charts-blue, #59a4f9);
+    --ds-git-added: var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
+    --ds-git-modified: var(--vscode-gitDecoration-modifiedResourceForeground, #e2c08d);
+    --ds-terminal-cyan: var(--vscode-terminal-ansiCyan, #11a8cd);
+
+    /* Menus */
+    --ds-menu-bg: var(--vscode-menu-background, var(--ds-widget-bg));
+    --ds-menu-fg: var(--vscode-menu-foreground, var(--ds-fg));
+    --ds-menu-border: var(--vscode-menu-border, var(--ds-border));
+    --ds-menu-selection-bg: var(--vscode-menu-selectionBackground, var(--ds-list-hover-bg));
+    --ds-menu-selection-fg: var(--vscode-menu-selectionForeground, var(--ds-fg));
+}

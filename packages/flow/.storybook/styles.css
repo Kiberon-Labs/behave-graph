@@ -1,8 +1,14 @@
-@import "./vscode.css";
+/* Dark canvas by default, matching the editor theme used by the components.
+   Colors resolve through the design system's `--ds-*` bridge layer (defined in
+   src/css/vars.css, imported via src/index.css before this file). */
+body.sb-show-main {
+    background-color: var(--ds-editor-bg) !important;
+    color: var(--ds-editor-fg);
+}
 
 #storybook-root {
     padding: 0 !important;
-    font-family: var(--vscode-editor-font-family) !important;
+    font-family: var(--ds-font-mono) !important;
 }
 
 .h-dvh {

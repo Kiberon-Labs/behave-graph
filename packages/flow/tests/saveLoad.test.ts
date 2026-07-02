@@ -24,6 +24,7 @@ describe('Save and Load Graph', () => {
     };
 
     system = new System(registry);
+    system.createSession('graph');
   });
 
   it('should save and load a graph with node positions', () => {
@@ -67,7 +68,7 @@ describe('Save and Load Graph', () => {
     system.edgeStore.getState().setEdges(initialEdges);
 
     // Save the graph
-    const savedGraph = buildUIGraphJSON(system);
+    const savedGraph = buildUIGraphJSON(system.session!);
 
     // Verify saved graph has nodes with positions
     expect(savedGraph.nodes).toHaveLength(2);
@@ -115,7 +116,7 @@ describe('Save and Load Graph', () => {
     system.nodeStore.getState().setNodes(initialNodes);
 
     // Save the graph
-    const savedGraph = buildUIGraphJSON(system);
+    const savedGraph = buildUIGraphJSON(system.session!);
 
     // Verify viewport is saved
     expect(savedGraph.user?.viewport).toEqual({ x: 50, y: 100, zoom: 1.5 });
@@ -151,7 +152,7 @@ describe('Save and Load Graph', () => {
     system.nodeStore.getState().setNodes(nodes);
 
     // Save the graph
-    const savedGraph = buildUIGraphJSON(system);
+    const savedGraph = buildUIGraphJSON(system.session!);
 
     // Verify variables are in the flow
     expect(savedGraph.flow.variables).toBeDefined();
@@ -200,7 +201,7 @@ describe('Save and Load Graph', () => {
     system.nodeStore.getState().setNodes(nodes);
 
     // Save the graph
-    const savedGraph = buildUIGraphJSON(system);
+    const savedGraph = buildUIGraphJSON(system.session!);
 
     // Verify custom events are in the flow
     expect(savedGraph.flow.customEvents).toEqual(customEvents);
@@ -236,7 +237,7 @@ describe('Save and Load Graph', () => {
     system.nodeStore.getState().setNodes(nodesWithPositions);
 
     // Save the graph
-    const savedGraph = buildUIGraphJSON(system);
+    const savedGraph = buildUIGraphJSON(system.session!);
 
     // Modify the node position
     system.nodeStore.getState().setNodes([
@@ -340,7 +341,7 @@ describe('Save and Load Graph', () => {
     system.variableStore.getState().setVariables(variables);
 
     // Save
-    const saved = buildUIGraphJSON(system);
+    const saved = buildUIGraphJSON(system.session!);
 
     // Clear
     system.nodeStore.getState().setNodes([]);

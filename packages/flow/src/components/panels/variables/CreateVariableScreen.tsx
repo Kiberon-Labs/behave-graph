@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useStore } from 'zustand';
 import { Variable } from '@kiberon-labs/behave-graph';
-import { useSystem } from '@/system/provider';
+import { useActiveGraph } from '@/system/provider';
 import {
   VscodeButton,
   VscodeTextfield,
@@ -18,8 +18,8 @@ type Props = {
 };
 
 export function CreateVariableScreen({ onBack, onCancel, onCreated }: Props) {
-  const system = useSystem();
-  const registry = useStore(system.registry);
+  const system = useActiveGraph()!;
+  const registry = useStore(system.editor.registry);
   const setVariable = useStore(system.variableStore, (x) => x.setVariable);
   const controls = useStore(system.controlStore, (x) => x.controls);
   const defaultControl = useStore(system.controlStore, (x) => x.defaultControl);

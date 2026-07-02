@@ -25,7 +25,7 @@ import type {
 } from './types.js';
 
 /**
- * Handle returned by McpServer.registerTool — lets us remove or
+ * Handle returned by McpServer.registerTool , lets us remove or
  * update the tool later.
  */
 interface RegisteredToolHandle {
@@ -84,7 +84,7 @@ export class BehaveGraphMcpServer {
     // Add or update tools
     for (const [name, def] of incoming) {
       if (this.registeredTools.has(name)) {
-        // Tool already registered — for simplicity we remove and
+        // Tool already registered , for simplicity we remove and
         // re-add so the description / schema are refreshed.
         this.registeredTools.get(name)!.handle.remove();
         this.registeredTools.delete(name);
@@ -104,7 +104,7 @@ export class BehaveGraphMcpServer {
   /**
    * Registers the `search_tools` MCP tool on the extension host.
    *
-   * This tool does NOT go through the webview — it reads the
+   * This tool does NOT go through the webview , it reads the
    * `registeredTools` map directly to let agents discover tools
    * by name, description, category, or tags.
    */
@@ -126,15 +126,15 @@ export class BehaveGraphMcpServer {
             .optional()
             .describe(
               'Free-text search string. Matches against tool ' +
-                'name, title, description, category, and tags.'
+              'name, title, description, category, and tags.'
             ),
           category: z
             .string()
             .optional()
             .describe(
               'Filter by category (e.g. "inspection", ' +
-                '"authoring", "variables", "events", ' +
-                '"editor", "execution").'
+              '"authoring", "variables", "events", ' +
+              '"editor", "execution").'
             )
         }
       },
@@ -168,10 +168,10 @@ export class BehaveGraphMcpServer {
           tags: d.tags ?? [],
           parameters: d.inputSchema
             ? Object.entries(d.inputSchema).map(([pName, pSchema]) => ({
-                name: pName,
-                type: pSchema.type ?? 'unknown',
-                description: pSchema.description ?? null
-              }))
+              name: pName,
+              type: pSchema.type ?? 'unknown',
+              description: pSchema.description ?? null
+            }))
             : []
         }));
 
@@ -204,7 +204,7 @@ export class BehaveGraphMcpServer {
   }
 
   // -----------------------------------------------------------
-  // MCP Prompt — tool discovery workflow
+  // MCP Prompt , tool discovery workflow
   // -----------------------------------------------------------
 
   /**
@@ -282,28 +282,28 @@ You are interacting with the Behave Graph visual node editor via MCP tools.
 
 There are many tools available, organized into these categories:
 
-- **inspection** — Read graph state: get the full graph JSON, \
+- **inspection** , Read graph state: get the full graph JSON, \
 inspect individual nodes, list available node types, see the \
 current selection.
-- **authoring** — Modify the graph: add/remove nodes, \
+- **authoring** , Modify the graph: add/remove nodes, \
 connect/disconnect sockets, set parameters and configuration.
-- **variables** — Create and remove graph variables.
-- **events** — Create and remove custom events (with optional \
+- **variables** , Create and remove graph variables.
+- **events** , Create and remove custom events (with optional \
 parameters).
-- **editor** — Control the editor UI: save, auto-layout, \
+- **editor** , Control the editor UI: save, auto-layout, \
 zoom to fit, select nodes.
-- **execution** — Run or stop graph execution.
+- **execution** , Run or stop graph execution.
 
 ## Workflow
 
 1. **Start with \`search_tools\`** to find the right tool. \
 You can search by keyword or filter by category. Omit all \
 parameters to see every available tool.
-2. **Read tool details** — the search result includes each \
+2. **Read tool details** , the search result includes each \
 tool's description and parameter schema so you know exactly \
 what arguments to pass.
-3. **Call the tool** — use the tool name from the search result.
-4. **Inspect the result** — most tools return JSON describing \
+3. **Call the tool** , use the tool name from the search result.
+4. **Inspect the result** , most tools return JSON describing \
 what happened.
 
 ## Tips
@@ -397,7 +397,7 @@ function jsonSchemaPropertyToZod(prop: JsonSchemaProperty): z.ZodType {
       }
       break;
     default:
-      // No type specified — accept anything
+      // No type specified , accept anything
       schema = z.unknown();
       break;
   }

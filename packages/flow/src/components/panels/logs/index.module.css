@@ -5,7 +5,7 @@
     flex-direction: column;
     gap: 8px;
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--vscode-panel-border);
+    border-bottom: 1px solid var(--ds-panel-border);
 }
 
 .searchBar {
@@ -36,10 +36,16 @@
     gap: 2px;
 }
 
+/* Keep the toolbar action icons inside their (ghost) buttons. */
+.toolbarActions svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Active toggle: conveyed by the solid icon variant + an accent color, with no
+   box — the buttons stay ghost/invisible like the rest of the toolbar. */
 .actionActive {
-    color: var(--vscode-inputOption-activeForeground, #ffffff);
-    background-color: var(--vscode-inputOption-activeBackground, rgba(53, 116, 240, 0.25));
-    outline: 1px solid var(--vscode-inputOption-activeBorder, transparent);
+    color: var(--ds-focus-border, #3794ff);
 }
 
 /* ---- Level filter chips ---------------------------------------------- */
@@ -73,13 +79,13 @@
 }
 
 .levelChip:focus-visible {
-    outline: 1px solid var(--vscode-focusBorder);
+    outline: 1px solid var(--ds-focus-border);
     outline-offset: 1px;
 }
 
 .levelOff {
     background-color: transparent;
-    color: var(--vscode-descriptionForeground, #9d9d9d);
+    color: var(--ds-fg-muted, #9d9d9d);
     opacity: 0.6;
 }
 
@@ -114,7 +120,7 @@
     font-size: 0.72rem;
     line-height: 1;
     align-self: center;
-    color: var(--vscode-descriptionForeground, #9d9d9d);
+    color: var(--ds-fg-muted, #9d9d9d);
     font-variant-numeric: tabular-nums;
 }
 
@@ -134,15 +140,15 @@
     justify-content: center;
     height: 100%;
     min-height: 64px;
-    color: var(--vscode-descriptionForeground, #9d9d9d);
+    color: var(--ds-fg-muted, #9d9d9d);
     font-size: 0.85rem;
 }
 
 .logsList {
     display: flex;
     flex-direction: column;
-    font-family: var(--vscode-editor-font-family, monospace);
-    font-size: var(--vscode-editor-font-size, 12px);
+    font-family: var(--ds-font-mono, monospace);
+    font-size: var(--ds-font-mono-size, 12px);
     line-height: 18px;
 }
 
@@ -158,16 +164,16 @@
 }
 
 .row:hover {
-    background-color: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.06));
+    background-color: var(--ds-list-hover-bg, rgba(255, 255, 255, 0.06));
 }
 
 .row[data-severity='warning'] {
-    border-left-color: color-mix(in srgb, var(--vscode-editorWarning-foreground, #cca700) 60%, transparent);
+    border-left-color: color-mix(in srgb, var(--ds-warning, #cca700) 60%, transparent);
 }
 
 .row[data-severity='error'] {
-    border-left-color: var(--vscode-editorError-foreground, #f48771);
-    background-color: color-mix(in srgb, var(--vscode-editorError-foreground, #f48771) 8%, transparent);
+    border-left-color: var(--ds-error, #f48771);
+    background-color: color-mix(in srgb, var(--ds-error, #f48771) 8%, transparent);
 }
 
 .rowIcon {
@@ -186,7 +192,7 @@
 
 .rowTime {
     flex: none;
-    color: var(--vscode-descriptionForeground, #9d9d9d);
+    color: var(--ds-fg-muted, #9d9d9d);
     opacity: 0.85;
     font-variant-numeric: tabular-nums;
 }
@@ -194,19 +200,19 @@
 .rowMessage {
     flex: 1;
     min-width: 0;
-    color: var(--vscode-foreground);
+    color: var(--ds-fg);
 }
 
 .row[data-severity='error'] .rowMessage {
-    color: var(--vscode-editorError-foreground, #f48771);
+    color: var(--ds-error, #f48771);
 }
 
 .row[data-severity='verbose'] .rowMessage {
-    color: var(--vscode-descriptionForeground, #9d9d9d);
+    color: var(--ds-fg-muted, #9d9d9d);
 }
 
 .highlight {
-    background-color: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 92, 0, 0.33));
+    background-color: var(--ds-find-match-bg, rgba(234, 92, 0, 0.33));
     color: inherit;
     border-radius: 2px;
 }

@@ -28,14 +28,14 @@
     }
 
     code {
-        background: var(--vscode-textCodeBlock-background);
+        background: var(--ds-code-bg);
         padding: 0.125em 0.25em;
         border-radius: 3px;
-        font-family: var(--vscode-editor-font-family);
+        font-family: var(--ds-font-mono);
     }
 
     pre {
-        background: var(--vscode-textCodeBlock-background);
+        background: var(--ds-code-bg);
         padding: 0.75em;
         border-radius: 4px;
         overflow-x: auto;

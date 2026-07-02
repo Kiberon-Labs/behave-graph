@@ -26,10 +26,18 @@ export const registryStoreFactory = () =>
     },
 
     updateRegistry: (registry: INodeRegistry) =>
-      set((x) => ({
-        values: { ...x.values, ...registry.values },
-        specs: [...registry.specs]
-      })),
+      set((x) => {
+        // Merge specs by type (additive) so layering multiple profiles/plugins
+        // (core + image + ai + ...) doesn't clobber previously-registered node
+        // types. Later registrations override an existing type. Use updateSpecs
+        // for a full replacement.
+        const byType = new Map(x.specs.map((spec) => [spec.type, spec]));
+        for (const spec of registry.specs) byType.set(spec.type, spec);
+        return {
+          values: { ...x.values, ...registry.values },
+          specs: Array.from(byType.values())
+        };
+      }),
 
     updateValues: (values: Record<string, ValueTypeMetadata>) =>
       set((x) => ({

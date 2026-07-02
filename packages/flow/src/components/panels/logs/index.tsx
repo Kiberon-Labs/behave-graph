@@ -14,7 +14,7 @@ import {
   ClockSolid
 } from 'iconoir-react';
 import { VscodeTextfield } from '@vscode-elements/react-elements';
-import { useSystem } from '@/system/provider';
+import { useActiveGraph } from '@/system/provider';
 import { useStore } from 'zustand';
 import clsx from 'clsx';
 import { BasePanel } from '../base';
@@ -25,10 +25,10 @@ import { Icon } from '@/components/primitives/icon';
 const LEVELS: readonly LogSeverity[] = ['verbose', 'info', 'warning', 'error'];
 
 const LOG_COLORS: Record<LogSeverity, string> = {
-  verbose: 'var(--vscode-terminal-ansiCyan, #29b8db)',
-  info: 'var(--vscode-charts-blue, #3794ff)',
-  warning: 'var(--vscode-editorWarning-foreground, #cca700)',
-  error: 'var(--vscode-editorError-foreground, #f48771)'
+  verbose: 'var(--ds-terminal-cyan, #29b8db)',
+  info: 'var(--ds-chart-blue, #3794ff)',
+  warning: 'var(--ds-warning, #cca700)',
+  error: 'var(--ds-error, #f48771)'
 };
 
 const IconType: Record<LogSeverity, React.ReactNode> = {
@@ -66,7 +66,7 @@ const renderMessage = (message: string, term: string): React.ReactNode => {
 };
 
 export function LogsPanel() {
-  const system = useSystem();
+  const system = useActiveGraph()!;
   const logs = useStore(system.logsStore, (x) => x.logs);
   const clearLogs = useStore(system.logsStore, (x) => x.clear);
 
@@ -161,7 +161,7 @@ export function LogsPanel() {
   const copyToClipboard = useCallback(
     (text: string) => {
       navigator.clipboard.writeText(text).then(() => {
-        system.notifications.success('Copied to clipboard');
+        system.editor.notifications.success('Copied to clipboard');
       });
     },
     [system]

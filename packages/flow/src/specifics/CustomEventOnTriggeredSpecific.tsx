@@ -5,7 +5,7 @@ import {
   VscodeSingleSelect
 } from '@vscode-elements/react-elements';
 
-import { useSystem } from '@/system/provider';
+import { useGraph } from '@/system/provider';
 import type { SpecificRenderProps } from '@/store/specific';
 
 const NAME = 'customEvent/onTriggered.customEventId';
@@ -21,7 +21,7 @@ export function getCustomEventOnTriggeredSpecific() {
 const CustomEventOnTriggeredSpecific: React.FC<SpecificRenderProps> = ({
   node
 }) => {
-  const system = useSystem();
+  const system = useGraph();
   const customEvents = useStore(system.eventsStore, (s) => s.customEvents);
 
   const options = useMemo(() => {

@@ -12,7 +12,6 @@ Example abstractions in behave-graph:
 
 - **ILogger**. The logging interface allows for behave-graph to report verbose, info, warning and error text messages. The command line graph-exec tool uses the driver DefaultLogger to output these messages to the console.
 - **ILifecycleEventEmitter**. This interface is responsible for emitting when the behave-graph should start, tick and stop.
-- **IScene**. This interface is responsible for doing basic scene manipulations. In the three example, this interface is implemented by the ThreeScene class that maps these operations to a Three.js-based scene graph.
 
 For example here is the ILogger abstraction, you can see it is just a standard Typescript interface:
 
@@ -28,9 +27,6 @@ export interface ILogger {
 Here is the DefaultLogger implementation of the abstraction, you can see it is just a standard Typescript class that implements the above interface:
 
 ```ts
-import { Logger } from '../../../../Diagnostics/Logger.js';
-import { ILogger } from '../ILogger.js';
-
 export class DefaultLogger implements ILogger {
   verbose(text: string): void {
     Logger.verbose(text);

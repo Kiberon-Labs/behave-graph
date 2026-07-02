@@ -18,27 +18,35 @@ import { NodePickerPanel } from '@/components/panels/nodePicker';
 import { PanelPanel } from '@/components/panels/panel';
 import { ConversationPanel } from '@/components/panels/conversation';
 import { LayersPanel } from '@/components/panels/layers';
+import { GraphPropertiesPanel } from '@/components/panels/graphProperties';
+import { GraphProvider } from './provider';
+import { useStore } from 'zustand';
+import type { GraphSession } from './graphSession';
+import {
+  DEFAULT_GRAPH_ID,
+  isGraphTabId,
+  sessionIdFromTabId,
+  tabIdForSession
+} from '@/components/layoutController/utils';
+
+/** Live graph tab title , re-renders when the graph is renamed. */
+const GraphTabTitle = ({ session }: { session: GraphSession }) => {
+  const name = useStore(session.metaStore, (s) => s.name);
+  return <>{name}</>;
+};
 
 export class TabLoader {
   public readonly tabs: Record<string, () => TabData> = {};
+  private readonly system: System;
 
-  constructor(_system: System) {
-    this.register('graph', () => {
-      return {
-        id: 'graph',
-        closable: true,
-        cached: true,
-        group: 'graph',
-        title: 'Graph',
-        content: () => (
-          <ErrorBoundary fallback={'whoops'}>
-            <HotKeys>
-              <Flow />
-            </HotKeys>
-          </ErrorBoundary>
-        )
-      };
-    });
+  constructor(system: System) {
+    this.system = system;
+
+    // The default graph tab. Other graphs are loaded dynamically by id
+    // (see `loadGraphTab`).
+    this.register(DEFAULT_GRAPH_ID, () =>
+      this.buildGraphTab(DEFAULT_GRAPH_ID)
+    );
 
     this.register('system:settings', () => {
       return {
@@ -91,6 +99,20 @@ export class TabLoader {
         content: () => (
           <ErrorBoundary fallback={'whoops'}>
             <LogsPanel />
+          </ErrorBoundary>
+        )
+      };
+    });
+
+    this.register('graphProperties', () => {
+      return {
+        id: 'graphProperties',
+        closable: true,
+        title: 'Graph Properties',
+        group: 'default',
+        content: () => (
+          <ErrorBoundary fallback={'whoops'}>
+            <GraphPropertiesPanel />
           </ErrorBoundary>
         )
       };
@@ -256,10 +278,40 @@ export class TabLoader {
     if (!tab.id) {
       return;
     }
+    // Dynamic per-graph tabs (`graph:<sessionId>`) are not in the registry.
+    if (isGraphTabId(tab.id) && tab.id !== DEFAULT_GRAPH_ID) {
+      return this.buildGraphTab(tab.id);
+    }
     return this.tabs[tab.id]?.();
   }
 
   register(id: string, loader: () => TabData) {
     this.tabs[id] = loader;
+  }
+
+  /**
+   * Build the TabData for a graph tab, resolving (or lazily creating) its
+   * session and wrapping the canvas in a {@link GraphProvider} so it stays bound
+   * to its own graph regardless of which tab is focused.
+   */
+  private buildGraphTab(tabId: string): TabData {
+    const sessionId = sessionIdFromTabId(tabId);
+    const session = this.system.getOrCreateSession(sessionId);
+    return {
+      id: tabIdForSession(sessionId),
+      closable: true,
+      cached: true,
+      group: 'graph',
+      title: <GraphTabTitle session={session} />,
+      content: () => (
+        <ErrorBoundary fallback={'whoops'}>
+          <GraphProvider value={session}>
+            <HotKeys>
+              <Flow />
+            </HotKeys>
+          </GraphProvider>
+        </ErrorBoundary>
+      )
+    };
   }
 }

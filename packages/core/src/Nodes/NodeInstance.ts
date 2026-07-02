@@ -15,13 +15,22 @@ export const NodeType = {
 
 export type NodeType = (typeof NodeType)[keyof typeof NodeType];
 
+/**
+ * A node's execution kind. The four built-ins are recognised by the engine out
+ * of the box; a host may introduce its own kind (e.g. `'AudioRate'`) by
+ * stamping a custom string here and registering a matching handler via
+ * {@link Engine.registerNodeExecutionHandler}. The `string & {}` keeps
+ * autocomplete for the built-ins while leaving the set open (OCP).
+ */
+export type NodeTypeName = NodeType | (string & {});
+
 export interface INode {
   readonly inputs: Socket[];
   readonly outputs: Socket[];
   readonly graph: IGraph;
   description: INodeDescription;
   configuration: NodeConfiguration;
-  nodeType: (typeof NodeType)[keyof typeof NodeType];
+  nodeType: NodeTypeName;
   id: string;
   label?: string;
   metadata?: any;

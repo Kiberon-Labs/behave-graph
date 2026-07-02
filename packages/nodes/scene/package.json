@@ -5,8 +5,11 @@
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "source": "./src/index.ts",
+  "behaveGraph": {
+    "manifest": "./dist/behave-graph.manifest.json"
+  },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && behave-graph-manifest dist/manifest.source.js --out dist",
     "check": "oxfmt --check",
     "format": "oxfmt",
     "test": "vitest",

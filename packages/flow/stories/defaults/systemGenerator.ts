@@ -34,5 +34,6 @@ const nodeRegistry = {
 //Basic system generator for tests and stories
 export const systemGenerator = () => {
   const defaultSys = new System(nodeRegistry);
+  defaultSys.createSession('graph');
   return defaultSys;
 };

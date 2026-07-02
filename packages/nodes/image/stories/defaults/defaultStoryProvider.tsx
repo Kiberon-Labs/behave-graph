@@ -1,4 +1,8 @@
-import { System, SystemProvider } from '@kiberon-labs/behave-graph-flow';
+import {
+  GraphProvider,
+  System,
+  SystemProvider
+} from '@kiberon-labs/behave-graph-flow';
 import {
   registerCoreProfile,
   writeNodeSpecsToJSON,
@@ -19,6 +23,7 @@ const nodeRegistry = {
 };
 
 const defaultSys = new System(nodeRegistry);
+const defaultSession = defaultSys.createSession('graph');
 
 defaultSys.registerPlugin(imagePlugin).then(() => {
   defaultSys.tabStore.getState().setLayout({
@@ -99,7 +104,7 @@ defaultSys.registerPlugin(imagePlugin).then(() => {
     }
   });
 
-  defaultSys.flowStore.getState().setGraph({
+  defaultSession.flowStore.getState().setGraph({
     nodes: [
       {
         id: '57dab1a3-1be8-46b0-bb26-30c0d85205a2',
@@ -239,5 +244,9 @@ export const DefaultSystemProvider = ({
 }: {
   children: React.ReactElement;
 }) => {
-  return <SystemProvider value={defaultSys}>{children}</SystemProvider>;
+  return (
+    <SystemProvider value={defaultSys}>
+      <GraphProvider value={defaultSession}>{children}</GraphProvider>
+    </SystemProvider>
+  );
 };

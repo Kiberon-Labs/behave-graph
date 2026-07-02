@@ -6,7 +6,12 @@ import { Reduce, Maximize, Xmark } from 'iconoir-react';
 import { useSystem } from '@/system/provider.js';
 import { MenuBar } from '../menubar';
 import { useStore } from 'zustand';
-import { findGraphPanel } from './utils';
+import {
+  findGraphPanel,
+  collectGraphSessionIds,
+  isGraphTabId,
+  sessionIdFromTabId
+} from './utils';
 
 import styles from './index.module.css';
 import { NotificationProvider } from '../notifications';
@@ -97,7 +102,25 @@ export const LayoutController = (props: {}) => {
     if (graphContainer?.activeId) {
       //Get the active Id to find the currently selected graph
       setCurrentPanel(graphContainer.activeId!);
+
+      // Keep the editor's active graph in sync with the focused graph tab so
+      // panels bound via useActiveGraph() rebind to it.
+      if (isGraphTabId(graphContainer.activeId)) {
+        system.activeGraph
+          .getState()
+          .setActiveGraph(sessionIdFromTabId(graphContainer.activeId));
+      }
     }
+
+    // Dispose sessions whose tabs were closed in this layout change.
+    const before = collectGraphSessionIds(layout);
+    const after = collectGraphSessionIds(newLayout);
+    for (const id of before) {
+      if (!after.has(id)) {
+        system.disposeSession(id);
+      }
+    }
+
     setLayout(newLayout);
   };
 

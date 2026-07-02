@@ -1,101 +1,82 @@
-.panel {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--vscode-editor-background);
-  color: var(--vscode-editor-foreground);
+/* Local Graph Runner panel — follows the shared panel conventions: BasePanel
+   chrome, SectionTitle headers, VscodeDivider separators, and the design
+   system's spacing/type scale (no card backgrounds or bespoke pixel values). */
+
+.divider {
+    margin: 0.4rem 0;
 }
 
-.scrollContainer {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-}
-
-.title {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--vscode-foreground);
-}
-
-.section {
-  margin-bottom: 24px;
-  padding: 12px;
-  background: var(--vscode-editor-inactiveSelectionBackground);
-  border-radius: 4px;
-}
-
-.sectionTitle {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--vscode-foreground);
-}
-
+/* Status rows */
 .statusRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 0.5rem);
+    padding: 0.1rem 0;
 }
 
-.formGroup {
-  margin-bottom: 16px;
+.statusValue {
+    font-size: var(--fs-label, 0.8rem);
+    font-variant-numeric: tabular-nums;
+    color: var(--ds-fg);
 }
 
-.formGroup:last-child {
-  margin-bottom: 0;
+/* Labelled control rows (mirrors the Settings panel) */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: var(--space-1, 0.25rem) 0;
 }
 
-.inputGroup {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-top: 4px;
+.label {
+    font-size: var(--fs-label, 0.8rem);
+    color: var(--ds-fg);
+    line-height: 1.3;
 }
 
-.formField {
-  flex: 1;
+.description {
+    font-size: var(--fs-desc, 0.72rem);
+    color: var(--ds-fg-muted);
+    line-height: 1.35;
 }
 
-.currentValue {
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--vscode-descriptionForeground);
+.inputRow {
+    display: flex;
+    gap: var(--space-2, 0.5rem);
+    align-items: center;
+    margin-top: 0.15rem;
 }
 
-.helpText {
-  display: block;
-  font-size: 11px;
-  color: var(--vscode-descriptionForeground);
-  font-weight: normal;
-  margin-top: 2px;
+.input {
+    flex: 1;
+    min-width: 0;
 }
 
-.presetButtons {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 8px;
+.current {
+    font-size: var(--fs-desc, 0.72rem);
+    color: var(--ds-fg-muted);
 }
 
+.presets {
+    display: flex;
+    gap: var(--space-2, 0.5rem);
+    flex-wrap: wrap;
+    margin-top: 0.15rem;
+}
+
+/* How-to-use list */
 .helpList {
-  margin: 0;
-  padding-left: 20px;
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--vscode-descriptionForeground);
-}
-
-.helpList li {
-  margin-bottom: 8px;
-}
-
-.helpList li:last-child {
-  margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 0.5rem);
+    margin: 0.25rem 0 0;
+    padding-left: 1.1rem;
+    font-size: var(--fs-desc, 0.72rem);
+    line-height: 1.5;
+    color: var(--ds-fg-muted);
 }
 
 .helpList strong {
-  color: var(--vscode-foreground);
+    color: var(--ds-fg);
+    font-weight: 600;
 }
