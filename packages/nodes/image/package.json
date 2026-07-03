@@ -1,6 +1,6 @@
 {
   "name": "@kiberon-labs/behave-graph-nodes-image",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "type": "module",
   "source": "./src/index.ts",
   "exports": {
