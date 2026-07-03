@@ -1,0 +1,48 @@
+{
+  "v": "1.0.0",
+  "name": "Game Example",
+  "annotations": {},
+  "data": {},
+  "flow": {
+    "nodes": [
+      {
+        "id": "int-a",
+        "type": "game/integrate",
+        "configuration": {
+          "entityId": "a",
+          "dt": 0.5
+        }
+      }
+    ],
+    "variables": [],
+    "customEvents": []
+  },
+  "nodes": [
+    {
+      "id": "int-a",
+      "type": "behaveNode",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "data": {
+        "type": "game/integrate",
+        "configuration": {
+          "entityId": "a",
+          "dt": 0.5
+        },
+        "ports": {}
+      },
+      "width": 150,
+      "height": 150
+    }
+  ],
+  "edges": [],
+  "user": {
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  }
+}

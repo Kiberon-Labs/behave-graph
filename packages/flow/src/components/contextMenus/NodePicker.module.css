@@ -16,7 +16,7 @@
 }
 
 .sidebar {
-  border-right: 1px solid var(--vscode-input-border, var(--colors-borderSubtle));
+  border-right: 1px solid var(--ds-input-border, var(--colors-borderSubtle));
   background: var(--colors-bgPanel);
   display: flex;
   flex-direction: column;
@@ -41,12 +41,12 @@
 }
 
 .sidebarItem:hover {
-  background: var(--vscode-button-hoverBackground, #026ec1);
+  background: var(--ds-button-hover-bg, #026ec1);
 }
 
 .sidebarItemActive {
-  background: var(--vscode-button-secondaryBackground, #313131);
-  color: var(--vscode-list-activeSelectionForeground);
+  background: var(--ds-button-secondary-bg, #313131);
+  color: var(--ds-list-active-fg);
 }
 
 .main {
@@ -61,7 +61,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
-  border-bottom: 1px solid var(--vscode-input-border, var(--colors-borderSubtle));
+  border-bottom: 1px solid var(--ds-input-border, var(--colors-borderSubtle));
 }
 
 .search {
@@ -110,7 +110,7 @@
 }
 
 .nodeRow:hover {
-  background: var(--vscode-button-hoverBackground, #026ec1);
+  background: var(--ds-button-hover-bg, #026ec1);
 }
 
 .infoButton {
@@ -128,7 +128,7 @@
 }
 
 .infoButton:hover {
-  background: var(--vscode-button-secondaryBackground, #313131);
+  background: var(--ds-button-secondary-bg, #313131);
   opacity: 1 !important;
 }
 
@@ -145,7 +145,7 @@
   width: 28px;
   height: 28px;
   border-radius: 0.25rem;
-  border: 1px solid var(--vscode-input-border, var(--colors-borderSubtle));
+  border: 1px solid var(--ds-input-border, var(--colors-borderSubtle));
   background: var(--colors-bgCanvas);
   overflow: hidden;
   display: flex;
@@ -210,8 +210,8 @@
   font-size: 0.65rem;
   padding: 0.1rem 0.35rem;
   border-radius: 0.25rem;
-  background: var(--vscode-badge-background, #4d4d4d);
-  color: var(--vscode-badge-foreground, #ffffff);
+  background: var(--ds-badge-bg, #4d4d4d);
+  color: var(--ds-badge-fg, #ffffff);
   opacity: 0.85;
 }
 
@@ -223,7 +223,7 @@
 }
 
 .card:hover {
-  background: var(--vscode-button-hoverBackground, #026ec1);
+  background: var(--ds-button-hover-bg, #026ec1);
 }
 
 .cardInner {
@@ -245,7 +245,7 @@
   width: 56px;
   height: 56px;
   border-radius: 0.25rem;
-  border: 1px solid var(--vscode-input-border, var(--colors-borderSubtle));
+  border: 1px solid var(--ds-input-border, var(--colors-borderSubtle));
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -260,7 +260,7 @@
 
 .footer {
   padding: 0.35rem 0.5rem;
-  border-top: 1px solid var(--vscode-input-border, var(--colors-borderSubtle));
+  border-top: 1px solid var(--ds-input-border, var(--colors-borderSubtle));
   font-size: 0.75rem;
   opacity: 0.8;
   display: flex;

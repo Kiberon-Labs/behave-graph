@@ -117,7 +117,7 @@ describe('nested loops across suspension', () => {
     await second.engine.executeAllSync();
 
     // the inner loop finishes its remaining iteration (12) BEFORE the outer
-    // loop advances — and neither loop restarts
+    // loop advances , and neither loop restarts
     expect(secondRun).toEqual([12, 20, 21, 22, COMPLETED]);
 
     expect([...firstRun, ...secondRun.slice(0, -1)]).toEqual(ALL_ITERATIONS);

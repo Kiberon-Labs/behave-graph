@@ -10,7 +10,7 @@ import {
   type INodeDefinition,
   type SocketsDefinition
 } from './NodeDefinitions.js';
-import { type INode, NodeType } from './NodeInstance.js';
+import { type INode, type NodeTypeName } from './NodeInstance.js';
 import { NodeCategory } from './Registry/NodeCategory.js';
 
 const makeSocketFromDefinition = (
@@ -84,7 +84,7 @@ type CommonProps = Pick<
 >;
 
 export const makeCommonProps = (
-  nodeType: NodeType,
+  nodeType: NodeTypeName,
   {
     typeName,
     in: inputs,

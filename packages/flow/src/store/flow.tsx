@@ -1,5 +1,5 @@
 import { CustomEdge } from '@/components/edges';
-import type { System } from '@/system';
+import type { GraphSession } from '@/system/graphSession';
 import { behaveToFlow } from '@/transformers/behaveToFlow';
 import { flowToBehave } from '@/transformers/flowToBehave';
 import { autoLayout } from '@/util/autoLayout';
@@ -54,7 +54,7 @@ export type FlowStore = {
 //   setCustomNodeTypes(customNodeTypes);
 // }, [specJson]);
 
-export const flowStoreFactory = (system: System) => {
+export const flowStoreFactory = (session: GraphSession) => {
   const flowStore = create<FlowStore>((set, get) => ({
     graphJson: null,
     nodeTypes: {
@@ -69,19 +69,19 @@ export const flowStoreFactory = (system: System) => {
         return cached;
       }
 
-      const nodes = system.nodeStore.getState().nodes;
-      const edges = system.edgeStore.getState().edges;
-      const _variables = system.variableStore.getState().variables;
-      const specs = system.specStore.getState().specs;
+      const nodes = session.nodeStore.getState().nodes;
+      const edges = session.edgeStore.getState().edges;
+      const _variables = session.variableStore.getState().variables;
+      const specs = session.editor.specStore.getState().specs;
 
-      const computed = flowToBehave(system, nodes, edges, specs);
+      const computed = flowToBehave(session, nodes, edges, specs);
 
       set({ graphJson: computed });
       return computed;
     },
 
     setGraph: (graphJson: GraphJSON, options?: { skipLayout?: boolean }) => {
-      system.eventsStore
+      session.eventsStore
         .getState()
         .setCustomEvents(
           Object.fromEntries(
@@ -94,7 +94,7 @@ export const flowStoreFactory = (system: System) => {
       if (graphJson.variables) {
         graphJson.variables.forEach((varJson) => {
           const valueType =
-            system.registry.getState().values[varJson.valueTypeName];
+            session.editor.registry.getState().values[varJson.valueTypeName];
           const initialValue = valueType?.deserialize
             ? valueType.deserialize(varJson.initialValue)
             : varJson.initialValue;
@@ -116,12 +116,12 @@ export const flowStoreFactory = (system: System) => {
         if (!hasPositionMetaData(graphJson)) {
           autoLayout(nodes, edges);
         }
-        system.nodeStore.getState().setNodes(nodes);
-        system.edgeStore.getState().setEdges(edges);
+        session.nodeStore.getState().setNodes(nodes);
+        session.edgeStore.getState().setEdges(edges);
       }
 
-      // custom events stored in system.eventsStore
-      system.variableStore.getState().setVariables(variables);
+      // custom events stored in session.eventsStore
+      session.variableStore.getState().setVariables(variables);
       get().invalidateCache();
     },
     edgeTypes: {
@@ -146,11 +146,11 @@ export const flowStoreFactory = (system: System) => {
     }
   }));
 
-  system.nodeStore.subscribe(() => {
+  session.nodeStore.subscribe(() => {
     flowStore.getState().invalidateCache();
   });
 
-  system.eventsStore.subscribe(() => {
+  session.eventsStore.subscribe(() => {
     flowStore.getState().invalidateCache();
   });
 
@@ -165,12 +165,12 @@ export type NodeStore = {
   applyNodeChanges: (changes: NodeChange[]) => void;
 };
 
-export const nodeStoreFactory = (system: System) =>
+export const nodeStoreFactory = (session: GraphSession) =>
   create<NodeStore>((set) => ({
     nodes: [],
     addNode(node) {
       set((x) => ({ nodes: [...x.nodes, node] }));
-      system.pubsub.publish('node:added', node);
+      session.pubsub.publish('node:added', node);
     },
     applyNodeChanges(changes: NodeChange[]) {
       set((p) => {
@@ -183,7 +183,7 @@ export const nodeStoreFactory = (system: System) =>
             }
             // Publish nodeRemoved event for deletable nodes
             if (node) {
-              system.pubsub.publish('node:removed', node);
+              session.pubsub.publish('node:removed', node);
             }
           }
           return true;
@@ -211,7 +211,7 @@ export type EdgeStore = {
   applyEdgeChanges: (changes: EdgeChange[]) => void;
 };
 
-export const edgeStoreFactory = (_system: System) =>
+export const edgeStoreFactory = (session: GraphSession) =>
   create<EdgeStore>((set) => ({
     edges: [],
 
@@ -225,7 +225,7 @@ export const edgeStoreFactory = (_system: System) =>
           if (change.type === 'remove') {
             const edge = p.edges.find((e) => e.id === change.id);
             if (edge) {
-              _system.pubsub.publish('edge:removed', edge);
+              session.pubsub.publish('edge:removed', edge);
             }
           }
         });

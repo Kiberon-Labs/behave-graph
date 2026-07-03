@@ -7,7 +7,7 @@ import {
 } from '@vscode-elements/react-elements';
 import { Plus, Minus } from 'iconoir-react';
 
-import { useSystem } from '@/system/provider';
+import { useGraph } from '@/system/provider';
 import type { SocketGeneratorRenderProps } from '@/store/socketGenerator';
 import type { NodeSpecJSON } from '@kiberon-labs/behave-graph/Graphs/IO/NodeSpecJSON';
 
@@ -24,7 +24,7 @@ export function getSwitchOnStringGenerator() {
 const SwitchOnStringGenerator: React.FC<SocketGeneratorRenderProps> = ({
   node
 }) => {
-  const system = useSystem();
+  const system = useGraph();
 
   const numCases = node.data.configuration?.numCases ?? 0;
   const caseLabels = node.data.configuration?.caseLabels ?? {};

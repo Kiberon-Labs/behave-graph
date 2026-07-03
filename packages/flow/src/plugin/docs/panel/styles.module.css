@@ -10,7 +10,7 @@
 
 .header {
     padding: 1rem;
-    border-bottom: 1px solid var(--vscode-input-border, var(--colors-borderSubtle));
+    border-bottom: 1px solid var(--ds-input-border, var(--colors-borderSubtle));
     background: var(--colors-bgPanel);
 }
 
@@ -28,7 +28,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 0.5rem;
-    border: 1px solid var(--vscode-input-border, var(--colors-borderSubtle));
+    border: 1px solid var(--ds-input-border, var(--colors-borderSubtle));
     background: var(--colors-bgCanvas);
     flex-shrink: 0;
 }
@@ -62,8 +62,8 @@
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    background: var(--vscode-badge-background, #4d4d4d);
-    color: var(--vscode-badge-foreground, #ffffff);
+    background: var(--ds-badge-bg, #4d4d4d);
+    color: var(--ds-badge-fg, #ffffff);
 }
 
 .content {
@@ -77,8 +77,8 @@
     line-height: 1.5;
     margin-bottom: 1.5rem;
     padding: 0.75rem;
-    background: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
-    border-left: 4px solid var(--vscode-textBlockQuote-border, #007acc);
+    background: var(--ds-blockquote-bg, rgba(127, 127, 127, 0.1));
+    border-left: 4px solid var(--ds-blockquote-border, #007acc);
     border-radius: 0.25rem;
 }
 
@@ -98,7 +98,7 @@
     font-weight: 600;
     margin-bottom: 0.75rem;
     padding-bottom: 0.25rem;
-    border-bottom: 1px solid var(--vscode-input-border, var(--colors-borderSubtle));
+    border-bottom: 1px solid var(--ds-input-border, var(--colors-borderSubtle));
 }
 
 .socketList {
@@ -114,7 +114,7 @@
     padding: 0.5rem;
     background: var(--colors-bgPanel);
     border-radius: 0.25rem;
-    border: 1px solid var(--vscode-input-border, var(--colors-borderSubtle));
+    border: 1px solid var(--ds-input-border, var(--colors-borderSubtle));
 }
 
 .socketIcon {

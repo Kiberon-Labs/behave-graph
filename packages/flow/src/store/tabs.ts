@@ -1,5 +1,6 @@
 import type { BoxBase, LayoutBase, PanelBase, TabBase } from 'rc-dock';
 import { create } from 'zustand';
+import { isGraphTabId } from '@/components/layoutController/utils';
 
 function isPanelBase(value: BoxBase | PanelBase): value is PanelBase {
   return Array.isArray((value as PanelBase).tabs);
@@ -121,6 +122,9 @@ const defaultLayout: LayoutBase = {
                       {
                         tabs: [
                           {
+                            id: 'graphProperties'
+                          },
+                          {
                             id: 'variables'
                           },
                           {
@@ -226,7 +230,7 @@ export const tabStoreFactory = () =>
 
         // 2) Otherwise, insert it into a target panel (prefer explicit panelId).
         const targetPanelId =
-          options?.panelId ?? (tabId === 'graph' ? 'graphs' : undefined);
+          options?.panelId ?? (isGraphTabId(tabId) ? 'graphs' : undefined);
 
         if (targetPanelId) {
           const res = recurseUpsertTabInPanelId(

@@ -40,7 +40,7 @@ export const NodeSettings: React.FC<NodeSettingsProps> = ({
         <VscodeDivider />
 
         <div className={styles.descriptionSection}>
-          <div className={styles.descriptionTitle}>Description</div>
+          <div className={styles.subTitle}>Description</div>
           <VscodeTextarea
             placeholder="No description provided."
             className={styles.descriptionTextarea}
@@ -62,7 +62,7 @@ export const NodeSettings: React.FC<NodeSettingsProps> = ({
         <VscodeDivider />
 
         <div className={styles.annotationsSection}>
-          <div className={styles.annotationsTitle}>Annotations</div>
+          <div className={styles.subTitle}>Annotations</div>
           {annotations == null ? (
             <div className={styles.annotationsEmpty}>No annotations.</div>
           ) : typeof annotations === 'string' ||

@@ -19,7 +19,8 @@
   "license": "ISC",
   "author": "Kiberon Labs <admin@kiberonlabs.com>",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/nodes/*"
   ],
   "scripts": {
     "check": "turbo run check",
@@ -43,5 +44,11 @@
     "typescript": "^5.9.2",
     "vitest": "^4.0.10"
   },
-  "packageManager": "pnpm@10.14.0"
+  "packageManager": "pnpm@10.14.0",
+  "pnpm": {
+    "overrides": {
+      "react": "19.2.3",
+      "react-dom": "19.2.3"
+    }
+  }
 }

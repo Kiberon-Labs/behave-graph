@@ -17,6 +17,9 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "behave-graph-manifest": "./dist/Manifest/cli.js"
+  },
   "publishConfig": {
     "provenance": true,
     "access": "public"

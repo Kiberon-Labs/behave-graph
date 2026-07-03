@@ -13,6 +13,7 @@ import styles from './styles.module.css';
 export type OutputSocketProps = {
   connected: boolean;
   hide?: boolean;
+  label?: string;
   specJSON: NodeSpecJSON[];
 } & OutputSocketSpecJSON;
 
@@ -21,11 +22,14 @@ export default function OutputSocket({
   connected,
   hide,
   valueType,
-  name
+  name,
+  label
 }: OutputSocketProps) {
   const instance = useReactFlow();
   const sys = useSystem();
   const { valueTypeColors, icons, defaultIcon } = useStore(sys.legendStore);
+  const autoConvert = useStore(sys.systemSettings, (s) => s.autoConvert);
+  const conversions = useStore(sys.conversionStore, (s) => s.conversions);
   const Icon = icons[valueType] ?? defaultIcon;
 
   const isFlowSocket = valueType === 'flow';
@@ -38,7 +42,7 @@ export default function OutputSocket({
 
   return (
     <div className={cx(styles.row, hide ? styles.hidden : undefined)}>
-      {showName && <div className={styles.name}>{name}</div>}
+      {showName && <div className={styles.name}>{label ?? name}</div>}
       {isFlowSocket && <NavArrowRightSolid />}
 
       <Handle
@@ -51,7 +55,10 @@ export default function OutputSocket({
         }}
         className={cx(styles.socket)}
         isValidConnection={(connection: Connection) =>
-          isValidConnection(connection, instance, specJSON)
+          isValidConnection(connection, instance, specJSON, {
+            autoConvert,
+            conversions
+          })
         }
       >
         <Icon />

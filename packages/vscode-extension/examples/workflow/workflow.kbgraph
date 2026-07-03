@@ -1,0 +1,264 @@
+{
+  "v": "1.0.0",
+  "name": "Workflow Example",
+  "annotations": {},
+  "data": {},
+  "flow": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "lifecycle/onStart",
+        "flows": {
+          "flow": {
+            "nodeId": "http",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "http",
+        "type": "workflow/httpRequest",
+        "parameters": {
+          "url": {
+            "value": "https://api.example.com/data"
+          }
+        },
+        "flows": {
+          "completed": {
+            "nodeId": "branch",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "ok",
+        "type": "workflow/statusOk",
+        "parameters": {
+          "status": {
+            "link": {
+              "nodeId": "http",
+              "socket": "status"
+            }
+          }
+        }
+      },
+      {
+        "id": "branch",
+        "type": "flow/branch",
+        "parameters": {
+          "condition": {
+            "link": {
+              "nodeId": "ok",
+              "socket": "ok"
+            }
+          }
+        },
+        "flows": {
+          "true": {
+            "nodeId": "setOk",
+            "socket": "flow"
+          },
+          "false": {
+            "nodeId": "setErr",
+            "socket": "flow"
+          }
+        }
+      },
+      {
+        "id": "setOk",
+        "type": "workflow/setResult",
+        "configuration": {
+          "key": "result"
+        },
+        "parameters": {
+          "value": {
+            "link": {
+              "nodeId": "http",
+              "socket": "body"
+            }
+          }
+        }
+      },
+      {
+        "id": "setErr",
+        "type": "workflow/setResult",
+        "configuration": {
+          "key": "error"
+        },
+        "parameters": {
+          "value": {
+            "link": {
+              "nodeId": "http",
+              "socket": "body"
+            }
+          }
+        }
+      }
+    ],
+    "variables": [],
+    "customEvents": []
+  },
+  "nodes": [
+    {
+      "id": "start",
+      "type": "behaveNode",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "data": {
+        "type": "lifecycle/onStart",
+        "configuration": {},
+        "ports": {}
+      },
+      "width": 150,
+      "height": 150
+    },
+    {
+      "id": "http",
+      "type": "behaveNode",
+      "position": {
+        "x": 240,
+        "y": 0
+      },
+      "data": {
+        "type": "workflow/httpRequest",
+        "configuration": {},
+        "ports": {
+          "url": "https://api.example.com/data"
+        }
+      },
+      "width": 150,
+      "height": 150
+    },
+    {
+      "id": "ok",
+      "type": "behaveNode",
+      "position": {
+        "x": 240,
+        "y": 240
+      },
+      "data": {
+        "type": "workflow/statusOk",
+        "configuration": {},
+        "ports": {}
+      },
+      "width": 150,
+      "height": 150
+    },
+    {
+      "id": "branch",
+      "type": "behaveNode",
+      "position": {
+        "x": 500,
+        "y": 0
+      },
+      "data": {
+        "type": "flow/branch",
+        "configuration": {},
+        "ports": {}
+      },
+      "width": 150,
+      "height": 150
+    },
+    {
+      "id": "setOk",
+      "type": "behaveNode",
+      "position": {
+        "x": 760,
+        "y": -80
+      },
+      "data": {
+        "type": "workflow/setResult",
+        "configuration": {
+          "key": "result"
+        },
+        "ports": {}
+      },
+      "width": 150,
+      "height": 150
+    },
+    {
+      "id": "setErr",
+      "type": "behaveNode",
+      "position": {
+        "x": 760,
+        "y": 160
+      },
+      "data": {
+        "type": "workflow/setResult",
+        "configuration": {
+          "key": "error"
+        },
+        "ports": {}
+      },
+      "width": 150,
+      "height": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "e:start:flow->http:flow",
+      "source": "start",
+      "sourceHandle": "flow",
+      "target": "http",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e:http:completed->branch:flow",
+      "source": "http",
+      "sourceHandle": "completed",
+      "target": "branch",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e:http:status->ok:status",
+      "source": "http",
+      "sourceHandle": "status",
+      "target": "ok",
+      "targetHandle": "status"
+    },
+    {
+      "id": "e:ok:ok->branch:condition",
+      "source": "ok",
+      "sourceHandle": "ok",
+      "target": "branch",
+      "targetHandle": "condition"
+    },
+    {
+      "id": "e:branch:true->setOk:flow",
+      "source": "branch",
+      "sourceHandle": "true",
+      "target": "setOk",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e:branch:false->setErr:flow",
+      "source": "branch",
+      "sourceHandle": "false",
+      "target": "setErr",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e:http:body->setOk:value",
+      "source": "http",
+      "sourceHandle": "body",
+      "target": "setOk",
+      "targetHandle": "value"
+    },
+    {
+      "id": "e:http:body->setErr:value",
+      "source": "http",
+      "sourceHandle": "body",
+      "target": "setErr",
+      "targetHandle": "value"
+    }
+  ],
+  "user": {
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  }
+}

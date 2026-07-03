@@ -52,9 +52,9 @@
 
 .keyBadge {
     font-size: 0.875rem;
-    font-family: var(--vscode-editor-font-family);
-    background: var(--vscode-editorWidget-background);
-    border: 1px solid var(--vscode-editorWidget-border);
+    font-family: var(--ds-font-mono);
+    background: var(--ds-widget-bg);
+    border: 1px solid var(--ds-border-subtle);
     padding: 0.25rem 0.5rem;
     border-radius: var(--component-radii-sm);
     word-break: break-all;

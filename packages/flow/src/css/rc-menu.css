@@ -1,100 +1,101 @@
 .rc-menu {
     color: var(--colors-fg);
     border: none;
-    font-size: var(--fontSizes-small);
-    box-shadow: var(--shadows-focus);
-    font:var(--vscode-editor-font-family) !important;
+    font-family: var(--ds-font-mono, monospace);
+    font-size: var(--fs-label, 0.8rem);
+    box-shadow: none;
 }
 
-
-
-.rc-menu-item-active,
-.rc-menu-submenu-active>.rc-menu-submenu-title {
-    background: var(--colors-bgEmphasis);
-    cursor: default;
-}
-
-
-
+/* ---- Top menubar (File / Edit / Window) ---- */
 .rc-menu-horizontal {
     margin: 0;
-    background-color: var(--colors-bgCanvas);
+    padding: 0.15rem 0.25rem;
+    display: flex;
+    gap: 0.15rem;
+    background-color: var(--ds-tabs-bg, var(--colors-bgCanvas));
     color: var(--colors-fg);
     border-radius: 0;
-    border-bottom: 1px solid var(--colors-borderSubtle);
+    border-bottom: 1px solid var(--colors-borderMuted);
     box-shadow: none;
-
 }
 
 .rc-menu-horizontal>.rc-menu-item,
 .rc-menu-horizontal>.rc-menu-submenu>.rc-menu-submenu-title {
-    padding: 0em 0.5em;
-    font-size: 0.8em;
+    padding: 2px 8px;
+    font-size: var(--fs-label, 0.8rem);
+    border-radius: 4px;
+    border-bottom: none;
 }
 
-.rc-menu-item-selected {
-    background-color: unset;
-    transform: translateZ(0);
+.rc-menu-horizontal>.rc-menu-item:hover,
+.rc-menu-horizontal>.rc-menu-submenu>.rc-menu-submenu-title:hover,
+.rc-menu-horizontal>.rc-menu-submenu-active,
+.rc-menu-horizontal>.rc-menu-item-active {
+    background: var(--ds-list-hover-bg, #2a2d2e);
+    color: var(--ds-fg);
+    border-radius: 4px;
+    border-bottom: none;
 }
 
+.rc-menu-item-selected,
 .rc-menu-submenu-selected {
     background-color: unset;
 }
 
-.rc-menu-horizontal>.rc-menu-item:hover,
-.rc-menu-horizontal>.rc-menu-submenu>.rc-menu-submenu-title:hover {
-    background: var(--colors-bgEmphasis);
-    border-radius: 2px;
-    border-bottom: none;
+/* ---- Dropdown popup (VSCode context-menu style) ---- */
+.rc-menu-submenu>.rc-menu,
+.rc-menu-sub {
+    background-color: var(--ds-widget-bg, #202020);
+    border: 1px solid var(--ds-border-subtle, #454545);
+    border-radius: 4px;
+    box-shadow: var(--shadows-contextMenu, 0 2px 8px rgba(0, 0, 0, 0.36));
+    padding: 4px;
+    font-size: var(--fs-label, 0.8rem);
+    min-width: 200px;
 }
-
-
-.rc-menu-horizontal>.rc-menu-submenu-active,
-.rc-menu-horizontal>.rc-menu-item-active {
-    color: white;
-    border-radius: 2px;
-    background: var(--colors-bgSubtle);
-    border-bottom: none;
-}
-
-
-
-
-.rc-menu-submenu>.rc-menu {
-    background-color: var(--colors-bgCanvas);
-    border: 1px solid var(--colors-borderSubtle);
-    font-size: 0.8em;
-}
-
 
 .rc-menu-vertical>.rc-menu-item,
 .rc-menu-vertical-left>.rc-menu-item,
 .rc-menu-vertical-right>.rc-menu-item,
 .rc-menu-inline>.rc-menu-item,
+.rc-menu-sub>.rc-menu-item,
 .rc-menu-vertical>.rc-menu-submenu>.rc-menu-submenu-title,
-.rc-menu-vertical-left>.rc-menu-submenu>.rc-menu-submenu-title,
-.rc-menu-vertical-right>.rc-menu-submenu>.rc-menu-submenu-title,
-.rc-menu-inline>.rc-menu-submenu>.rc-menu-submenu-title {
+.rc-menu-sub>.rc-menu-submenu>.rc-menu-submenu-title {
     cursor: pointer;
-    padding: var(--sizes-2) var(--sizes-4);
+    padding: 2px 20px 2px 10px;
+    line-height: 1.4;
+    border-radius: 4px;
+}
+
+.rc-menu-vertical>.rc-menu-item:hover,
+.rc-menu-sub>.rc-menu-item:hover,
+.rc-menu-vertical>.rc-menu-submenu>.rc-menu-submenu-title:hover,
+.rc-menu-sub>.rc-menu-submenu>.rc-menu-submenu-title:hover,
+.rc-menu-item-active,
+.rc-menu-submenu-active>.rc-menu-submenu-title {
+    background: var(--ds-list-hover-bg, #2a2d2e);
+    color: var(--ds-fg);
+    cursor: pointer;
 }
 
 .rc-menu-item-divider {
-    background-color:var(--colors-borderDefault);
+    background-color: var(--ds-border-subtle, #454545);
+    height: 1px;
+    margin: 4px 6px;
 }
 
 .rc-menu-item:hover .inner-menu-item {
-    background-color: var(--vscode-button-background, #0078d4)
+    background-color: var(--ds-button-bg, #0078d4);
 }
 
 .rc-menu-submenu-popup {
     z-index: 1000;
 }
 
-.dock-style-headless .dock-nav-list  {
-display: none;
+.dock-style-headless .dock-nav-list {
+    display: none;
 }
 
-.dock-style-headless .drag-initiator{
-    height:0.5em;
+.dock-style-headless .drag-initiator {
+    height: 0.5em;
 }

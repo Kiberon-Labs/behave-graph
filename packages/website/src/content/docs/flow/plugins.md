@@ -1,482 +1,374 @@
 ---
 title: Plugin System
-description: Extend Behave-Graph Flow with custom plugins
+description: Extend the Behave-Graph Flow editor with plugins , commands, panels, per-graph state and more, without forking the core.
 ---
 
-The Behave-Graph Flow plugin system enables powerful extensions to the editor without modifying core code. Plugins can register custom nodes, add UI panels, hook into events, and extend nearly every aspect of the system.
+The Flow editor is built to be extended. Almost everything you can configure ,
+commands, context menus, keyboard shortcuts, toolbar buttons, dockable panels,
+input controls, socket icons/colours, automatic type conversions and per-graph
+state , is exposed through small **registries** that a plugin writes to. Core
+code never has to change.
 
-## What is a Plugin?
+This page is the reference for the plugin model and every extension surface. For
+a high-level map of what's customizable, see
+[Customizing the Editor](./customizing-the-editor); if you'd rather learn by
+building, follow the [Build your own plugin](../guides/build-a-plugin) tutorial.
 
-A plugin is a function that receives the `System` instance and extends it:
+## The mental model: editor vs. graph
+
+Two objects matter:
+
+- **`System`** , the *editor*. One per application. It owns everything shared
+  across graphs: settings, the node registry & specs, the menu bar, tabs,
+  hotkeys, the toolbar, notifications, and the registries below.
+- **`GraphSession`** , a *single open graph* (one editor tab). It owns per-graph
+  state: nodes, edges, variables, selection, traces, undo history and its own
+  scoped pub/sub. Multiple graphs are open at once, fully isolated.
+
+A plugin is given the `System`. When it needs to touch *each graph* (e.g. attach
+a per-graph controller), it registers a **session extension** rather than reaching
+for a single "active" graph , see [Per-graph state](#per-graph-state-session-extensions).
+
+## What a plugin is
+
+A plugin is a loader function that receives the `System` and (optionally) typed
+options. Wrap it with the `plugin()` helper, which tags it with a name:
 
 ```typescript
-import type { System } from '@kiberon-labs/behave-graph-flow';
+import { plugin, type System } from '@kiberon-labs/behave-graph-flow';
 
-export const myPlugin = (system: System) => {
-  // Extend the system
-  console.log('Plugin loaded!');
-  
-  // Register nodes, subscribe to events, add UI components, etc.
-};
+export const helloPlugin = plugin(
+  (system: System) => {
+    // extend the editor here
+  },
+  { name: 'hello' }
+);
 ```
 
-## Loading Plugins
+The loader may be `async` and may return a `Promise`.
 
-Plugins are registered with the System during initialization:
+### Registering a plugin
 
 ```typescript
 import { System } from '@kiberon-labs/behave-graph-flow';
-import { myPlugin } from './plugins/myPlugin';
+import { helloPlugin } from './plugins/hello';
 
 const system = new System(registry);
 
-// Load plugin
-system.registerPlugin(myPlugin);
+await system.registerPlugin(helloPlugin);
 ```
 
-### Plugin with Options
+### Options
 
-Plugins can accept configuration:
+Type the options on the loader; pass them as the second argument to
+`registerPlugin`:
 
 ```typescript
-import type { System } from '@kiberon-labs/behave-graph-flow';
-
-interface MyPluginOptions {
+interface AnalyticsOptions {
   apiKey: string;
-  endpoint: string;
-  enableDebug?: boolean;
+  debug?: boolean;
 }
 
-export const createMyPlugin = (options: MyPluginOptions) => {
-  return (system: System) => {
-    console.log('Plugin initialized with:', options);
-    
-    // Use options to configure behavior
-    if (options.enableDebug) {
-      system.pubsub.subscribe('*', (event, data) => {
-        console.log('Event:', event, data);
-      });
-    }
-  };
-};
-
-// Usage
-system.registerPlugin(createMyPlugin({
-  apiKey: 'abc123',
-  endpoint: 'https://api.example.com'
-}));
-```
-
-## Plugin Capabilities
-
-### 1. Register Custom Nodes
-
-Add new node types to the registry:
-
-```typescript
-export const mathNodesPlugin = (system: System) => {
-  const registry = system.registry.getState();
-  
-  registry.registerNode({
-    type: 'math/power',
-    category: 'Math',
-    label: 'Power',
-    in: {
-      base: 'number',
-      exponent: 'number'
-    },
-    out: {
-      result: 'number'
-    },
-    exec: ({ base, exponent }) => ({
-      result: Math.pow(base, exponent)
-    })
-  });
-  
-  registry.registerNode({
-    type: 'math/sqrt',
-    category: 'Math',
-    label: 'Square Root',
-    in: { value: 'number' },
-    out: { result: 'number' },
-    exec: ({ value }) => ({ result: Math.sqrt(value) })
-  });
-};
-```
-
-### 2. Add Menu Items
-
-Extend the menu bar:
-
-```typescript
-export const customMenuPlugin = (system: System) => {
-  const menubar = system.menubarStore.getState();
-  
-  menubar.addMenuItem({
-    path: 'Tools',
-    items: [
-      {
-        name: 'export-json',
-        label: 'Export as JSON',
-        icon: <DownloadIcon />,
-        action: () => {
-          const graph = system.flowStore.getState().getGraph();
-          downloadJson(graph, 'graph.json');
-        }
-      },
-      {
-        name: 'validate',
-        label: 'Validate Graph',
-        action: () => {
-          // Custom validation logic
-          const { nodes, edges } = system.flowStore.getState();
-          const errors = validateGraph(nodes, edges);
-          
-          if (errors.length === 0) {
-            system.notifications.success('Graph is valid!');
-          } else {
-            system.notifications.error(`Found ${errors.length} errors`);
-          }
-        }
-      }
-    ]
-  });
-};
-```
-
-### 3. Subscribe to Events
-
-React to system events:
-
-```typescript
-export const analyticsPlugin = (system: System) => {
-  // Track node additions
-  system.pubsub.subscribe('node:added', (node) => {
-    analytics.track('Node Added', {
-      type: node.type,
-      timestamp: Date.now()
-    });
-  });
-  
-  // Track graph saves
-  system.pubsub.subscribe('graph:saved', (graph) => {
-    analytics.track('Graph Saved', {
-      nodeCount: graph.flow.nodes.length,
-      edgeCount: graph.flow.nodes.reduce((sum, n) => {
-        return sum + 
-          Object.keys(n.flows || {}).length +
-          Object.keys(n.values || {}).length;
-      }, 0)
-    });
-  });
-  
-  // Track errors
-  system.pubsub.subscribe('notification', (data) => {
-    if (data.type === 'error') {
-      analytics.track('Error', { message: data.message });
-    }
-  });
-};
-```
-
-### 4. Register Custom Panels
-
-Add tool panels to the UI:
-
-```typescript
-import { MyCustomPanel } from './components/MyCustomPanel';
-
-export const customPanelPlugin = (system: System) => {
-  // Register panel component
-  system.tabLoader.registerPanel('myPanel', MyCustomPanel);
-  
-  // Add menu item to open it
-  system.menubarStore.getState().addMenuItem({
-    path: 'Window',
-    items: [{
-      name: 'my-panel',
-      label: 'My Custom Panel',
-      action: () => {
-        const layout = system.tabStore.getState().layout;
-        const newLayout = addFloatingTab(layout, {
-          id: 'myPanel',
-          title: 'My Panel',
-          content: () => <MyCustomPanel />
-        });
-        system.tabStore.getState().setLayout(newLayout);
-      }
-    }]
-  });
-};
-```
-
-### 5. Register Custom Controls
-
-Add specialized input controls for node parameters:
-
-```typescript
-import { ColorPicker } from './controls/ColorPicker';
-
-export const customControlsPlugin = (system: System) => {
-  system.controlStore.getState().registerControl({
-    valueType: 'color',
-    component: ColorPicker
-  });
-  
-  system.controlStore.getState().registerControl({
-    valueType: 'gradient',
-    component: GradientEditor
-  });
-};
-
-// Now nodes can use these value types
-registry.registerNode({
-  type: 'visual/setColor',
-  in: {
-    color: 'color',  // Uses ColorPicker control
-    gradient: 'gradient'  // Uses GradientEditor control
+export const analyticsPlugin = plugin<AnalyticsOptions>(
+  (system, options) => {
+    if (options.debug) console.log('analytics on', options.apiKey);
   },
-  // ...
+  { name: 'analytics' }
+);
+
+await system.registerPlugin(analyticsPlugin, { apiKey: 'abc123', debug: true });
+```
+
+## Extension surfaces
+
+Each surface is a store reached through the `System` (`system.<store>`). The
+pattern is always the same: call a `register`/`add` method, optionally keeping the
+returned disposer to undo it.
+
+### Commands
+
+Commands are named, dispatchable actions. Defining behaviour as a command means a
+single implementation is reachable from a keyboard shortcut, a menu item **and** a
+context-menu entry , they all dispatch by id.
+
+```typescript
+system.commandStore.getState().register({
+  id: 'myplugin.exportPng',
+  title: 'Export as PNG',
+  run: (ctx) => {
+    // ctx = { editor, session, nodeId?, edgeId?, ... }
+    exportPng(ctx.session);
+  }
 });
 ```
 
-### 6. Add Hotkeys
-
-Register keyboard shortcuts:
+Run a command against the focused graph from anywhere:
 
 ```typescript
-export const hotkeysPlugin = (system: System) => {
-  const hotkeys = system.hotKeyStore.getState();
-  
-  hotkeys.registerHotkey({
-    key: 'ctrl+shift+e',
-    description: 'Execute current graph',
-    action: () => {
-      const graph = system.flowStore.getState().getGraph();
-      executeGraph(graph);
-    }
-  });
-  
-  hotkeys.registerHotkey({
-    key: 'ctrl+shift+v',
-    description: 'Validate graph',
-    action: () => {
-      validateCurrentGraph(system);
-    }
-  });
-};
+system.runCommand('myplugin.exportPng');
+// or target a specific node:
+system.runCommand('node.focus', { nodeId });
 ```
 
-### 7. Extend the System Interface
+Re-registering the same `id` replaces the command, so a plugin can override a
+built-in (e.g. `editor.save`) without forking.
 
-Add custom services to the System:
+### Context menus
+
+Context-menu items are registered per target (`node` | `edge` | `selection` |
+`pane`) and dispatch a command (or run inline). `label` may be a function for
+state-dependent text, and `when` hides an item dynamically.
 
 ```typescript
-import type { System } from '@kiberon-labs/behave-graph-flow';
+system.contextMenuStore.getState().register({
+  id: 'myplugin.node.exportPng',
+  target: 'node',
+  label: 'Export as PNG',
+  commandId: 'myplugin.exportPng',
+  order: 100,
+  group: 'export'
+});
+```
 
-// Extend the System interface
+Items with different adjacent `group`s get a separator between them.
+
+### Keyboard shortcuts
+
+```typescript
+system.hotKeyStore.getState().register({
+  action: 'EXPORT_PNG',
+  trigger: ['ctrl+shift+e', 'command+shift+e'],
+  description: 'Export as PNG',
+  handler: () => system.runCommand('myplugin.exportPng')
+});
+```
+
+### Toolbar buttons
+
+Add a group to the floating toolbar. `buttons` accepts either a `ToolbarButton`
+descriptor or a raw React node:
+
+```typescript
+system.toolbarStore.getState().addGroup({
+  id: 'myplugin-tools',
+  label: 'My Tools',
+  buttons: [
+    {
+      id: 'export-png',
+      icon: <DownloadIcon />,
+      label: 'Export PNG',
+      onClick: () => system.runCommand('myplugin.exportPng'),
+      disabled: () => false
+    }
+  ]
+});
+```
+
+### Menu-bar items
+
+The menu bar is organised into named sub-menus (`file`, `edit`, `window`, …).
+Append items to one with `setSubMenuItems`. Each item renders itself:
+
+```typescript
+import { MenuItemElement } from '@kiberon-labs/behave-graph-flow';
+
+const windowMenu = system.menubarStore.getState().items.find((m) => m.name === 'window');
+system.menubarStore.getState().setSubMenuItems('window', [
+  ...(windowMenu?.items ?? []),
+  {
+    name: 'myplugin-panel',
+    render: (rest) => (
+      <MenuItemElement onClick={() => openMyPanel(system)} {...rest}>
+        My Panel
+      </MenuItemElement>
+    )
+  }
+]);
+```
+
+### Dockable panels
+
+Register a panel loader with the `tabLoader`; it returns an rc-dock `TabData`.
+Once registered, the tab id can be opened from a command, menu item or the layout
+API.
+
+```typescript
+system.tabLoader.register('myplugin:panel', () => ({
+  id: 'myplugin:panel',
+  title: 'My Panel',
+  content: () => <MyPanel />
+}));
+```
+
+### Input controls
+
+Controls are the editors shown for a value type in the **Node Inputs** panel.
+Register a React component for a value-type name:
+
+```typescript
+system.controlStore.getState().registerControl('color', ColorPickerControl);
+```
+
+A control receives `{ value, onChange, valueType }`. Value types without a
+registered control fall back to the default control.
+
+### Socket icons & colours (legend)
+
+```typescript
+system.legendStore.getState().setIcon('color', SwatchIcon);
+system.legendStore.getState().setValueTypeColor('color', '#e2c08d');
+system.legendStore.getState().setCategoryColor('Logic', '#59a4f9');
+```
+
+### Automatic type conversions
+
+When the user connects two different-but-convertible sockets, auto-convert can
+splice in a converter node. Register a rule pinning the converter node and the
+exact ports to wire:
+
+```typescript
+system.registerConversion({
+  from: 'integer',
+  to: 'string',
+  nodeType: 'math/toString/integer',
+  inputKey: 'a',
+  outputKey: 'result'
+});
+```
+
+See [Type Conversions](./type-conversions) for the full feature, including the
+in-editor rule editor.
+
+### Socket generators
+
+Generators build a node's dynamic ports (and an optional inline/panel editor)
+from its configuration , this is how variadic nodes and the
+[subgraph](./subgraphs) boundary/call nodes work.
+
+```typescript
+system.socketGeneratorStore.getState().registerGenerator({
+  name: 'myplugin/myNode.generator',
+  check: (spec) => spec.type === 'myplugin/myNode',
+  render: (props) => <MyNodePortsEditor {...props} />
+});
+```
+
+## Per-graph state (session extensions)
+
+To attach state or behaviour to **every graph** , existing tabs and any opened
+later , register a *session extension*. It runs once per `GraphSession`, and may
+return a cleanup that runs when that graph's tab is closed.
+
+```typescript
+import { plugin, type System, type GraphSession } from '@kiberon-labs/behave-graph-flow';
+
+// Make the new property typed on every session.
 declare module '@kiberon-labs/behave-graph-flow' {
-  interface ISystem {
+  interface IGraphSession {
+    myController?: MyController;
+  }
+}
+
+export const myControllerPlugin = plugin(
+  (system: System) => {
+    system.registerSessionExtension((session: GraphSession) => {
+      const controller = new MyController(session);
+      session.decorate('myController', controller);
+      return () => controller.dispose(); // runs on session dispose
+    });
+  },
+  { name: 'my-controller' }
+);
+```
+
+Now `session.myController` is available and typed wherever you have a
+`GraphSession`. This is exactly how the built-in graph runner attaches a
+per-graph run controller. You can also register cleanup directly with
+`session.onDispose(fn)`.
+
+## Editor-level services
+
+For state that is genuinely editor-wide (not per-graph), attach it to the
+`System` the same way , augment the `System` interface and `decorate`:
+
+```typescript
+declare module '@kiberon-labs/behave-graph-flow' {
+  interface System {
     analytics: AnalyticsService;
-    storage: StorageService;
   }
 }
 
-// Plugin implementation
-export const servicesPlugin = (system: System) => {
-  // Add custom services
-  system.decorate('analytics', new AnalyticsService());
-  system.decorate('storage', new LocalStorageService());
-};
+export const analyticsPlugin = plugin(
+  (system) => system.decorate('analytics', new AnalyticsService()),
+  { name: 'analytics' }
+);
 
-// Now accessible everywhere
-system.analytics.track('event');
-system.storage.save('key', data);
+// accessible everywhere as system.analytics
 ```
 
-### 8. Custom Variable Types
+> Note the asymmetry: editor-wide properties augment `interface System`, while
+> per-graph properties augment `interface IGraphSession`.
 
-Register custom variable types:
+## Events (pub/sub)
+
+There are two buses. The **editor** bus (`system.pubsub`) carries global events
+(`EditorPubSys`); each graph has its **own** bus (`session.pubsub`) for graph
+events (`GraphPubSys`). Augment the matching interface to add typed topics.
 
 ```typescript
-export const customVariablesPlugin = (system: System) => {
-  system.registry.getState().registerValueType({
-    name: 'vector3',
-    creator: () => ({ x: 0, y: 0, z: 0 }),
-    deserialize: (value) => {
-      if (typeof value === 'string') {
-        const [x, y, z] = value.split(',').map(Number);
-        return { x, y, z };
-      }
-      return value;
-    },
-    serialize: (value) => `${value.x},${value.y},${value.z}`,
-    lerp: (a, b, t) => ({
-      x: a.x + (b.x - a.x) * t,
-      y: a.y + (b.y - a.y) * t,
-      z: a.z + (b.z - a.z) * t
-    })
-  });
-};
+const off = system.pubsub.subscribe('graph:saved', (_topic, graph) => {
+  console.log('saved', graph);
+});
+// later: off();
 ```
 
-## Complete Plugin Example
+## Defining custom nodes
 
-Here's a full-featured plugin:
+Custom *nodes* are **not** registered through the editor plugin API. They live in
+the underlying graph **registry** you pass to `new System(registry)` , a separate
+concern from plugins (see
+[Registry vs. plugins](./customizing-the-editor#registry-vs-plugins)). Define them
+with the core node/value-type machinery and bundle them into a profile. See
+[Core Concepts → Nodes](../core-concepts/nodes),
+[Profiles](../core-concepts/profiles) and
+[Registry](../core-concepts/registry). A Flow plugin then layers the
+*editor experience* (icons, controls, generators, conversions) on top.
 
-```typescript
-import type { System } from '@kiberon-labs/behave-graph-flow';
-import { createStore } from 'zustand';
+## Loading packages from a manifest
 
-interface HistoryEntry {
-  timestamp: number;
-  action: string;
-  data: any;
-}
+Everything above registers extensions *imperatively* — a plugin imports the
+package's code and writes to the stores. A package can instead ship a static
+**manifest** that the editor loads **without importing the package's code**: the
+node palette and value types populate from JSON alone, while the UI contributions
+declared in the manifest map onto the same extension surfaces documented here and
+are registered only under an explicit trust gate.
 
-interface HistoryStore {
-  entries: HistoryEntry[];
-  addEntry: (action: string, data: any) => void;
-  clear: () => void;
-}
+This is a separate subject with its own reference — see
+[Package Manifests](../../manifests/overview/) for the format, the build-time
+generator, the `loadManifest` / `manifestPlugin` API and the trust model.
 
-export const historyPlugin = (system: System) => {
-  // 1. Create a custom store
-  const historyStore = createStore<HistoryStore>()((set) => ({
-    entries: [],
-    addEntry: (action, data) => {
-      set((state) => ({
-        entries: [
-          ...state.entries,
-          { timestamp: Date.now(), action, data }
-        ]
-      }));
-    },
-    clear: () => set({ entries: [] })
-  }));
-  
-  // 2. Attach to system
-  system.decorate('historyStore', historyStore);
-  
-  // 3. Subscribe to events
-  system.pubsub.subscribe('node:added', (node) => {
-    historyStore.getState().addEntry('Node Added', {
-      type: node.type,
-      id: node.id
-    });
-  });
-  
-  system.pubsub.subscribe('edge:added', (edge) => {
-    historyStore.getState().addEntry('Edge Added', {
-      source: edge.source,
-      target: edge.target
-    });
-  });
-  
-  // 4. Register panel
-  system.tabLoader.registerPanel('history', () => {
-    const entries = useStore(historyStore, (s) => s.entries);
-    
-    return (
-      <div>
-        <h3>Action History</h3>
-        <ul>
-          {entries.map((entry, i) => (
-            <li key={i}>
-              {new Date(entry.timestamp).toLocaleTimeString()}: {entry.action}
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  });
-  
-  // 5. Add menu item
-  system.menubarStore.getState().addMenuItem({
-    path: 'Window/History',
-    action: () => {
-      // Open history panel
-      const layout = system.tabStore.getState().layout;
-      // ... add panel to layout
-    }
-  });
-};
-```
+## Built-in plugins
 
-## Plugin Best Practices
+The editor ships these as plugins you can study or replace:
 
-### 1. Namespace Your Nodes
+- **Graph runners** , three execution models (local, web worker, remote) over a
+  shared client protocol. See [Graph Runners](./graph-runners).
+- **Alignment** , node alignment & distribution.
+- **Documentation** , inline node help.
 
-Prefix custom node types with a unique namespace:
+Editor defaults (the standard socket generators and the subgraph contract sync)
+are registered through `registerDefaults(system)`.
 
-```typescript
-// ✅ Good
-registry.registerNode({ type: 'myplugin/customNode', ... });
+## Best practices
 
-// ❌ Bad - might conflict
-registry.registerNode({ type: 'customNode', ... });
-```
-
-
-### 2. Type Safety
-
-Extend TypeScript interfaces for type-safe plugins:
-
-```typescript
-declare module '@kiberon-labs/behave-graph-flow' {
-  interface ISystem {
-    myService: MyService;
-  }
-  
-  interface PubSys {
-    'myplugin:event': MyEventData;
-  }
-}
-```
-
-### 3. Documentation
-
-Document your plugin's API:
-
-```typescript
-/**
- * Analytics Plugin
- * 
- * Tracks user interactions and sends analytics events.
- * 
- * @example
- * ```typescript
- * system.registerPlugin(createAnalyticsPlugin({
- *   apiKey: 'your-key',
- *   endpoint: 'https://analytics.example.com'
- * }));
- * ```
- */
-export const createAnalyticsPlugin = (options: AnalyticsOptions) => {
-  // ...
-};
-```
-
-## Built-in Plugins
-
-Behave-Graph Flow includes several built-in plugins:
-
-- **Alignment Plugin**: Node alignment and distribution tools
-- **AI Plugin**: AI-powered node suggestions
-- **Documentation Plugin**: Inline help and documentation
-- **Toolbar Plugin**: Customizable toolbar actions
-
-## Publishing Plugins
-
-To share your plugin:
-
-1. **Package it**: Create an npm package
-2. **Export types**: Include TypeScript declarations
-3. **Document usage**: Provide clear setup instructions
-4. **Version carefully**: Follow semantic versioning
-
-```typescript
-// my-plugin/index.ts
-export { myPlugin } from './plugin';
-export type { MyPluginOptions } from './types';
-```
+- **Namespace your ids.** Prefix commands, context-menu items, panels and node
+  types with your plugin name (`myplugin.…`, `myplugin:panel`) to avoid clashes.
+- **Type your augmentations.** Augment `System` / `IGraphSession` /
+  `EditorPubSys` / `GraphPubSys` so `decorate`, `subscribe` and `session.x` are
+  type-checked.
+- **Clean up.** Return a cleanup from session extensions and keep the disposers
+  from `register(...)` calls so your plugin can be torn down.
+- **Prefer commands.** Put behaviour in a command and have keys/menus/context
+  menus dispatch it , one implementation, many entry points.
+- **Make setup idempotent** if it can run more than once (registries upsert by
+  id/name, so re-registering is safe).

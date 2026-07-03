@@ -13,15 +13,16 @@ import type { StoreApi } from 'zustand';
 import type { GraphRunnerClientStore } from './store';
 import { GraphRunnerButtons } from './buttons';
 import { plugin } from '@/system/plugin';
-import { isBehaveNode } from '@/util/isBehaveNode';
-import type { Node } from 'reactflow';
 import { GraphRunner } from './runner';
+import { GraphRunController } from './runController';
+import type { GraphSession } from '@/system/graphSession';
 
 export * from './types';
 export * from './client';
 export * from './transport';
 export * from './panel';
 export * from './runner';
+export * from './runController';
 export * from './store';
 export * from './session';
 /**
@@ -86,25 +87,30 @@ export async function graphRunnerClientPluginLoader(
     }
   }
 
-  // Create and decorate actions
+  // Shared connection. Per-session run controllers are created below.
   const runner = new GraphRunner(system, store);
   system.decorate('runner', runner);
 
-  // Add toolbar buttons for graph execution control
+  // Attach a run controller to every graph session (existing + future) so each
+  // open graph runs independently over the shared connection. The editor applies
+  // this to graphs already open and to every graph created later, and tears the
+  // controller down when a graph's tab is closed.
+  system.registerSessionExtension((session: GraphSession) => {
+    if (!session.runController) {
+      session.decorate('runController', new GraphRunController(session, runner));
+    }
+    return () => {
+      session.runController?.dispose();
+      session.decorate('runController', undefined);
+    };
+  });
+
+  // Add toolbar buttons for graph execution control. Rendered inside each graph
+  // tab, GraphRunnerButtons resolves its own session's controller.
   system.toolbarStore.getState().addGroup({
     id: 'graph-runner-controls',
     label: 'Graph Runner',
-    buttons: [
-      <GraphRunnerButtons
-        key="graph-runner-buttons"
-        store={store}
-        onPlay={() => runner.play()}
-        onPause={() => runner.pause()}
-        onResume={() => runner.resume()}
-        onStep={() => runner.step()}
-        onStop={() => runner.stop()}
-      />
-    ]
+    buttons: [<GraphRunnerButtons key="graph-runner-buttons" />]
   });
 
   system.hotKeyStore.getState().register({
@@ -112,10 +118,12 @@ export async function graphRunnerClientPluginLoader(
     description: 'Triggers playing the graph',
     trigger: 'p',
     handler: () => {
-      if (runner.store.getState().isExecuting) {
-        runner.stop();
+      const controller = system.session?.runController;
+      if (!controller) return;
+      if (controller.store.getState().isExecuting) {
+        controller.stop();
       } else {
-        runner.play();
+        controller.play();
       }
     }
   });
@@ -162,88 +170,6 @@ export async function graphRunnerClientPluginLoader(
         .setSubMenuItems('window', [...windowMenu.items, newMenuItem]);
     }
   }
-
-  system.pubsub.subscribe('node:added', (_, node: Node) => {
-    if (!isBehaveNode(node)) {
-      return;
-    }
-
-    const client = runner.store.getState().client;
-    const currentRunId = runner.store.getState().currentRunId;
-    const graphId = runner.store.getState().currentGraphId;
-
-    // Only send if we have an active run and realtime is enabled
-    if (client && currentRunId && graphId) {
-      const capabilities = runner.store.getState().connectionInfo.capabilities;
-      if (capabilities?.realtime) {
-        client.addNode(
-          currentRunId,
-          node.id,
-          node.data.type,
-          node.data as Record<string, unknown>,
-          node.position
-        );
-      }
-    }
-  });
-
-  system.pubsub.subscribe('edge:added', (_, edge) => {
-    const client = runner.store.getState().client;
-    const currentRunId = runner.store.getState().currentRunId;
-    const graphId = runner.store.getState().currentGraphId;
-
-    // Only send if we have an active run and realtime is enabled
-    if (client && currentRunId && graphId && edge.source && edge.target) {
-      const capabilities = runner.store.getState().connectionInfo.capabilities;
-      if (capabilities?.realtime) {
-        client.createLink(
-          currentRunId,
-          edge.source,
-          edge.sourceHandle || '',
-          edge.target,
-          edge.targetHandle || ''
-        );
-      }
-    }
-  });
-
-  system.pubsub.subscribe('edge:removed', (_, edge) => {
-    const client = runner.store.getState().client;
-    const currentRunId = runner.store.getState().currentRunId;
-    const graphId = runner.store.getState().currentGraphId;
-
-    // Only send if we have an active run and realtime is enabled
-    if (client && currentRunId && graphId && edge.source && edge.target) {
-      const capabilities = runner.store.getState().connectionInfo.capabilities;
-      if (capabilities?.realtime) {
-        client.removeLink(
-          currentRunId,
-          edge.source,
-          edge.sourceHandle || '',
-          edge.target,
-          edge.targetHandle || ''
-        );
-      }
-    }
-  });
-
-  system.pubsub.subscribe('node:removed', (_, node: Node) => {
-    if (!isBehaveNode(node)) {
-      return;
-    }
-
-    const client = runner.store.getState().client;
-    const currentRunId = runner.store.getState().currentRunId;
-    const graphId = runner.store.getState().currentGraphId;
-
-    // Only send if we have an active run and realtime is enabled
-    if (client && currentRunId && graphId) {
-      const capabilities = runner.store.getState().connectionInfo.capabilities;
-      if (capabilities?.realtime) {
-        client.removeNode(currentRunId, node.id);
-      }
-    }
-  });
 
   if (!options.skipAutoConnect) {
     await runner.connect();

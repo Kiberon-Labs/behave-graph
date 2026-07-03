@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
-import { useSystem } from '@/system';
+import { useActiveGraph } from '@/system';
 import type { TraceSpan } from '@/store/traces';
 import { VscodeButton, VscodeDivider } from '@vscode-elements/react-elements';
 import styles from './index.module.css';
 import { BasePanel } from '../base';
 import type { HoverInfo, ViewState } from './types';
-import { clamp } from './utils';
+import { clamp, MAX_ZOOM_OUT_FACTOR } from './utils';
 import { useDerivedSpans } from './useDerivedSpans';
 import { TracesHeader } from './TracesHeader';
 import { TimeGrid } from './TimeGrid';
@@ -17,7 +17,7 @@ import { TraceTooltip } from './TraceTooltip';
 const PADDING = 8;
 
 export function TracesPanel() {
-  const system = useSystem();
+  const system = useActiveGraph()!;
   const version = useStore(system.traceStore, (s) => s.version);
   const clear = useStore(system.traceStore, (s) => s.clear);
   const collector = system.traceStore.getState().collector;
@@ -161,7 +161,11 @@ export function TracesPanel() {
 
       const zoomFactor = Math.exp(e.deltaY * 0.0015);
       setView((v) => {
-        const nextRange = clamp(v.range * zoomFactor, 1, derived.range);
+        const nextRange = clamp(
+          v.range * zoomFactor,
+          1,
+          derived.range * MAX_ZOOM_OUT_FACTOR
+        );
         const k = x / Math.max(1, rect.width);
         const nextStart = clampViewStart(t - k * nextRange, nextRange);
         return {

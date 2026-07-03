@@ -36,9 +36,9 @@ This protocol defines a WebSocket-based interface for decoupled execution of beh
 	```
 
 **Authentication Types:**
-- `bearer` — Bearer token (JWT or API key)
-- `apiKey` — Simple API key
-- `none` — No authentication (development only)
+- `bearer` , Bearer token (JWT or API key)
+- `apiKey` , Simple API key
+- `none` , No authentication (development only)
 
 **Example with API Key:**
 ```json
@@ -559,7 +559,7 @@ Get metadata about all available node types and their sockets.
 ```
 
 ### Variable Change Events
-- `variableChanged` — Emitted when a variable's value changes during execution.
+- `variableChanged` , Emitted when a variable's value changes during execution.
 	- Includes: `runId`, `graphId`, `variableName`, `oldValue`, `newValue`, and optionally `nodeId` (if the change was triggered by a node).
 
 #### Example Variable Change Event
@@ -576,7 +576,7 @@ Get metadata about all available node types and their sockets.
 ```
 
 ### Event Emission
-- `eventEmitted` — Emitted when an event is triggered during graph execution.
+- `eventEmitted` , Emitted when an event is triggered during graph execution.
   - Includes: `runId`, `graphId`, `eventName`, `payload`, and optionally `nodeId` (if the event was triggered by a specific node).
 
 #### Example Event Emission
@@ -592,7 +592,7 @@ Get metadata about all available node types and their sockets.
 ```
 
 ### Node Addition Events
-- `nodeAdded` — Emitted when a node is added to a graph during execution.
+- `nodeAdded` , Emitted when a node is added to a graph during execution.
   - Includes: `runId`, `graphId`, `nodeId`, `nodeType`, and optionally `nodeData` with the full node configuration.
 
 #### Example Node Addition Event
@@ -617,19 +617,19 @@ Get metadata about all available node types and their sockets.
 ## 10. Error Handling
 
 ### Error Codes
-- `PROTOCOL_VERSION_MISMATCH` — Incompatible protocol versions
-- `PROTOCOL_VIOLATION` — Protocol rules violated (e.g., hello not sent first)
-- `AUTHENTICATION_FAILED` — Invalid or missing authentication credentials
-- `AUTHENTICATION_REQUIRED` — Authentication is required but not provided
-- `SESSION_NOT_FOUND` — Session does not exist or expired
-- `SESSION_EXPIRED` — Session timed out
-- `INVALID_GRAPH` — Graph definition is malformed
-- `VALIDATION_FAILED` — Graph failed validation
-- `RUN_NOT_FOUND` — Run ID does not exist
-- `NODE_EXECUTION_ERROR` — Error during node execution
-- `TIMEOUT` — Execution exceeded max time
-- `CONCURRENT_LIMIT_EXCEEDED` — Too many concurrent runs
-- `PERMISSION_DENIED` — Unauthorized operation
+- `PROTOCOL_VERSION_MISMATCH` , Incompatible protocol versions
+- `PROTOCOL_VIOLATION` , Protocol rules violated (e.g., hello not sent first)
+- `AUTHENTICATION_FAILED` , Invalid or missing authentication credentials
+- `AUTHENTICATION_REQUIRED` , Authentication is required but not provided
+- `SESSION_NOT_FOUND` , Session does not exist or expired
+- `SESSION_EXPIRED` , Session timed out
+- `INVALID_GRAPH` , Graph definition is malformed
+- `VALIDATION_FAILED` , Graph failed validation
+- `RUN_NOT_FOUND` , Run ID does not exist
+- `NODE_EXECUTION_ERROR` , Error during node execution
+- `TIMEOUT` , Execution exceeded max time
+- `CONCURRENT_LIMIT_EXCEEDED` , Too many concurrent runs
+- `PERMISSION_DENIED` , Unauthorized operation
 
 ### Error Response Format
 ```json

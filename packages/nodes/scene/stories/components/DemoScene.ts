@@ -488,7 +488,7 @@ export class DemoScene implements IScene {
 
   addOnAnyMeshClickedListener(callback: (meshName: string) => void): void {
     console.log(
-      '[DemoScene] addOnAnyMeshClickedListener — registering listener, total:',
+      '[DemoScene] addOnAnyMeshClickedListener , registering listener, total:',
       this.anyMeshClickListeners.size + 1
     );
     this.anyMeshClickListeners.add(callback);
@@ -503,7 +503,7 @@ export class DemoScene implements IScene {
     console.log(
       '[DemoScene] triggerAnyMeshClick:',
       meshName,
-      '— listeners:',
+      ', listeners:',
       this.anyMeshClickListeners.size
     );
     this.anyMeshClickListeners.forEach((cb) => cb(meshName));

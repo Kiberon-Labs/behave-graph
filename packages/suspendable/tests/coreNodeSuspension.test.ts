@@ -5,7 +5,7 @@ import { makeTestEngine } from './testUtils';
 
 /**
  * Core flow nodes keep their cursors in node state (not closures), so the
- * engine can capture them generically — no ISuspendable implementation needed.
+ * engine can capture them generically , no ISuspendable implementation needed.
  * These tests run the unmodified core `flow/forLoop` and `flow/sequence`
  * through a mid-execution suspension round-trip.
  */

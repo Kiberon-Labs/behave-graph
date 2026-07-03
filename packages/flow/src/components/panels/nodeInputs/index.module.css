@@ -61,26 +61,30 @@
 }
 
 .emptyState {
-    font-size: 0.9em;
-    font-style: italic;
-    opacity: 0.7;
+    font-size: var(--fs-desc, 0.72rem);
+    color: var(--ds-fg-muted);
     text-align: center;
-    padding: 2rem;
+    padding: 2rem 1rem;
+    line-height: 1.4;
 }
 
 .panelTitle {
-    font-size: 1.05em;
-    text-align: center;
+    font-size: 0.95rem;
+    text-align: left;
     font-weight: 600;
     cursor: text;
     flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .panelTitleContainer {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    justify-content: flex-start;
+    gap: 0.4rem;
     position: relative;
 }
 
@@ -115,7 +119,7 @@
 }
 
 .infoButton:hover {
-    background: var(--vscode-button-secondaryBackground, #313131);
+    background: var(--ds-button-secondary-bg, #313131);
     opacity: 1 !important;
 }
 
@@ -138,10 +142,13 @@
 }
 
 .panelId {
-    font-size: 0.6em;
-    opacity: 0.5;
-    text-align: center;
+    font-size: var(--fs-desc, 0.72rem);
+    color: var(--ds-fg-muted);
+    opacity: 0.8;
+    text-align: left;
     font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 0.25rem;
 }
 
 .toolbar {
@@ -149,10 +156,9 @@
 }
 
 .noInputs {
-    font-size: 0.9em;
-    font-style: italic;
-    opacity: 0.7;
-    padding: 0.75rem;
+    font-size: var(--fs-desc, 0.72rem);
+    color: var(--ds-fg-muted);
+    padding: 0.75rem 0.2em;
 }
 
 .stackColPadded {
@@ -162,34 +168,38 @@
 }
 
 .inputRow {
-    display: grid;
-    grid-template-columns: minmax(120px, 1fr) minmax(160px, 1fr);
-    align-items: center;
-    gap: 0.4em;
-    padding: 0.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.25rem 0.2em;
+}
+
+/* Control fills the row width below the label, VSCode-settings style */
+.inputRow > div:last-child {
+    width: 100%;
 }
 
 .inputMeta {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: baseline;
+    gap: 0.4rem;
 }
 
 .inputName {
-    font-size: 0.9em;
+    font-size: var(--fs-label, 0.8rem);
     font-weight: 600;
     text-transform: capitalize;
 }
 
 .inputSubtext {
-    font-size: 0.75em;
-    opacity: 0.7;
+    font-size: var(--fs-desc, 0.72rem);
+    color: var(--ds-fg-muted);
+    opacity: 0.8;
 }
 
 .connectedMessage {
-    font-size: 0.85em;
-    font-style: italic;
-    opacity: 0.7;
+    font-size: var(--fs-desc, 0.72rem);
+    color: var(--ds-fg-muted);
 }
 
 .stackGap2Padded {
@@ -199,31 +209,59 @@
     padding: 0.2em;
 }
 
+/* Shared compact uppercase sub-section label for the Settings tab */
+.subTitle {
+    font-size: var(--fs-section, 0.7rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ds-fg);
+    opacity: 0.65;
+}
+
 .settingsRow {
     display: flex;
     justify-content: space-between;
     gap: 0.4em;
+    font-size: var(--fs-label, 0.8rem);
+}
+
+.settingsRow > div:first-child {
+    color: var(--ds-fg-muted);
+}
+
+.settingsRow > div:last-child {
+    min-width: 0;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.descriptionSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.descriptionTextarea {
+    width: 100%;
 }
 
 .annotationsSection {
     display: flex;
     flex-direction: column;
-    gap: 0.2em;
-}
-
-.annotationsTitle {
-    font-size: 0.95em;
-    font-weight: 600;
+    gap: 0.35rem;
 }
 
 .annotationsEmpty {
-    font-size: 0.85em;
-    font-style: italic;
-    opacity: 0.7;
+    font-size: var(--fs-desc, 0.72rem);
+    color: var(--ds-fg-muted);
 }
 
 .annotationsValue {
-    font-size: 0.85em;
+    font-size: var(--fs-desc, 0.72rem);
 }
 
 .annotationsList {
@@ -232,16 +270,16 @@
 }
 
 .annotationsListItem {
-    font-size: 0.85em;
+    font-size: var(--fs-desc, 0.72rem);
 }
 
 .annotationsPre {
     margin: 0;
-    padding: 0.2em;
+    padding: 0.5rem;
     border: 1px solid var(--color-neutral-stroke-subtle);
-    border-radius: 0.2em;
+    border-radius: var(--component-radii-sm, 4px);
     background: var(--color-neutral-background-strong);
-    font-size: 0.8em;
+    font-size: var(--fs-desc, 0.72rem);
     overflow: auto;
     white-space: pre-wrap;
     word-break: break-word;
@@ -249,9 +287,20 @@
 
 .panelHeader {
     display: flex;
-    justify-content: flex-end;
-    padding: 0.25rem 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0.2em;
+    margin-bottom: 0.25rem;
     border-bottom: 1px solid var(--color-neutral-stroke-subtle);
+}
+
+.panelHeaderLabel {
+    font-size: var(--fs-section, 0.7rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ds-fg);
+    opacity: 0.65;
 }
 
 
@@ -260,6 +309,17 @@
     display: flex;
     align-items: flex-start;
     gap: 0.25rem;
+}
+
+/* Per-input visibility toggle: subtle by default, full strength on row hover */
+.inputToggle {
+    opacity: 0.45;
+    transition: opacity 0.1s ease;
+}
+
+.inputWithToggle:hover .inputToggle,
+.inputToggle:focus-visible {
+    opacity: 1;
 }
 
 .visibilityToggle {

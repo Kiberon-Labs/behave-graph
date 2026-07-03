@@ -4,15 +4,16 @@ import type {
   NodeSpecJSON
 } from '@kiberon-labs/behave-graph';
 import type { Edge, Node } from 'reactflow';
-import { System } from '../system/system';
+import type { GraphSession } from '../system/graphSession';
 import { writeVariablesToJSON } from '../util/serializeVariables';
 import { isBehaveNode } from '@/util/isBehaveNode';
+import { deriveContract } from './contract';
 
 const isNullish = (value: any): value is null | undefined =>
   value === undefined || value === null;
 
 export const flowToBehave = (
-  system: System,
+  session: GraphSession,
   nodes: Node[],
   edges: Edge[],
   nodeSpecJSON: NodeSpecJSON[]
@@ -20,11 +21,11 @@ export const flowToBehave = (
   const graph: GraphJSON = {
     nodes: [],
     variables: [],
-    customEvents: system.eventsStore.getState().getCustomEvents()
+    customEvents: session.eventsStore.getState().getCustomEvents()
   };
 
-  const registry = system.registry.getState();
-  const varStore = system.variableStore.getState().variables;
+  const registry = session.editor.registry.getState();
+  const varStore = session.variableStore.getState().variables;
 
   nodes.forEach((node) => {
     if (!isBehaveNode(node)) return;
@@ -109,5 +110,12 @@ export const flowToBehave = (
   if (Object.keys(varStore).length > 0) {
     graph.variables = writeVariablesToJSON(registry, varStore);
   }
+
+  // Derive the graph's contract (inputs/outputs) from its boundary nodes so
+  // callers and the runtime can read it.
+  const { graphInputs, graphOutputs } = deriveContract(nodes);
+  if (graphInputs.length > 0) graph.graphInputs = graphInputs;
+  if (graphOutputs.length > 0) graph.graphOutputs = graphOutputs;
+
   return graph;
 };

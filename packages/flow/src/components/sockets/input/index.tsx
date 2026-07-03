@@ -19,6 +19,7 @@ export type InputSocketProps = {
   hideName?: boolean;
   connected: boolean;
   value: any | undefined;
+  label?: string;
   onChange: (key: string, value: any) => void;
   specJSON: NodeSpecJSON[];
 } & InputSocketSpecJSON;
@@ -28,12 +29,15 @@ const InputSocket: React.FC<InputSocketProps> = ({
   specJSON,
   hideName,
   hide,
+  label,
   ...rest
 }) => {
   const { name, valueType } = rest;
   const instance = useReactFlow();
   const sys = useSystem();
   const { valueTypeColors, icons, defaultIcon } = useStore(sys.legendStore);
+  const autoConvert = useStore(sys.systemSettings, (s) => s.autoConvert);
+  const conversions = useStore(sys.conversionStore, (s) => s.conversions);
   const Icon = icons[valueType] ?? defaultIcon;
 
   const isFlowSocket = valueType === 'flow';
@@ -48,7 +52,7 @@ const InputSocket: React.FC<InputSocketProps> = ({
   return (
     <div className={cx(styles.row, hide ? styles.hidden : undefined)}>
       {isFlowSocket && <NavArrowRightSolid />}
-      {showName && <div className={styles.name}>{name}</div>}
+      {showName && <div className={styles.name}>{label ?? name}</div>}
 
       <Handle
         id={name}
@@ -64,7 +68,10 @@ const InputSocket: React.FC<InputSocketProps> = ({
           connected ? undefined : styles.disconnected
         )}
         isValidConnection={(connection: Connection) =>
-          isValidConnection(connection, instance, specJSON)
+          isValidConnection(connection, instance, specJSON, {
+            autoConvert,
+            conversions
+          })
         }
       >
         <Icon />

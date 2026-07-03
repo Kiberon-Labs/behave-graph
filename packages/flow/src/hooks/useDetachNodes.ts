@@ -1,10 +1,10 @@
-import { useSystem } from '@/system';
+import { useGraph } from '@/system';
 import { useCallback } from 'react';
 import { useStoreApi } from 'reactflow';
 import { useStore } from 'zustand';
 
 export function useDetachNodes() {
-  const sys = useSystem();
+  const sys = useGraph();
   const setNodes = useStore(sys.nodeStore, (x) => x.setNodes);
   const store = useStoreApi();
 

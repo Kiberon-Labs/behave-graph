@@ -1,9 +1,6 @@
 import {
-  Assert,
   Engine,
   EventEmitter,
-  isAsyncNode,
-  isEventNode,
   Link,
   isFlowNode,
   type FiberListenerInner,
@@ -37,40 +34,19 @@ export class SuspendableEngine extends Engine {
     super(graph, registry);
   }
 
-  //Note this is a weak point in the system to completely override the existing logic
-  override commitToNewFiber(
-    node: INode,
-    outputFlowSocketName: string,
-    fiberCompletedListener: FiberListenerInner = undefined
-  ) {
-    try {
-      Assert.mustBeTrue(isEventNode(node) || isAsyncNode(node));
-      const outputSocket = node.outputs.find(
-        (socket) => socket.name === outputFlowSocketName
-      );
-      if (outputSocket === undefined) {
-        throw new Error(`no socket with the name ${outputFlowSocketName}`);
-      }
-      if (outputSocket.links.length > 1) {
-        throw new Error(
-          'invalid for an output flow socket to have multiple downstream links:' +
-            `${node.description.typeName}.${outputSocket.name} has ${outputSocket.links.length} downlinks`
-        );
-      }
-      if (outputSocket.links.length === 1) {
-        const fiber = new SuspendableFiber(
-          this,
-          outputSocket.links[0]!,
-          fiberCompletedListener
-        );
-        this.onNodeCommit.emit({ node, socket: outputFlowSocketName });
-
-        this.fiberQueue.push(fiber);
-      }
-    } catch (error) {
-      this.onNodeExecutionError.emit({ node, error });
-      throw error;
-    }
+  /**
+   * Supply the suspendable fiber variant through the engine's fiber factory
+   * seam. All scheduling logic (`trigger`, `commitToNewFiber`) is inherited
+   * unchanged; only the concrete fiber type differs. Suspendable fibers manage
+   * their own continuation state, so the triggering node passed by the base is
+   * intentionally unused here.
+   */
+  protected override makeFiber(
+    nextEval: Link | null,
+    fiberCompletedListener: FiberListenerInner = undefined,
+    _node: INode | undefined = undefined
+  ): SuspendableFiber {
+    return new SuspendableFiber(this, nextEval, fiberCompletedListener);
   }
 
   commitContinuedFiber(node: INode) {

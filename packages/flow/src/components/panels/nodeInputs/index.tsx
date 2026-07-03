@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { useSystem } from '@/system/provider';
+import { useActiveGraph, GraphProvider } from '@/system/provider';
 import {
   VscodeTabHeader,
   VscodeTabPanel,
@@ -27,8 +27,8 @@ import { EyeClosed, EyeSolid } from 'iconoir-react';
 import { Icon } from '@/components/primitives/icon';
 
 export function NodeInputsPanel() {
-  const system = useSystem();
-  const documentation = useStore(system.documentationStore, (x) => x.docs);
+  const system = useActiveGraph()!;
+  const documentation = useStore(system.editor.documentationStore, (x) => x.docs);
 
   const {
     allSpecsJson,
@@ -182,7 +182,7 @@ export function NodeInputsPanel() {
       system.refStore.getState().setRef('selectedDocumentationType', nodeType);
 
       // Open documentation browser panel
-      const currentLayout = system.tabStore.getState().layout;
+      const currentLayout = system.editor.tabStore.getState().layout;
 
       // Close existing doc browser if open
       const existingPanel = findTabInLayout(currentLayout, 'docbrowser');
@@ -203,7 +203,7 @@ export function NodeInputsPanel() {
         height: 700
       });
 
-      system.tabStore.getState().setLayout(newLayout);
+      system.editor.tabStore.getState().setLayout(newLayout);
     },
     [system]
   );
@@ -262,6 +262,7 @@ export function NodeInputsPanel() {
           <VscodeTabPanel>
             {inputsWithControls.length > 0 && (
               <div className={styles.panelHeader}>
+                <span className={styles.panelHeaderLabel}>Inputs</span>
                 <Icon
                   onClick={handleToggleAllInputs}
                   title="Toggle all input visibility"
@@ -278,10 +279,14 @@ export function NodeInputsPanel() {
             )}
 
             {generatorNode && (
-              <SocketGenerators
-                generators={matchingGenerators}
-                generatorNode={generatorNode}
-              />
+              // Generators read per-graph state via useGraph(); bind them to the
+              // active session since this panel lives outside the graph tab.
+              <GraphProvider value={system}>
+                <SocketGenerators
+                  generators={matchingGenerators}
+                  generatorNode={generatorNode}
+                />
+              </GraphProvider>
             )}
             {inputsWithControls.length === 0 &&
               matchingGenerators.length === 0 && (
@@ -302,6 +307,7 @@ export function NodeInputsPanel() {
           <VscodeTabPanel>
             {outputsWithInfo.length > 0 && (
               <div className={styles.panelHeader}>
+                <span className={styles.panelHeaderLabel}>Outputs</span>
                 <Icon
                   onClick={handleToggleAllOutputs}
                   title="Toggle all output visibility"

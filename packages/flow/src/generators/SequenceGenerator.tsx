@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { VscodeButton } from '@vscode-elements/react-elements';
 import { Plus, Minus } from 'iconoir-react';
 
-import { useSystem } from '@/system/provider';
+import { useGraph } from '@/system/provider';
 import type { SocketGeneratorRenderProps } from '@/store/socketGenerator';
 import type { NodeSpecJSON } from '@kiberon-labs/behave-graph/Graphs/IO/NodeSpecJSON';
 
@@ -18,7 +18,7 @@ export function getSequenceGenerator() {
 }
 
 const SequenceGenerator: React.FC<SocketGeneratorRenderProps> = ({ node }) => {
-  const system = useSystem();
+  const system = useGraph();
 
   const numOutputs = node.data.configuration?.numOutputs ?? 0;
 

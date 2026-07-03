@@ -13,6 +13,10 @@ import {
 } from '../Nodes/NodeInstance.js';
 import { sleep } from '../utils/sleep.js';
 import { Fiber, type FiberListenerInner } from './Fiber.js';
+import {
+  createDefaultNodeExecutionHandlers,
+  type NodeExecutionHandler
+} from './NodeExecutionHandler.js';
 import { resolveSocketValue } from './resolveSocketValue.js';
 import type { IRegistry } from '~/index.js';
 
@@ -41,6 +45,15 @@ export class Engine {
   public readonly nodes: GraphNodes;
   private disposed = false;
   public executionSteps = 0;
+  /**
+   * Dispatch table mapping a node's `nodeType` to the handler that knows how to
+   * trigger that kind within a fiber step. Seeded with the built-in Flow and
+   * Async kinds; register additional kinds with
+   * {@link Engine.registerNodeExecutionHandler}. This is the engine's
+   * open/closed seam for custom execution semantics.
+   */
+  public readonly nodeExecutionHandlers: Map<string, NodeExecutionHandler> =
+    createDefaultNodeExecutionHandlers();
 
   constructor(graph: GraphInstance, registry: IRegistry) {
     this.registry = registry;
@@ -77,6 +90,9 @@ export class Engine {
     this.disposed = true;
     // dispose all, possibly in-progress, async nodes
     this.asyncNodes.forEach((asyncNode) => asyncNode.dispose());
+    // clear so executeAllAsync's loop (which waits while asyncNodes is
+    // non-empty) winds down after disposal instead of spinning.
+    this.asyncNodes.length = 0;
 
     // dispose all event nodes
     this.eventNodes.forEach((eventNode) => eventNode.dispose(this));
@@ -85,6 +101,31 @@ export class Engine {
 
   hasPending(): boolean {
     return this.fiberQueue.length > 0 || this.asyncNodes.length > 0;
+  }
+
+  /**
+   * Factory for the fibers this engine schedules. Override in a subclass to
+   * supply a custom {@link Fiber} variant (e.g. a suspendable fiber) without
+   * reimplementing the surrounding scheduling logic. This is the seam that lets
+   * the execution strategy vary independently of the engine.
+   */
+  protected makeFiber(
+    nextEval: Link | null,
+    fiberCompletedListener: FiberListenerInner = undefined,
+    node: INode | undefined = undefined
+  ): Fiber {
+    return new Fiber(this, nextEval, fiberCompletedListener, node);
+  }
+
+  /**
+   * Teach the engine how to execute a custom node kind. The `nodeType` must
+   * match the `nodeType` discriminator on the node instances it should drive.
+   */
+  registerNodeExecutionHandler(
+    nodeType: string,
+    handler: NodeExecutionHandler
+  ): void {
+    this.nodeExecutionHandlers.set(nodeType, handler);
   }
 
   /**
@@ -108,8 +149,7 @@ export class Engine {
       if (!inputSocket) {
         throw new Error('input socket not found: ' + inputSocketName);
       }
-      const fiber = new Fiber(
-        this,
+      const fiber = this.makeFiber(
         new Link(node.id, inputSocket.name),
         fiberCompletedListener,
         node
@@ -146,8 +186,7 @@ export class Engine {
         );
       }
       if (outputSocket.links.length === 1) {
-        const fiber = new Fiber(
-          this,
+        const fiber = this.makeFiber(
           outputSocket.links[0] ?? null,
           fiberCompletedListener,
           node

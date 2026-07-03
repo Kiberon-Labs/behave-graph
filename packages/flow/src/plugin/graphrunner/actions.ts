@@ -1,15 +1,14 @@
-import type { System } from '../../system/system';
-import type { StoreApi } from 'zustand';
-import type { GraphRunnerClientStore } from './store';
+import type { GraphSession } from '@/system/graphSession';
 import type { GraphRunnerClient } from './client';
+import type { GraphRunner } from './runner';
 import { executing } from '@/annotations';
 import { sleep } from '@/util/sleep';
 import { type ValueJSON } from '@kiberon-labs/behave-graph';
 
-// Helper to clear executing state from all nodes
-async function clearAllExecutingStates(system: System) {
+// Helper to clear executing state from all nodes of a session
+async function clearAllExecutingStates(session: GraphSession) {
   await sleep(1); // Delay to allow any final traces to process
-  system.nodeStore.getState().setNodes((nodes) =>
+  session.nodeStore.getState().setNodes((nodes) =>
     nodes.map((node) => {
       if ('data' in node && node.data.annotations?.[executing]) {
         return {
@@ -29,20 +28,36 @@ async function clearAllExecutingStates(system: System) {
 }
 
 /**
- * Setup persistent event listeners on the client for trace, logs, and run lifecycle
- * This should be called once when the client is connected
+ * Clients that already have listeners attached. Guards against double-wiring when
+ * both the plugin's `runner.connect()` and a host (e.g. the webworker runner)
+ * call {@link setupClientEventListeners} on the same client , which would record
+ * every trace span, log and event twice.
+ */
+const wiredClients = new WeakSet<GraphRunnerClient>();
+
+/**
+ * Setup persistent event listeners on the shared client. Registered once when
+ * the client connects; every message is routed to the session that started its
+ * run (via {@link GraphRunner.runIndex}), so concurrent graphs stay isolated.
+ *
+ * Idempotent per client: calling it again with the same client is a no-op.
  */
 export function setupClientEventListeners(
   client: GraphRunnerClient,
-  system: System,
-  store: StoreApi<GraphRunnerClientStore>
+  runner: GraphRunner
 ) {
-  const { setIsExecuting, setCurrentRunId, setCurrentGraphId, setIsPaused } =
-    store.getState();
+  if (wiredClients.has(client)) return;
+  wiredClients.add(client);
 
-  // Listen for trace events - these apply to all runs
+  // Resolve the session that owns a given run id, or null if unknown.
+  const sessionFor = (runId: string): GraphSession | null =>
+    runner.runIndex.get(runId)?.session ?? null;
+
+  // Listen for trace events
   client.on('trace', async (message) => {
-    const traceStore = system.traceStore.getState();
+    const session = sessionFor(message.runId);
+    if (!session) return;
+    const traceStore = session.traceStore.getState();
     if (message.event === 'start') {
       let name = message.nodeId;
       if (
@@ -58,50 +73,56 @@ export function setupClientEventListeners(
       traceStore.addSpan({
         nodeId: message.nodeId,
         name,
-        start: message.timestamp || performance.now(),
-        end: 1,
-        lane: 0
+        // `?? `not `||`: the worker sends run-relative ms, so 0 is a valid (and
+        // common, for the first node) start , `||` fell back to the main thread's
+        // performance.now(), producing huge, wrong-clock timestamps.
+        start: message.timestamp ?? performance.now(),
+        // Open span: NaN until the matching `end` event arrives. The store/render
+        // treat NaN as "still running"; a literal end let it render mis-sized.
+        end: Number.NaN
+        // lane omitted: let the store allocate/free lanes so concurrent spans
+        // stack instead of all piling into lane 0.
       });
 
       // Mark node as executing
-      system.nodeStore.getState().setNodes((nodes) =>
+      session.nodeStore.getState().setNodes((nodes) =>
         nodes.map((node) =>
           node.id === message.nodeId && 'data' in node
             ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  annotations: {
-                    ...node.data.annotations,
-                    [executing]: true
-                  }
+              ...node,
+              data: {
+                ...node.data,
+                annotations: {
+                  ...node.data.annotations,
+                  [executing]: true
                 }
               }
+            }
             : node
         )
       );
     } else if (message.event === 'end') {
       traceStore.updateSpan(message.nodeId, {
-        end: message.timestamp || performance.now()
+        end: message.timestamp ?? performance.now()
       });
 
       //Delay to allow UI to show executing state
       await sleep(1);
 
       // Mark node as no longer executing
-      system.nodeStore.getState().setNodes((nodes) =>
+      session.nodeStore.getState().setNodes((nodes) =>
         nodes.map((node) =>
           node.id === message.nodeId && 'data' in node
             ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  annotations: {
-                    ...node.data.annotations,
-                    [executing]: false
-                  }
+              ...node,
+              data: {
+                ...node.data,
+                annotations: {
+                  ...node.data.annotations,
+                  [executing]: false
                 }
               }
+            }
             : node
         )
       );
@@ -110,9 +131,10 @@ export function setupClientEventListeners(
 
   // Listen for log messages
   client.on('log', (message) => {
-    const logStore = system.logsStore.getState();
+    const session = sessionFor(message.runId);
+    if (!session) return;
     const formattedMessage = `[${message.runId}/${message.graphId}] ${message.message}${message.data !== undefined ? ` ${JSON.stringify(message.data)}` : ''}`;
-    logStore.append({
+    session.logsStore.getState().append({
       time: new Date(),
       data: {
         message: formattedMessage
@@ -123,131 +145,115 @@ export function setupClientEventListeners(
 
   // Listen for variable change events from server
   client.on('variableChanged', (message) => {
-    const variableStore = system.variableStore.getState();
+    const session = sessionFor(message.runId);
+    if (!session) return;
+    const variableStore = session.variableStore.getState();
     const id = message.variableName;
 
-    // Get existing variable or create new one
     const existingVariable = variableStore.variables[id];
 
     if (existingVariable) {
-      // Update existing variable
-      system.variableStore.getState().setVariable(id, {
+      variableStore.setVariable(id, {
         ...existingVariable,
         initialValue: message.newValue as ValueJSON
       });
     } else {
-      // Create new variable if it doesn't exist
       const inferredType = typeof message.newValue;
-      const newVariable = {
+      variableStore.setVariable(id, {
         id,
         name: message.variableName,
         valueTypeName: inferredType === 'object' ? 'string' : inferredType,
         initialValue: message.newValue as ValueJSON
-      };
-      variableStore.setVariable(id, newVariable);
+      });
     }
   });
 
-  // Listen for run completion events
+  // Run lifecycle events
   client.on('completed', (message) => {
-    const currentRunId = store.getState().currentRunId;
-    if (message.runId === currentRunId) {
-      system.notifications.success(`Graph completed: ${message.graphId}`);
-      setIsExecuting(false);
-      setCurrentRunId(null);
-      setCurrentGraphId(null);
-      setIsPaused(false);
-      clearAllExecutingStates(system);
-    }
+    const controller = runner.runIndex.get(message.runId);
+    if (!controller) return;
+    controller.session.editor.notifications.success(
+      `Graph completed: ${message.graphId}`
+    );
+    controller.finishRun();
+    clearAllExecutingStates(controller.session);
   });
 
   client.on('error', (message) => {
-    const currentRunId = store.getState().currentRunId;
-    if (message.runId === currentRunId) {
-      system.notifications.error(`Graph failed: ${message.graphId}`);
-      setIsExecuting(false);
-      setCurrentRunId(null);
-      setCurrentGraphId(null);
-      setIsPaused(false);
-      clearAllExecutingStates(system);
-    }
+    if (!message.runId) return;
+    const controller = runner.runIndex.get(message.runId);
+    if (!controller) return;
+    controller.session.editor.notifications.error(
+      `Graph failed: ${message.graphId}`
+    );
+    controller.finishRun();
+    clearAllExecutingStates(controller.session);
   });
 
   client.on('stopped', (message) => {
-    const currentRunId = store.getState().currentRunId;
-    if (message.runId === currentRunId) {
-      system.notifications.info(`Graph stopped: ${message.graphId}`);
-      setIsExecuting(false);
-      setCurrentRunId(null);
-      setCurrentGraphId(null);
-      setIsPaused(false);
-      clearAllExecutingStates(system);
-    }
+    const controller = runner.runIndex.get(message.runId);
+    if (!controller) return;
+    controller.session.editor.notifications.info(
+      `Graph stopped: ${message.graphId}`
+    );
+    controller.finishRun();
+    clearAllExecutingStates(controller.session);
   });
 
   // Realtime state change listeners
   client.on('nodeRemoved', (message) => {
-    const currentRunId = store.getState().currentRunId;
-    if (message.runId === currentRunId) {
-      // Update node store to reflect removal
-      system.nodeStore
-        .getState()
-        .setNodes((nodes) =>
-          nodes.filter((node) => node.id !== message.nodeId)
-        );
-      system.notifications.info(`Node removed: ${message.nodeId}`);
-    }
+    const session = sessionFor(message.runId);
+    if (!session) return;
+    session.nodeStore
+      .getState()
+      .setNodes((nodes) => nodes.filter((node) => node.id !== message.nodeId));
+    session.editor.notifications.info(`Node removed: ${message.nodeId}`);
   });
 
   client.on('linkCreated', (message) => {
-    const currentRunId = store.getState().currentRunId;
-    if (message.runId === currentRunId) {
-      system.notifications.info(
-        `Link created: ${message.fromNodeId}/${message.fromSocket} -> ${message.toNodeId}/${message.toSocket}`
-      );
-    }
+    const session = sessionFor(message.runId);
+    if (!session) return;
+    session.editor.notifications.info(
+      `Link created: ${message.fromNodeId}/${message.fromSocket} -> ${message.toNodeId}/${message.toSocket}`
+    );
   });
 
   client.on('linkRemoved', (message) => {
-    const currentRunId = store.getState().currentRunId;
-    if (message.runId === currentRunId) {
-      system.notifications.info(
-        `Link removed: ${message.fromNodeId}/${message.fromSocket} -> ${message.toNodeId}/${message.toSocket}`
-      );
-    }
+    const session = sessionFor(message.runId);
+    if (!session) return;
+    session.editor.notifications.info(
+      `Link removed: ${message.fromNodeId}/${message.fromSocket} -> ${message.toNodeId}/${message.toSocket}`
+    );
   });
 
   client.on('nodeParamUpdated', (message) => {
-    const currentRunId = store.getState().currentRunId;
-    if (message.runId === currentRunId) {
-      system.notifications.info(`Parameter updated on ${message.nodeId}`);
-    }
+    const session = sessionFor(message.runId);
+    if (!session) return;
+    session.editor.notifications.info(`Parameter updated on ${message.nodeId}`);
   });
 
   client.on('affectedNodes', (message) => {
-    const currentRunId = store.getState().currentRunId;
-    if (message.runId === currentRunId) {
-      // Highlight affected nodes
-      system.nodeStore.getState().setNodes((nodes) =>
-        nodes.map((node) => {
-          if (message.nodeIds.includes(node.id)) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                annotations: {
-                  ...node.data?.annotations,
-                  [executing]: true
-                }
+    const session = sessionFor(message.runId);
+    if (!session) return;
+    session.nodeStore.getState().setNodes((nodes) =>
+      nodes.map((node) => {
+        if (message.nodeIds.includes(node.id)) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              annotations: {
+                ...node.data?.annotations,
+                [executing]: true
               }
-            };
-          }
-          return node;
-        })
-      );
-      system.notifications.info(
-        `Executing ${message.reason}: ${message.nodeIds.length} node(s)`
-      );
-    }
+            }
+          };
+        }
+        return node;
+      })
+    );
+    session.editor.notifications.info(
+      `Executing ${message.reason}: ${message.nodeIds.length} node(s)`
+    );
   });
 }

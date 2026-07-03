@@ -6,6 +6,7 @@
 import type { System } from '../../system/system.js';
 import { plugin } from '../../system/plugin.js';
 import type { IRegistry } from '@kiberon-labs/behave-graph';
+import { buildUIGraphJSON } from '../../transformers/Uigraph.js';
 import { GraphRunnerClient } from '../graphrunner/client.js';
 import { LocalTransport } from './transport.js';
 import {
@@ -86,11 +87,16 @@ export async function localGraphRunnerPluginLoader(
       tickStrategy
     });
 
-  // Create local transport with access to the node registry and store
+  // Create local transport with access to the node registry and store.
+  // `resolveGraph` lets Call Subgraph nodes run other open graphs by id.
   const transport = new LocalTransport(options.registry, {
     ...options,
     store: localStore,
-    sessionFactory
+    sessionFactory,
+    resolveGraph: (id) => {
+      const target = system.activeGraph.getState().sessions[id];
+      return target ? buildUIGraphJSON(target).flow : undefined;
+    }
   });
 
   // Create client with the local transport and message activity tracking

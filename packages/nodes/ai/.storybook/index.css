@@ -1,0 +1,18 @@
+@import "@kiberon-labs/behave-graph-flow/entry.css";
+
+html {
+    font-family: ui-sans-serif,
+        system-ui,
+        sans-serif,
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Noto Color Emoji";
+}
+
+html,
+body,
+#storybook-root {
+    height: 100%;
+    margin: 0;
+}

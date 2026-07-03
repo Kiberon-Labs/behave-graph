@@ -8,6 +8,14 @@ export const hashToHue = (str: string): number => {
 export const clamp = (v: number, min: number, max: number): number =>
   Math.max(min, Math.min(max, v));
 
+/**
+ * How far past the captured data extent the user may zoom out. Without headroom
+ * the view range is clamped to the data range, so you hit a wall and "can't zoom
+ * out" , especially for very short traces. This lets the trace be pulled back
+ * into a smaller cluster with surrounding space.
+ */
+export const MAX_ZOOM_OUT_FACTOR = 8;
+
 const NICE_INTERVALS = [
   1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000
 ] as const;

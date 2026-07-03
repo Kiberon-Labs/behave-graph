@@ -1,0 +1,39 @@
+{
+  "name": "Basic chat",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "lifecycle/onStart",
+      "metadata": { "positionX": "-220", "positionY": "320" },
+      "flows": { "flow": { "nodeId": "setup", "socket": "flow" } }
+    },
+    {
+      "id": "provider",
+      "type": "ai/provider",
+      "metadata": { "positionX": "-220", "positionY": "0" },
+      "parameters": { "kind": { "value": "openrouter" } }
+    },
+    {
+      "id": "agent",
+      "type": "ai/agent",
+      "metadata": { "positionX": "140", "positionY": "40" },
+      "parameters": {
+        "provider": { "link": { "nodeId": "provider", "socket": "provider" } },
+        "model": { "value": "meta-llama/llama-3.3-70b-instruct:free" },
+        "systemPrompt": {
+          "value": "You are a helpful assistant embedded in a node editor."
+        }
+      }
+    },
+    {
+      "id": "setup",
+      "type": "ai/setupConversation",
+      "metadata": { "positionX": "520", "positionY": "200" },
+      "parameters": {
+        "agent": { "link": { "nodeId": "agent", "socket": "agent" } }
+      }
+    }
+  ],
+  "variables": [],
+  "customEvents": []
+}

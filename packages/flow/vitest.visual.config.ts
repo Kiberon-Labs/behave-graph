@@ -40,6 +40,13 @@ export default defineConfig({
     }
   },
   resolve: {
+    // The browser runner renders through vitest-browser-react, which can pull
+    // its own React/React-DOM copy (a different patch than the app's pinned
+    // 19.2.3). Two React instances means the renderer sets the hook dispatcher
+    // on one copy while the panels call hooks on the other, producing "Invalid
+    // hook call / more than one copy of React" and a null dispatcher. Force a
+    // single instance so the renderer and the components share it.
+    dedupe: ['react', 'react-dom'],
     alias: {
       '~': path.resolve(__dirname, './src'),
       '@': path.resolve(__dirname, './src')

@@ -1,6 +1,6 @@
 import { docsPlugin } from '@/plugin/docs';
 
-import { SystemProvider } from '@/system/provider';
+import { SystemProvider, GraphProvider } from '@/system/provider';
 import { System } from '@/system/system';
 import {
   registerCoreProfile,
@@ -41,6 +41,7 @@ export const systemGenerator = () => {
 };
 
 const defaultSys = new System(nodeRegistry);
+const defaultSession = defaultSys.createSession('graph');
 
 defaultSys.registerPlugin(alignmentPlugin);
 defaultSys.registerPlugin(docsPlugin);
@@ -77,7 +78,7 @@ defaultSys.pubsub.subscribe('graph:saved', (_, graph) => {
   downloadJson('graph.json', graph);
 });
 
-defaultSys.flowStore.getState().setGraph({
+defaultSession.flowStore.getState().setGraph({
   nodes: [
     {
       type: 'lifecycle/onStart',
@@ -151,7 +152,7 @@ const exampleLogTime = (h: number, m: number, s: number, ms: number) =>
     message: 'debug/log: failed to resolve socket "value" on node 3.'
   }
 ].forEach((entry, index) => {
-  defaultSys.logsStore.getState().append({
+  defaultSession.logsStore.getState().append({
     type: entry.type,
     data: { message: entry.message },
     time: exampleLogTime(13, 45, 30 + index, 120 + index * 37)
@@ -163,5 +164,9 @@ export const DefaultSystemProvider = ({
 }: {
   children: React.ReactElement;
 }) => {
-  return <SystemProvider value={defaultSys}>{children}</SystemProvider>;
+  return (
+    <SystemProvider value={defaultSys}>
+      <GraphProvider value={defaultSession}>{children}</GraphProvider>
+    </SystemProvider>
+  );
 };

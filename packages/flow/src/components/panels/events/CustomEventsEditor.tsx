@@ -8,7 +8,7 @@ import {
   VscodeSingleSelect,
   VscodeTextfield
 } from '@vscode-elements/react-elements';
-import { useSystem } from '@/system';
+import { useActiveGraph } from '@/system';
 import type { GraphJSON } from '@kiberon-labs/behave-graph';
 import { Download, Plus, Trash } from 'iconoir-react';
 
@@ -26,7 +26,7 @@ const nextNumericId = (events: Array<{ id: string }>) => {
 };
 
 export const CustomEventsEditor: React.FC = () => {
-  const system = useSystem();
+  const system = useActiveGraph()!;
 
   const eventsStoreApi = system.eventsStore;
   const persistedEvents = useStore(system.eventsStore, (s) =>

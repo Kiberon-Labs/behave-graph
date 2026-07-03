@@ -2,8 +2,9 @@
 @import 'rc-menu/assets/index.css';
 @import "rc-dock/dist/rc-dock-dark.css";
 
-@import "./css/vscode.css";
 @import "./css/vars.css";
+@import "./css/themes/kiberon.css";
+@import "./css/vscode-elements.css";
 @import "./css/rc-dock.css";
 @import "./css/rc-menu.css";
 @import "./css/prosemirror.css";
@@ -61,21 +62,7 @@
     color: var(--colors-fg);
 }
 
-.rc-menu-sub .rc-menu-item {
-    padding: 0.1em !important;
-}
-
-.rc-menu-item {
-    color: var(--colors-fg);
-    padding: 0 1em !important;
-}
-
-
-.rc-menu-horizontal {
-    padding: 0.2em;
-    display: flex;
-    gap: 0.4em;
-}
+/* rc-menu styling lives in css/rc-menu.css */
 
 
 .container {

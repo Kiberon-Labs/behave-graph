@@ -34,6 +34,34 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     <div className={`${styles.message} ${roleClass}`}>
       <span className={styles.roleLabel}>{message.role}</span>
       <div className={`${styles.bubble} ${bubbleClass}`}>
+        {message.attachments && message.attachments.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 4,
+              marginBottom: message.content ? 6 : 0
+            }}
+          >
+            {message.attachments.map((attachment, index) => (
+              <img
+                key={index}
+                src={attachment.url}
+                alt={attachment.alt ?? 'attachment'}
+                draggable={false}
+                style={{
+                  maxWidth: 180,
+                  maxHeight: 180,
+                  width: 'auto',
+                  height: 'auto',
+                  borderRadius: 6,
+                  display: 'block',
+                  objectFit: 'contain'
+                }}
+              />
+            ))}
+          </div>
+        )}
         {message.content}
         {message.isStreaming && <span className={styles.streamingIndicator} />}
       </div>
@@ -69,7 +97,7 @@ export function ConversationPanel() {
 
     system.chatStore.getState().setInputValue('');
 
-    // Publish the user message — the AI subsystem adds it to
+    // Publish the user message , the AI subsystem adds it to
     // memory which fires listeners that sync to the chat store.
     system.pubsub.publish('chat:userMessage', {
       content: trimmed

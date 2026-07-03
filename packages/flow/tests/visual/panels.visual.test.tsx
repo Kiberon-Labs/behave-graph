@@ -23,6 +23,7 @@ import { SearchPanel } from '@/components/panels/search';
 import { Settings } from '@/components/panels/systemSettings';
 import { TracesPanel } from '@/components/panels/traces';
 import { VariablesPanel } from '@/components/panels/variables';
+import { LocalGraphRunnerPanel } from '@/plugin/graphrunner-local';
 
 /**
  * One pixel-snapshot per panel. The shared {@link DefaultSystemProvider} (the
@@ -44,7 +45,8 @@ const panels: ReadonlyArray<readonly [name: string, element: ReactElement]> = [
   ['search', <SearchPanel />],
   ['systemSettings', <Settings />],
   ['traces', <TracesPanel />],
-  ['variables', <VariablesPanel />]
+  ['variables', <VariablesPanel />],
+  ['localGraphRunner', <LocalGraphRunnerPanel />]
 ];
 
 afterEach(() => {

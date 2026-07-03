@@ -61,6 +61,32 @@ export interface ITransport<
    */
   removeAllHandlers(): void;
 }
+
+/**
+ * Optional capability: a transport that can interactively control a run
+ * (pause / resume / step). Remote transports may not support it; the client
+ * detects support via {@link supportsExecutionControl} rather than reaching into
+ * transport internals.
+ */
+export interface IExecutionControl {
+  pauseExecution(runId: string): void;
+  resumeExecution(runId: string): Promise<void>;
+  stepExecution(runId: string): Promise<void>;
+  isPaused(runId: string): boolean;
+}
+
+/** Type guard: does this transport implement {@link IExecutionControl}? */
+export function supportsExecutionControl(
+  transport: unknown
+): transport is IExecutionControl {
+  return (
+    !!transport &&
+    typeof (transport as IExecutionControl).pauseExecution === 'function' &&
+    typeof (transport as IExecutionControl).resumeExecution === 'function' &&
+    typeof (transport as IExecutionControl).stepExecution === 'function'
+  );
+}
+
 /**
  * WebSocket transport implementation
  */

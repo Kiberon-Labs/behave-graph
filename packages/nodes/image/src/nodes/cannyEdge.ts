@@ -1,8 +1,7 @@
-import type { IMagickImage } from '@imagemagick/magick-wasm';
-import { ImageMagick, Percentage } from '@imagemagick/magick-wasm';
+import { Percentage } from '@imagemagick/magick-wasm';
 import { makePureInOutFunctionDesc } from '@kiberon-labs/behave-graph';
 import { ImageValue } from '../values';
-import { cloneImage } from '@/utils.js';
+import { transformImage } from '@/utils.js';
 
 export const CannyEdge = makePureInOutFunctionDesc({
   typeName: 'image/canny',
@@ -47,13 +46,11 @@ export const CannyEdge = makePureInOutFunctionDesc({
     const lower = new Percentage(lowerRaw);
     const upper = new Percentage(upperRaw);
 
-    const magickImage = await ImageMagick.read(
-      cloneImage(image),
-      async (image: IMagickImage) => {
-        image.cannyEdge(radius, sigma, lower, upper);
-        return await image.write((data) => data);
-      }
+    write(
+      'image',
+      await transformImage(image, (img) =>
+        img.cannyEdge(radius, sigma, lower, upper)
+      )
     );
-    write('image', magickImage);
   }
 });

@@ -196,7 +196,7 @@ system.undoManager.redo();
 
 ```typescript
 import { BehaveGraphFlow } from '@kiberon-labs/behave-graph-flow';
-import '@kiberon-labs/behave-graph-flow/dist/entry.css';
+import '@kiberon-labs/behave-graph-flow/entry.css';
 
 function App() {
   return (

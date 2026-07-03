@@ -1,0 +1,19 @@
+{
+  "name": "echo-mention",
+  "nodes": [
+    {
+      "id": "ev",
+      "type": "slack/onMention",
+      "parameters": { "channel": { "value": "C0123DEMO" } },
+      "flows": { "flow": { "nodeId": "reply", "socket": "flow" } }
+    },
+    {
+      "id": "reply",
+      "type": "slack/sendMessage",
+      "parameters": {
+        "channel": { "value": "C0123DEMO" },
+        "text": { "link": { "nodeId": "ev", "socket": "text" } }
+      }
+    }
+  ]
+}

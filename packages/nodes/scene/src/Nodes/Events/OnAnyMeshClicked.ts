@@ -27,7 +27,7 @@ export const OnAnyMeshClicked = makeEventNodeDefinition({
     };
 
     const scene = graph.getDependency('IScene');
-    console.log('[OnAnyMeshClicked] init — scene dependency:', !!scene);
+    console.log('[OnAnyMeshClicked] init , scene dependency:', !!scene);
 
     scene?.addOnAnyMeshClickedListener(handleMeshClicked);
 

@@ -348,8 +348,8 @@ export const GraphRunnerPanel: React.FC<GraphRunnerPanelProps> = ({
                         ).toLocaleTimeString();
                         const directionColor =
                           activity.direction === 'sent'
-                            ? 'var(--vscode-gitDecoration-modifiedResourceForeground)'
-                            : 'var(--vscode-gitDecoration-addedResourceForeground)';
+                            ? 'var(--ds-git-modified)'
+                            : 'var(--ds-git-added)';
 
                         return (
                           <div key={activity.id} className={styles.messageCard}>

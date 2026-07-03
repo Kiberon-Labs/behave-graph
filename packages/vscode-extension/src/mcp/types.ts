@@ -9,7 +9,7 @@
 
 // ---------------------------------------------------------------
 // JSON Schema subset used for tool input/output descriptions.
-// Full JSON Schema is overkill — we only need what the MCP SDK
+// Full JSON Schema is overkill , we only need what the MCP SDK
 // translates from zod schemas.
 // ---------------------------------------------------------------
 
@@ -35,7 +35,7 @@ export interface JsonSchemaProperty {
 export type JsonSchemaInput = Record<string, JsonSchemaProperty>;
 
 // ---------------------------------------------------------------
-// MCP tool definition — the extensible interface
+// MCP tool definition , the extensible interface
 // ---------------------------------------------------------------
 
 /**

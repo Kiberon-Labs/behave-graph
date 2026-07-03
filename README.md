@@ -2,6 +2,8 @@
 
 [![GitHub license](https://img.shields.io/npm/l/behave-graph)](https://github.com/kiberon-labs/behave-graph/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@kiberon-labs/behave-graph)](https://www.npmjs.com/package/@kiberon-labs/behave-graph)
 
+**Note that the v1.x.x version will encounter significant churn due to the rapid pace of development.
+
 Behave-Graph is a standalone library that implements the concept of "behavior graphs" as a portable TypeScript library with no required external run-time dependencies. Behavior graphs are expressive, deterministic, and extensible state machines that can encode arbitrarily complex behavior.
 
 Behavior graphs are used extensively in game development as a visual scripting language. For example, look at Unreal Engine Blueprints or Unity's Visual Scripting or NVIDIA Omniverse's OmniGraph behavior graphs.
@@ -12,7 +14,7 @@ Another neat fact about behavior graphs is that they offer a sand boxed executio
 
 ## Documentation
 
-See the dedicated documentation site [here](https://behave-graph.kiberon-labs.co.za)
+See the dedicated documentation site [here](https://behave-graph.kiberonlabs.com)
 
 ## Licence 
 

@@ -100,7 +100,7 @@ describe('suspending mid-loop', () => {
     resumed.unsuspend(persisted, undefined);
     await resumed.executeAllSync();
 
-    // only the remaining iterations execute — the loop does not restart at 0
+    // only the remaining iterations execute , the loop does not restart at 0
     expect(secondRun).toEqual([3, 4, COMPLETED]);
 
     // and across both runs every iteration executed exactly once

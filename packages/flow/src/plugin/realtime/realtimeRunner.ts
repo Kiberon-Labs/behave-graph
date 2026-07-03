@@ -425,10 +425,46 @@ export class RealtimeRunner {
     if (this.annotatedOutputNodeIds.length === 0) return;
 
     for (const nodeId of this.annotatedOutputNodeIds) {
-      const node = this.engine.nodes?.[nodeId];
-      if (!node) continue;
-      if (!isFunctionNode(node)) continue;
+      await this.evaluateNodeForPreview(nodeId);
+    }
+  }
 
+  /**
+   * Evaluate every node that a UI consumer is actively watching.
+   *
+   * Pure function graphs (e.g. the image nodes) never run during
+   * `executeAllSync()` because nothing pushes a flow fiber through them. They
+   * are normally pulled lazily when a downstream flow/event node reads their
+   * value. In the editor preview there is no such consumer, so the act of a
+   * component calling `watchNodeOutput()` is what drives evaluation: we resolve
+   * the node's upstream function graph and execute the node itself so its
+   * sockets hold a fresh value for `publishWatchedOutputs()` to read.
+   *
+   * This intentionally does not depend on the `ui.realtime` annotation , any
+   * watched output is evaluated.
+   */
+  private async recalculateWatchedOutputs(): Promise<void> {
+    if (!this.engine) return;
+    if (this.watched.size === 0) return;
+
+    for (const nodeId of this.watched.keys()) {
+      await this.evaluateNodeForPreview(nodeId);
+    }
+  }
+
+  /**
+   * Resolve a single function node's inputs (recursively executing its upstream
+   * function graph) and execute it. Non-function nodes keep whatever value their
+   * last real execution produced. Resilient: a failure on one node is logged and
+   * does not abort evaluation of the others.
+   */
+  private async evaluateNodeForPreview(nodeId: string): Promise<void> {
+    if (!this.engine) return;
+    const node = this.engine.nodes?.[nodeId];
+    if (!node) return;
+    if (!isFunctionNode(node)) return;
+
+    try {
       let executionSteps = 0;
       for (const inputSocket of node.inputs) {
         executionSteps += await this.resolveSocketValueForPreview(inputSocket);
@@ -440,6 +476,11 @@ export class RealtimeRunner {
       this.engine.onNodeExecutionEnd.emit(node);
 
       this.engine.executionSteps += executionSteps;
+    } catch (err) {
+      console.error(
+        `RealtimeRunner: failed to evaluate watched node ${nodeId}:`,
+        err
+      );
     }
   }
 
@@ -450,7 +491,7 @@ export class RealtimeRunner {
     const nodes = this.system.nodeStore.getState().nodes;
     const edges = this.system.edgeStore.getState().edges;
 
-    const rawGraphJson = flowToBehave(this.system, nodes, edges, specJson);
+    const rawGraphJson = flowToBehave(this.system.session!, nodes, edges, specJson);
     const graphWithAnnotations = this.mergeNodeAnnotationsIntoMetadata(
       rawGraphJson,
       nodes
@@ -540,6 +581,10 @@ export class RealtimeRunner {
       // Recalculate annotated output nodes to force evaluation of upstream function graphs.
       await this.recalculateAnnotatedOutputNodes();
 
+      // Pull every watched output (e.g. live image node previews) so pure
+      // function graphs are evaluated even without a flow consumer.
+      await this.recalculateWatchedOutputs();
+
       this.publishWatchedOutputs();
     } catch (err) {
       // Keep preview runner resilient; don't crash the editor.
@@ -561,6 +606,10 @@ export class RealtimeRunner {
       await this.engine.executeAllSync();
       // Recalculate annotated output nodes to force evaluation of upstream function graphs.
       await this.recalculateAnnotatedOutputNodes();
+
+      // Pull every watched output (e.g. live image node previews) so pure
+      // function graphs are evaluated even without a flow consumer.
+      await this.recalculateWatchedOutputs();
 
       this.publishWatchedOutputs();
     } catch {

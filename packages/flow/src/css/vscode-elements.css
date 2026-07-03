@@ -1,0 +1,124 @@
+/*
+ * @vscode-elements adapter.
+ *
+ * The editor uses @vscode-elements/react-elements (VscodeButton, VscodeTextfield,
+ * VscodeCheckbox, VscodeBadge, VscodeSingleSelect, …). Those web components style
+ * themselves from `--vscode-*` custom properties — they don't know about our
+ * `--ds-*` tokens. This file feeds them: it expresses our design tokens in the
+ * `--vscode-*` vocabulary the components understand, so they follow the active
+ * theme (default or an alternate like Kiberon) instead of falling back to their
+ * built-in VS Code blue.
+ *
+ * IMPORTANT — why the selector lists every theme scope:
+ * A custom property whose value is `var(--ds-x)` is substituted at the element
+ * it's declared on, then that *resolved* value inherits. Declaring the bridge
+ * only at `:root` would bake in the default `--ds-*` values and ignore a scoped
+ * theme. So the bridge is declared on `:root` AND on each theme container (where
+ * `--ds-*` is re-declared), so it re-resolves to that scope's tokens. When you
+ * add a new theme under css/themes/, add its scope selector here too.
+ *
+ * In the real VS Code extension this is inert: VS Code injects `--vscode-*` as
+ * inline styles on <html>, which win over these :root rules — so vscode-elements
+ * track the user's actual VS Code theme there, as intended.
+ */
+:root,
+[data-flow-theme="kiberon"],
+.flow-theme-kiberon {
+    /* Type */
+    --vscode-font-family: var(--ds-font-ui);
+
+    /* Foreground / focus / chrome */
+    --vscode-foreground: var(--ds-fg);
+    --vscode-disabledForeground: var(--ds-fg-muted);
+    --vscode-descriptionForeground: var(--ds-fg-muted);
+    --vscode-icon-foreground: var(--ds-icon-fg);
+    --vscode-focusBorder: var(--ds-focus-border);
+    --vscode-widget-border: var(--ds-border);
+    --vscode-contrastBorder: var(--ds-border);
+
+    /* Buttons */
+    --vscode-button-background: var(--ds-button-bg);
+    --vscode-button-foreground: var(--ds-button-fg);
+    --vscode-button-hoverBackground: var(--ds-button-hover-bg);
+    --vscode-button-border: var(--ds-button-border);
+    --vscode-button-secondaryBackground: var(--ds-button-secondary-bg);
+    --vscode-button-secondaryForeground: var(--ds-fg);
+    --vscode-button-secondaryHoverBackground: var(--ds-list-hover-bg);
+
+    /* Text inputs / textarea */
+    --vscode-input-background: var(--ds-input-bg);
+    --vscode-input-foreground: var(--ds-input-fg);
+    --vscode-input-border: var(--ds-input-border);
+    --vscode-input-placeholderForeground: var(--ds-fg-muted);
+    --vscode-settings-textInputBackground: var(--ds-input-bg);
+    --vscode-settings-textInputForeground: var(--ds-input-fg);
+    --vscode-settings-textInputBorder: var(--ds-input-border);
+
+    /* Checkbox */
+    --vscode-checkbox-background: var(--ds-input-bg);
+    --vscode-checkbox-foreground: var(--ds-fg);
+    --vscode-checkbox-border: var(--ds-input-border);
+    --vscode-checkbox-selectBackground: var(--ds-button-bg);
+    --vscode-checkbox-selectBorder: var(--ds-button-bg);
+    --vscode-settings-checkboxBackground: var(--ds-input-bg);
+    --vscode-settings-checkboxForeground: var(--ds-fg);
+    --vscode-settings-checkboxBorder: var(--ds-input-border);
+
+    /* Dropdown / single-select */
+    --vscode-dropdown-background: var(--ds-widget-bg);
+    --vscode-dropdown-foreground: var(--ds-fg);
+    --vscode-dropdown-border: var(--ds-input-border);
+    --vscode-dropdown-listBackground: var(--ds-widget-bg);
+    --vscode-settings-dropdownBackground: var(--ds-widget-bg);
+    --vscode-settings-dropdownForeground: var(--ds-fg);
+    --vscode-settings-dropdownBorder: var(--ds-input-border);
+
+    /* Badge */
+    --vscode-badge-background: var(--ds-badge-bg);
+    --vscode-badge-foreground: var(--ds-badge-fg);
+
+    /* Lists / trees */
+    --vscode-list-activeSelectionBackground: var(--ds-list-active-bg);
+    --vscode-list-activeSelectionForeground: var(--ds-list-active-fg);
+    --vscode-list-inactiveSelectionBackground: var(--ds-list-hover-bg);
+    --vscode-list-hoverBackground: var(--ds-list-hover-bg);
+    --vscode-list-hoverForeground: var(--ds-fg);
+    --vscode-list-focusBackground: var(--ds-list-active-bg);
+    --vscode-list-focusOutline: var(--ds-focus-border);
+
+    /* Toolbar */
+    --vscode-toolbar-hoverBackground: var(--ds-toolbar-hover-bg);
+    --vscode-toolbar-activeBackground: var(--ds-toolbar-active-bg);
+
+    /* Surfaces — collapsible headers, tables, dividers, panels */
+    --vscode-editorWidget-background: var(--ds-widget-bg);
+    --vscode-editorWidget-foreground: var(--ds-widget-fg);
+    --vscode-editorWidget-border: var(--ds-border-subtle);
+    --vscode-panel-border: var(--ds-panel-border);
+    --vscode-sideBar-background: var(--ds-sidebar-bg);
+    --vscode-sideBarSectionHeader-background: var(--ds-section-header-bg);
+    --vscode-sideBarSectionHeader-foreground: var(--ds-section-header-fg);
+    --vscode-sideBarSectionHeader-border: var(--ds-section-header-border);
+    --vscode-settings-headerForeground: var(--ds-fg);
+}
+
+/*
+ * Native form controls (checkbox / range / radio) tint from `accent-color`,
+ * which is a normal property — it re-resolves `var(--ds-*)` per element, so it
+ * follows a scoped theme without extra selectors.
+ */
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+    accent-color: var(--ds-button-bg);
+}
+
+/*
+ * Safety: vscode-elements form controls carry an intrinsic default width that can
+ * exceed a narrow panel and force horizontal overflow. Cap them to their container.
+ */
+vscode-textfield,
+vscode-textarea,
+vscode-single-select {
+    max-width: 100%;
+}

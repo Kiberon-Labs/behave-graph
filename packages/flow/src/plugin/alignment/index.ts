@@ -1,5 +1,5 @@
 import { align, distribute, ALIGNMENT } from '@/components/panels/alignment';
-import { type System } from '../../system';
+import type { GraphSession } from '@/system/graphSession';
 import type { Node } from 'reactflow';
 import { plugin } from '@/system/plugin';
 import { pinned } from '@/annotations';
@@ -25,7 +25,7 @@ export type AlignmentAxis = 'x' | 'y';
 export type AlignmentType = 'start' | 'center' | 'end';
 
 declare module '@/system/system' {
-  interface PubSys {
+  interface GraphPubSys {
     'alignment:align': {
       type: AlignmentType;
       axis: AlignmentAxis;
@@ -37,10 +37,10 @@ declare module '@/system/system' {
   }
 }
 
-export const setupSystemActions = (system: System) => {
+export const setupSessionActions = (session: GraphSession) => {
   // Subscribe to alignment events
-  system.pubsub.subscribe('alignment:align', (_, data) => {
-    const { nodes, setNodes } = system.nodeStore.getState();
+  session.pubsub.subscribe('alignment:align', (_, data) => {
+    const { nodes, setNodes } = session.nodeStore.getState();
     const { selectedNodes, unselectedNodes } = partitionSelectedNodes(nodes);
 
     const alignmentType =
@@ -55,8 +55,8 @@ export const setupSystemActions = (system: System) => {
   });
 
   // Subscribe to distribution events
-  system.pubsub.subscribe('alignment:distribute', (_, data) => {
-    const { nodes, setNodes } = system.nodeStore.getState();
+  session.pubsub.subscribe('alignment:distribute', (_, data) => {
+    const { nodes, setNodes } = session.nodeStore.getState();
     const { selectedNodes, unselectedNodes } = partitionSelectedNodes(nodes);
 
     const alignmentType =
@@ -71,11 +71,11 @@ export const setupSystemActions = (system: System) => {
   });
 };
 
-export const alignmentPlugin = plugin(
-  (system) => {
-    setupSystemActions(system);
-  },
-  {
-    name: 'alignment'
-  }
-);
+/**
+ * Alignment behaviour is now wired per-graph from the GraphSession constructor
+ * (see {@link setupSessionActions}), so this plugin is a no-op kept for
+ * backwards compatibility.
+ */
+export const alignmentPlugin = plugin(() => {}, {
+  name: 'alignment'
+});

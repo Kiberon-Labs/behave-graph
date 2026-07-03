@@ -6,7 +6,7 @@ const LINE_STYLE_BASE: React.CSSProperties = {
   top: 0,
   bottom: 0,
   width: 1,
-  backgroundColor: 'var(--vscode-panel-border)',
+  backgroundColor: 'var(--ds-panel-border)',
   opacity: 0.3
 };
 

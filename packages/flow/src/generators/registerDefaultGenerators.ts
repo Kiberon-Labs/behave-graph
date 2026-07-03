@@ -3,6 +3,11 @@ import { getSwitchOnStringGenerator } from '../generators/SwitchOnStringGenerato
 import { getSwitchOnIntegerGenerator } from '../generators/SwitchOnIntegerGenerator';
 import { getCustomEventOnTriggeredGenerator } from '../generators/CustomEventOnTriggeredGenerator';
 import { getSequenceGenerator } from '../generators/SequenceGenerator';
+import {
+  getGraphInputGenerator,
+  getGraphOutputGenerator
+} from '../generators/GraphBoundaryGenerator';
+import { getCallSubgraphGenerator } from '../generators/CallSubgraphGenerator';
 
 export function registerDefaultSocketGenerators(system: System): () => void {
   const store = system.socketGeneratorStore.getState();
@@ -19,6 +24,15 @@ export function registerDefaultSocketGenerators(system: System): () => void {
   const sequence = getSequenceGenerator();
   store.registerGenerator(sequence);
 
+  const graphInput = getGraphInputGenerator();
+  store.registerGenerator(graphInput);
+
+  const graphOutput = getGraphOutputGenerator();
+  store.registerGenerator(graphOutput);
+
+  const callSubgraph = getCallSubgraphGenerator();
+  store.registerGenerator(callSubgraph);
+
   return () => {
     system.socketGeneratorStore
       .getState()
@@ -30,5 +44,12 @@ export function registerDefaultSocketGenerators(system: System): () => void {
       .getState()
       .unregisterGenerator(customEventOnTriggered.name);
     system.socketGeneratorStore.getState().unregisterGenerator(sequence.name);
+    system.socketGeneratorStore.getState().unregisterGenerator(graphInput.name);
+    system.socketGeneratorStore
+      .getState()
+      .unregisterGenerator(graphOutput.name);
+    system.socketGeneratorStore
+      .getState()
+      .unregisterGenerator(callSubgraph.name);
   };
 }

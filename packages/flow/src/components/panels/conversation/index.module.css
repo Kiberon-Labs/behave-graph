@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--component-spacing-xs) var(--component-spacing-sm);
-  border-bottom: 1px solid var(--vscode-panel-border);
+  border-bottom: 1px solid var(--ds-panel-border);
   flex-shrink: 0;
 }
 
@@ -88,14 +88,14 @@
 }
 
 .userBubble {
-  background-color: var(--vscode-button-background);
-  color: var(--vscode-button-foreground);
+  background-color: var(--ds-button-bg);
+  color: var(--ds-button-fg);
   border-bottom-right-radius: 2px;
 }
 
 .assistantBubble {
-  background-color: var(--vscode-editor-inactiveSelectionBackground, #2a2d2e);
-  color: var(--vscode-editor-foreground);
+  background-color: var(--ds-inactive-selection-bg, #2a2d2e);
+  color: var(--ds-editor-fg);
   border-bottom-left-radius: 2px;
 }
 
@@ -107,7 +107,7 @@
   display: inline-block;
   width: 6px;
   height: 14px;
-  background-color: var(--vscode-editor-foreground);
+  background-color: var(--ds-editor-fg);
   opacity: 0.6;
   margin-left: 2px;
   animation: blink 0.8s step-end infinite;
@@ -124,7 +124,7 @@
   display: flex;
   gap: var(--component-spacing-xs);
   padding: var(--component-spacing-sm);
-  border-top: 1px solid var(--vscode-panel-border);
+  border-top: 1px solid var(--ds-panel-border);
   flex-shrink: 0;
 }
 

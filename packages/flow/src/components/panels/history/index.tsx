@@ -1,12 +1,12 @@
 import React from 'react';
 import { VscodeBadge, VscodeDivider } from '@vscode-elements/react-elements';
 import { useStore } from 'zustand';
-import { useSystem } from '@/system/provider';
+import { useActiveGraph } from '@/system/provider';
 import styles from './styles.module.css';
 import { BasePanel } from '../base';
 
 export function HistoryPanel() {
-  const system = useSystem();
+  const system = useActiveGraph()!;
   const history = useStore(system.undoManager.store, (s) => s.history);
   const redoStack = useStore(system.undoManager.store, (s) => s.redoStack);
 

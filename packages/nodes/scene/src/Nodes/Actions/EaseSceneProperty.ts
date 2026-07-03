@@ -6,6 +6,7 @@ import {
   Engine,
   type IGraph,
   type ILifecycleEventEmitter,
+  lerpValue,
   NodeDescription,
   Socket,
   toCamelCase
@@ -129,7 +130,8 @@ export class EaseSceneProperty extends AsyncNode {
       this.elapsedDuration = (Date.now() - this.startTime) / 1000;
 
       const t = Math.min(this.elapsedDuration / this.duration, 1);
-      const easedValue = valueType.lerp(
+      const easedValue = lerpValue(
+        valueType,
         this.initialValue,
         this.targetValue,
         this.easing(t)

@@ -26,7 +26,8 @@ it('transforms from flow to behave', () => {
     specs: specJSON
   };
   const system = new System(registry);
-  const output = flowToBehave(system, nodes, edges, specJSON);
+  const session = system.createSession('graph');
+  const output = flowToBehave(session, nodes, edges, specJSON);
 
   // Remove position metadata from expected graph since we no longer include it
   const expectedGraph = {

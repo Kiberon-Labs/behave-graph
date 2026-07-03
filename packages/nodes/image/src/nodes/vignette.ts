@@ -1,8 +1,6 @@
-import type { IMagickImage } from '@imagemagick/magick-wasm';
-import { ImageMagick } from '@imagemagick/magick-wasm';
 import { makeFunctionNodeDefinition } from '@kiberon-labs/behave-graph';
 import { ImageValue } from '../values';
-import { cloneImage } from '@/utils.js';
+import { transformImage } from '@/utils.js';
 
 export const Vignette = makeFunctionNodeDefinition({
   typeName: 'image/vignette',
@@ -43,13 +41,9 @@ export const Vignette = makeFunctionNodeDefinition({
     const sigma = read<number>('sigma');
     const x = read<number>('x');
     const y = read<number>('y');
-    const magickImage = await ImageMagick.read(
-      cloneImage(image),
-      async (image: IMagickImage) => {
-        image.vignette(radius, sigma, x, y);
-        return await image.write((data) => data);
-      }
+    write(
+      'image',
+      await transformImage(image, (img) => img.vignette(radius, sigma, x, y))
     );
-    write('image', magickImage);
   }
 });

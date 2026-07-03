@@ -1,5 +1,5 @@
 .dock {
-    border: 1px solid var(--vscode-settings-sashBorder);
+    border: 1px solid var(--ds-sash-border);
 }
 
 .dock-panel {
@@ -9,36 +9,79 @@
     background: var(--colors-bgCanvas);
 }
 
+/* ---- Tab bar: VSCode editor-group-header style ---- */
+.dock-bar,
 .dock-top .dock-bar {
-    border-bottom-color: var(--color-neutral-stroke-subtle);
-    padding-left: 0px;
+    background: var(--ds-tabs-bg, #181818);
+    border-bottom: 1px solid var(--colors-borderMuted);
+    padding-left: 0;
 }
 
 .dock-tab {
-    color: var(--colors-fg);
-    background: green;
-    border-bottom: none;
+    height: 30px;
+    margin-right: 0;
+    border: none;
+    border-right: 1px solid var(--colors-borderMuted);
+    background: var(--ds-tabs-bg, #181818);
+    color: var(--colors-fgSubtle);
+    font-size: var(--fs-body, 0.8125rem);
+    font-weight: 400;
     z-index: 10;
 }
 
-.dock-tab-btn[aria-selected="true"] {
-    background: var(--colors-bgSurface);
+.dock-tab:hover {
+    color: var(--colors-fg);
+}
+
+/* Active tab matches the editor surface (content-colored, like VSCode): its
+   lighter background against the darker tab bar marks it active. No top accent
+   line — repeated across panels it read as a stray-line artifact. */
+.dock-tab-active,
+.dock-tab-active:hover {
+    color: var(--colors-fg);
+    background: var(--colors-bgCanvas);
 }
 
 .dock-tab-close-btn {
     position: static;
-
-    &:hover {
-        background: var(--colors-bgEmphasis);
-        border-radius: 4px;
-    }
+    border-radius: 4px;
 }
 
+.dock-tab-close-btn:hover {
+    background: var(--colors-bgEmphasis);
+}
 
-.dock-tab {
+/* rc-dock's per-style rules (.dock-style-main / .dock-style-card) win on
+   specificity and re-introduce hardcoded colors, boxed/rounded card tabs, a
+   raised nav and a 35px extra-content. Flatten all of them to one VSCode look. */
+.dock-panel.dock-style-main .dock-bar,
+.dock-panel.dock-style-card .dock-bar {
+    background: var(--ds-tabs-bg, #181818);
+    border-bottom: 1px solid var(--colors-borderMuted);
+    overflow: hidden;
+}
+
+.dock-panel.dock-style-main .dock-tab,
+.dock-panel.dock-style-card .dock-tab {
     margin-right: 0;
-    border-right: 1px solid var(--colors-borderSubtle);
-    border-bottom: 1px solid var(--colors-borderSubtle);
+    border: none;
+    border-right: 1px solid var(--colors-borderMuted);
+    border-radius: 0;
+    background: var(--ds-tabs-bg, #181818);
+}
+
+.dock-panel.dock-style-main .dock-tab.dock-tab-active,
+.dock-panel.dock-style-card .dock-tab.dock-tab-active {
+    background: var(--colors-bgCanvas);
+}
+
+.dock-panel.dock-style-card .dock-nav-wrap {
+    padding-top: 0;
+    transform: none;
+}
+
+.dock-panel.dock-style-card .dock-extra-content {
+    height: 30px;
 }
 
 .dock-nav-operations-hidden {
@@ -55,12 +98,13 @@
 
 .dock-nav-wrap {
     cursor: move;
-    border-bottom: 1px solid var(--colors-borderDefault);
 }
 
-.dock-panel.dock-style-main .dock-tab,
-.dock-tab {
-    background: var(--color-neutral-canvas-subtle-bg);
+/* Panel extra controls (maximize/close) sit centered, flush in the bar */
+.dock-extra-content {
+    display: flex;
+    align-items: center;
+    padding-right: 4px;
 }
 
 .dock-fbox>.dock-panel {
@@ -70,43 +114,99 @@
 .drag-initiator {
     display: flex;
     align-items: center;
-    gap: 0.5em;
-}
-
-.dock-panel,
-.dock-top .dock-bar,
-.dock-tab {
-    background: var(--vscode-editorGroupHeader-tabsBackground);
-}
-
-.dock-panel.dock-style-main .dock-bar {
-    border-bottom-color: var(--color-neutral-stroke-subtle);
-}
-
-.drag-initiator {
+    gap: 0.4em;
     transition: width 0.2s;
 }
 
+/* Tab padding only , dividers also carry .drag-initiator, and padding there
+   (with box-sizing: border-box) inflates the resize handle. */
+.drag-initiator:not(.dock-divider) {
+    padding: 0px;
+}
+
+/* rc-dock's dark theme inflates dividers with transform: scaleX(3)/scaleY(3)
+   to create a grab zone, which renders as a huge bar. Cancel the transform and
+   use a real, modest 4px gutter that is invisible until hovered. */
+.dock-divider {
+    background: var(--ds-border);
+    flex: 0 0 4px;
+    padding: 0;
+    opacity: 1;
+    transition: background 0.1s ease;
+}
+
 .dock-hbox>.dock-divider {
-    width: 0.5px;
-    opacity: 0.1;
-    margin-left: -1px;
+    transform: none;
+    width: 4px;
+    margin: 0;
+    cursor: ew-resize;
 }
 
 .dock-vbox>.dock-divider {
-    height: 0.5px;
-    opacity: 0.1;
-    margin-top: -1px;
+    transform: none;
+    height: 4px;
+    margin: 0;
+    cursor: ns-resize;
 }
-
-.dock-divider {
-    background: var(--colors-borderMuted);
-    flex: 0 0 1px;
-}
-
 
 .dock-divider:hover {
-    background: var(--vscode-button-background, #0078d4);
-    transform: scaleX(5);
-    opacity: 1;
+    background: var(--ds-sash-hover-border, var(--ds-focus-border, #0078d4));
+}
+
+/* ---- Remaining rc-dock surfaces that the dark theme hardcodes ----
+   These are transient/interactive (active-tab ink bar, the overflow-tab
+   dropdown, drag-and-drop indicators, panel buttons). Map them onto VSCode
+   tokens so the whole dock follows the active theme, not just the static bar. */
+
+/* Active-tab accent line → VSCode focus accent (we also draw an inset top bar). */
+.dock-ink-bar {
+    background-color: var(--ds-focus-border, #0078d4);
+}
+
+/* Overflow-tab dropdown → VSCode menu surface. */
+.dock-dropdown-menu {
+    background-color: var(--ds-menu-bg, var(--colors-bgSurface));
+    border: 1px solid var(--ds-menu-border, var(--colors-borderDefault));
+    box-shadow: var(--shadows-contextMenu, 0 2px 8px rgba(0, 0, 0, 0.36));
+}
+
+.dock-dropdown-menu-item {
+    color: var(--ds-menu-fg, var(--colors-fg));
+}
+
+.dock-dropdown-menu-item:hover {
+    background: var(--ds-menu-selection-bg, var(--ds-list-hover-bg, var(--colors-bgEmphasis)));
+    color: var(--ds-menu-selection-fg, var(--colors-fg));
+}
+
+.dock-dropdown-menu-item-disabled,
+.dock-dropdown-menu-item-disabled:hover {
+    color: var(--colors-fgSubtle);
+    background: transparent;
+}
+
+/* Drag-and-drop placement indicators → neutral surface + focus accent. */
+.dock-drop-layer .dock-drop-square {
+    color: var(--colors-fgSubtle);
+    background: var(--colors-bgSurface);
+}
+
+.dock-drop-layer .dock-drop-square .dock-drop-square-box {
+    border: 1px solid var(--colors-borderDefault);
+}
+
+.dock-drop-layer .dock-drop-square-dropping {
+    background: var(--ds-list-active-bg, var(--ds-focus-border, #0078d4));
+    color: var(--ds-list-active-fg, #ffffff);
+}
+
+/* Panel maximize/restore/close buttons. */
+.dock-panel-max-btn,
+.dock-panel-min-btn {
+    color: var(--colors-fgSubtle);
+}
+
+.dock-panel-max-btn:hover,
+.dock-panel-min-btn:hover {
+    color: var(--colors-fg);
 }

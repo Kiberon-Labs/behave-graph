@@ -15,9 +15,10 @@ import type {
 import { v4 as uuidv4 } from 'uuid';
 
 import { calculateNewEdge } from '../util/calculateNewEdge.js';
+import { buildConverterInsertion } from '../util/autoConvert.js';
 import { getNodePickerFilters } from '../util/getPickerFilters.js';
 import { useBehaveGraphFlow } from './useBehaveGraphFlow.js';
-import { useSystem } from '@/system/provider.js';
+import { useGraph } from '@/system/provider.js';
 import type { ExtendedNodeSpecJSON } from '@/components/contextMenus/NodePicker.js';
 import {
   addFloatingTab,
@@ -56,7 +57,7 @@ export const useFlowHandlers = ({
   nodes: Node[];
   specJSON: NodeSpecJSON[] | undefined;
 }) => {
-  const sys = useSystem();
+  const sys = useGraph();
   const [lastConnectStart, setLastConnectStart] =
     useState<OnConnectStartParams>();
   const [nodePickerVisibility, setNodePickerVisibility] =
@@ -65,6 +66,43 @@ export const useFlowHandlers = ({
     (connection: Connection) => {
       if (connection.source === null) return;
       if (connection.target === null) return;
+
+      // Auto-convert: if the value types differ but a converter node exists,
+      // splice the converter in between instead of a direct edge.
+      const autoConvert = sys.editor.systemSettings.getState().autoConvert;
+      if (autoConvert && specJSON) {
+        const insertion = buildConverterInsertion(
+          connection,
+          sys.nodeStore.getState().nodes,
+          specJSON,
+          sys.editor.conversionStore.getState().conversions
+        );
+        if (insertion) {
+          const { node, edges: convEdges } = insertion;
+          sys.undoManager.execute({
+            name: 'Auto-convert connection',
+            execute: () => {
+              sys.nodeStore.getState().addNode(node);
+              sys.edgeStore
+                .getState()
+                .setEdges([...sys.edgeStore.getState().edges, ...convEdges]);
+              convEdges.forEach((e) => sys.pubsub.publish('edge:added', e));
+            },
+            undo: () => {
+              const ids = new Set(convEdges.map((e) => e.id));
+              sys.nodeStore
+                .getState()
+                .setNodes((ns) => ns.filter((n) => n.id !== node.id));
+              sys.edgeStore
+                .getState()
+                .setEdges(
+                  sys.edgeStore.getState().edges.filter((e) => !ids.has(e.id))
+                );
+            }
+          });
+          return;
+        }
+      }
 
       const newEdge = {
         id: uuidv4(),
@@ -81,7 +119,7 @@ export const useFlowHandlers = ({
         }
       ]);
     },
-    [onEdgesChange]
+    [onEdgesChange, sys, specJSON]
   );
 
   const closeNodePicker = useCallback(() => {
@@ -89,9 +127,9 @@ export const useFlowHandlers = ({
     setNodePickerVisibility(undefined);
 
     // Close the nodepicker panel from rc-dock
-    const currentLayout = sys.tabStore.getState().layout;
+    const currentLayout = sys.editor.tabStore.getState().layout;
     const newLayout = removeTabFromLayout(currentLayout, 'nodepicker');
-    sys.tabStore.getState().setLayout(newLayout);
+    sys.editor.tabStore.getState().setLayout(newLayout);
   }, [sys]);
 
   const handleAddNode = useCallback(
@@ -171,7 +209,7 @@ export const useFlowHandlers = ({
         sys.refStore.getState().setRef('nodePickerPosition', screenPos);
 
         // Open as floating rc-dock panel
-        const currentLayout = sys.tabStore.getState().layout;
+        const currentLayout = sys.editor.tabStore.getState().layout;
 
         // Close existing nodepicker if open
         const existingPanel = findTabInLayout(currentLayout, 'nodepicker');
@@ -194,7 +232,7 @@ export const useFlowHandlers = ({
           height: 500
         });
 
-        sys.tabStore.getState().setLayout(newLayout);
+        sys.editor.tabStore.getState().setLayout(newLayout);
       } else {
         setLastConnectStart(undefined);
       }
@@ -217,7 +255,7 @@ export const useFlowHandlers = ({
       sys.refStore.getState().setRef('nodePickerPosition', screenPos);
 
       // Open as floating rc-dock panel
-      const currentLayout = sys.tabStore.getState().layout;
+      const currentLayout = sys.editor.tabStore.getState().layout;
 
       // Close existing nodepicker if open
       const existingPanel = findTabInLayout(currentLayout, 'nodepicker');
@@ -240,7 +278,7 @@ export const useFlowHandlers = ({
         height: 500
       });
 
-      sys.tabStore.getState().setLayout(newLayout);
+      sys.editor.tabStore.getState().setLayout(newLayout);
     },
     [sys]
   );

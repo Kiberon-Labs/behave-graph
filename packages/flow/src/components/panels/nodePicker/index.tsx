@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { useSystem } from '@/system/provider';
+import { useActiveGraph } from '@/system/provider';
 import { useStore } from 'zustand';
 import { NodePicker } from '@/components/contextMenus/NodePicker';
 import type { ExtendedNodeSpecJSON } from '@/components/contextMenus/NodePicker';
@@ -12,9 +12,9 @@ import {
 } from '@/components/layoutController/utils';
 
 export function NodePickerPanel() {
-  const sys = useSystem();
-  const specJson = useStore(sys.specStore, (x) => x.specs);
-  const documentation = useStore(sys.documentationStore, (x) => x.docs);
+  const sys = useActiveGraph()!;
+  const specJson = useStore(sys.editor.specStore, (x) => x.specs);
+  const documentation = useStore(sys.editor.documentationStore, (x) => x.docs);
   const reactflowRef = useStore(sys.refStore, (x) => x.refs.reactflow);
   const screenPosition = useStore(
     sys.refStore,
@@ -32,9 +32,9 @@ export function NodePickerPanel() {
   // For now, we'll use undefined which means no filtering
   const nodePickFilters = undefined;
   const closeNodePicker = useCallback(() => {
-    const currentLayout = sys.tabStore.getState().layout;
+    const currentLayout = sys.editor.tabStore.getState().layout;
     const newLayout = removeTabFromLayout(currentLayout, 'nodepicker');
-    sys.tabStore.getState().setLayout(newLayout);
+    sys.editor.tabStore.getState().setLayout(newLayout);
   }, [sys]);
 
   const handleShowDocumentation = useCallback(
@@ -43,7 +43,7 @@ export function NodePickerPanel() {
       sys.refStore.getState().setRef('selectedDocumentationType', nodeType);
 
       // Open documentation browser panel
-      const currentLayout = sys.tabStore.getState().layout;
+      const currentLayout = sys.editor.tabStore.getState().layout;
 
       // Close existing doc browser if open
       const existingPanel = findTabInLayout(currentLayout, 'docbrowser');
@@ -64,7 +64,7 @@ export function NodePickerPanel() {
         height: 700
       });
 
-      sys.tabStore.getState().setLayout(newLayout);
+      sys.editor.tabStore.getState().setLayout(newLayout);
     },
     [sys]
   );

@@ -1,4 +1,4 @@
-import type { System } from '@/system';
+import type { GraphSession } from '@/system/graphSession';
 import { create } from 'zustand';
 
 export type SelectionStore = {
@@ -6,14 +6,14 @@ export type SelectionStore = {
   setSelectedNodeId: (nodeId: string | null) => void;
 };
 
-export const selectionStoreFactory = (system: System) => {
+export const selectionStoreFactory = (session: GraphSession) => {
   const store = create<SelectionStore>((set) => ({
     selectedNodeId: null,
     setSelectedNodeId: (selectedNodeId: string | null) =>
       set(() => ({ selectedNodeId }))
   }));
   //Track side effect of selected node in the node store
-  system.nodeStore.subscribe((state) => {
+  session.nodeStore.subscribe((state) => {
     const selectedNode = state.nodes.find((n) => n.selected);
     store.getState().setSelectedNodeId(selectedNode?.id ?? null);
   });

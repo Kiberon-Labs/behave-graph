@@ -10,8 +10,11 @@ import {
 import type {
   IStateService,
   GraphJSON,
+  GraphInstance,
   ILifecycleEventEmitter,
-  ILogger
+  ILogger,
+  IRegistry,
+  NodeExecutionHandler
 } from '@kiberon-labs/behave-graph';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -29,12 +32,39 @@ import {
 } from '@kiberon-labs/behave-graph-flow';
 
 /**
+ * Factory a custom registry may export to vary the engine used per run — e.g.
+ * `RealtimeEngine` instead of the default `Engine`. This is the extension's
+ * surface for the engine's execution-strategy seam.
+ */
+export type EngineFactory = (
+  graph: GraphInstance,
+  registry: IRegistry
+) => Engine;
+
+/**
+ * What a custom registry module can contribute to the runner: the registry
+ * itself plus two optional seams — an {@link EngineFactory} and a table of
+ * custom node-kind execution handlers (taught to the engine via
+ * `registerNodeExecutionHandler`). The latter lets a registry add brand-new
+ * node *kinds* (not just node types), e.g. an `'AudioRate'` render node.
+ */
+type LoadedRegistry = {
+  registry: IRegistry;
+  createEngine?: EngineFactory;
+  executionHandlers?: Record<string, NodeExecutionHandler>;
+};
+
+/**
  * Transport-agnostic Graph Runner Server implementing the Behave-Graph Execution Protocol
  */
 export class GraphRunnerServer {
   private state: ServerState;
   private config: Required<ServerConfig>;
   private cleanupInterval?: NodeJS.Timeout;
+  /** Optional per-run engine factory contributed by a custom registry. */
+  private engineFactory?: EngineFactory;
+  /** Optional custom node-kind execution handlers from a custom registry. */
+  private executionHandlers?: Record<string, NodeExecutionHandler>;
 
   private constructor(state: ServerState, config: Required<ServerConfig>) {
     this.state = state;
@@ -73,10 +103,10 @@ export class GraphRunnerServer {
       }
     };
 
-    // Load registry (custom or default)
-    const registry = await GraphRunnerServer.loadRegistry(
-      finalConfig.customRegistryPath
-    );
+    // Load registry (custom or default), plus any engine factory / custom
+    // node-kind handlers the registry module contributes.
+    const { registry, createEngine, executionHandlers } =
+      await GraphRunnerServer.loadRegistry(finalConfig.customRegistryPath);
 
     // Validate registry
     const registryErrors = validateRegistry(registry);
@@ -89,20 +119,28 @@ export class GraphRunnerServer {
 
     const state = new ServerState(registry);
     const server = new GraphRunnerServer(state, finalConfig);
+    server.engineFactory = createEngine;
+    server.executionHandlers = executionHandlers;
     server.connectTransport(transport);
 
     return server;
   }
 
   /**
-   * Load registry from custom path or use default core profile
+   * Load registry from custom path or use default core profile.
+   *
+   * Returns the registry along with any optional engine factory / custom
+   * node-kind execution handlers the registry module exports.
    */
-  private static async loadRegistry(customRegistryPath: string) {
+  private static async loadRegistry(
+    customRegistryPath: string
+  ): Promise<LoadedRegistry> {
     if (customRegistryPath) {
       // Try both .ts and .js extensions relative to the graph file
       const basePath = customRegistryPath.replace(/\.(ts|js)$/, '');
       const possiblePaths = [
         `${basePath}.js`, // Compiled JS takes priority
+        `${basePath}.mjs`,
         `${basePath}.ts`,
         customRegistryPath // Original path as fallback
       ];
@@ -125,35 +163,102 @@ export class GraphRunnerServer {
 
     console.log('Using default core profile registry');
     // Default: use core profile with transport logger
-    return registerCoreProfile({
-      values: {},
-      nodes: {},
-      dependencies: {
-        ILogger: new TransportLogger(),
-        ILifecycleEventEmitter: new ManualLifecycleEventEmitter()
-      }
-    });
+    return {
+      registry: registerCoreProfile({
+        values: {},
+        nodes: {},
+        dependencies: {
+          ILogger: new TransportLogger(),
+          ILifecycleEventEmitter: new ManualLifecycleEventEmitter()
+        }
+      })
+    };
   }
 
   /**
-   * Dynamically import a custom registry from a file path
+   * Dynamically import a registry module, transpiling TypeScript on demand.
+   *
+   * The extension host's Node may not strip types from `.ts` files, so when a
+   * direct import of a `.ts` registry fails we transpile it with esbuild and
+   * import the emitted ESM from a sibling temp file (kept adjacent so that
+   * bare-specifier resolution against the project's `node_modules` still works).
    */
-  private static async loadCustomRegistry(registryPath: string) {
+  private static async importRegistryModule(
+    registryPath: string
+  ): Promise<Record<string, unknown>> {
+    const toFileUrl = (p: string) =>
+      p.startsWith('file://') ? p : `file://${p.replace(/\\/g, '/')}`;
+
     try {
-      // Try loading as-is first
-      let registryModule;
-      try {
-        registryModule = await import(registryPath);
-      } catch (err) {
-        // If direct import fails, try with file:// protocol for absolute paths
-        const fileUrl = registryPath.startsWith('file://')
-          ? registryPath
-          : `file://${registryPath.replace(/\\/g, '/')}`;
-        registryModule = await import(fileUrl);
+      return await import(toFileUrl(registryPath));
+    } catch (err) {
+      if (!registryPath.endsWith('.ts')) {
+        throw err;
       }
+      // Reuse the previous transpile+import if the file hasn't changed — every
+      // graph open otherwise re-transpiles and re-imports the registry.
+      const mtimeMs = fs.statSync(registryPath).mtimeMs;
+      const cached = GraphRunnerServer.registryModuleCache.get(registryPath);
+      if (cached && cached.mtimeMs === mtimeMs) {
+        return cached.module;
+      }
+      console.log(
+        `Direct import of ${registryPath} failed; transpiling TypeScript on demand`
+      );
+      const esbuild = await import('esbuild');
+      const source = fs.readFileSync(registryPath, 'utf8');
+      const { code } = await esbuild.transform(source, {
+        loader: 'ts',
+        format: 'esm',
+        target: 'es2021',
+        sourcefile: registryPath
+      });
+      const tmpPath = registryPath.replace(
+        /\.ts$/,
+        `.__compiled.${process.pid}.${Date.now()}.mjs`
+      );
+      fs.writeFileSync(tmpPath, code);
+      try {
+        const module = await import(toFileUrl(tmpPath));
+        GraphRunnerServer.registryModuleCache.set(registryPath, {
+          mtimeMs,
+          module
+        });
+        return module;
+      } finally {
+        try {
+          fs.unlinkSync(tmpPath);
+        } catch {
+          /* best effort */
+        }
+      }
+    }
+  }
+
+  /** Cache of transpiled+imported `.ts` registry modules, keyed by path and
+   *  invalidated by mtime, shared across all per-document servers. */
+  private static readonly registryModuleCache = new Map<
+    string,
+    { mtimeMs: number; module: Record<string, unknown> }
+  >();
+
+  /**
+   * Dynamically import a custom registry from a file path.
+   *
+   * Besides the required `registry` export (named or default), a module may also
+   * export `createEngine` (an {@link EngineFactory}) and `executionHandlers`
+   * (a map of node-kind → handler) to extend how graphs run.
+   */
+  private static async loadCustomRegistry(
+    registryPath: string
+  ): Promise<LoadedRegistry> {
+    try {
+      const registryModule =
+        await GraphRunnerServer.importRegistryModule(registryPath);
 
       // Check for named export 'registry' or default export
-      const registry = registryModule.registry ?? registryModule.default;
+      const registry = (registryModule.registry ??
+        registryModule.default) as IRegistry | undefined;
 
       if (!registry) {
         throw new Error(
@@ -161,8 +266,21 @@ export class GraphRunnerServer {
         );
       }
 
-      console.log(`Loaded custom registry from: ${registryPath}`);
-      return registry;
+      const createEngine = registryModule.createEngine as
+        | EngineFactory
+        | undefined;
+      const executionHandlers = registryModule.executionHandlers as
+        | Record<string, NodeExecutionHandler>
+        | undefined;
+
+      console.log(
+        `Loaded custom registry from: ${registryPath}` +
+          (createEngine ? ' (+ custom engine)' : '') +
+          (executionHandlers
+            ? ` (+ ${Object.keys(executionHandlers).length} execution handler(s))`
+            : '')
+      );
+      return { registry, createEngine, executionHandlers };
     } catch (error) {
       console.error(
         `Failed to load custom registry from ${registryPath}:`,
@@ -841,8 +959,21 @@ export class GraphRunnerServer {
         }
       }
 
-      // Create engine
-      const engine = new Engine(graphInstance, runRegistry);
+      // Create engine — a custom registry may supply its own engine (e.g.
+      // RealtimeEngine) via an EngineFactory; otherwise use the default Engine.
+      const engine = this.engineFactory
+        ? this.engineFactory(graphInstance, runRegistry)
+        : new Engine(graphInstance, runRegistry);
+
+      // Teach the engine any custom node-kind execution handlers the registry
+      // contributed (the open/closed seam for brand-new node kinds).
+      if (this.executionHandlers) {
+        for (const [nodeType, handler] of Object.entries(
+          this.executionHandlers
+        )) {
+          engine.registerNodeExecutionHandler(nodeType, handler);
+        }
+      }
 
       // Create run record
       const run: GraphRun = {

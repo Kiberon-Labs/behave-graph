@@ -3,12 +3,48 @@ import { useStore } from 'zustand';
 import {
   VscodeButton,
   VscodeTextfield,
-  VscodeLabel,
-  VscodeBadge
+  VscodeBadge,
+  VscodeDivider
 } from '@vscode-elements/react-elements';
 
 import styles from './styles.module.css';
 import { useSystem } from '@/system/index.js';
+import { BasePanel } from '@/components/panels/base';
+import { SectionTitle } from '@/components/panels/common/SectionTitle';
+
+/** A labelled numeric field with a hint, an Apply button, and the current value. */
+const NumberControl = ({
+  label,
+  hint,
+  value,
+  current,
+  onChange,
+  onApply,
+  ...inputProps
+}: {
+  label: string;
+  hint: string;
+  value: string;
+  current: string;
+  onChange: (value: string) => void;
+  onApply: () => void;
+} & Record<string, unknown>) => (
+  <div className={styles.field}>
+    <span className={styles.label}>{label}</span>
+    <span className={styles.description}>{hint}</span>
+    <div className={styles.inputRow}>
+      <VscodeTextfield
+        className={styles.input}
+        type="number"
+        value={value}
+        onChange={(e: any) => onChange(e.target.value)}
+        {...inputProps}
+      />
+      <VscodeButton onClick={onApply}>Apply</VscodeButton>
+    </div>
+    <span className={styles.current}>Current: {current}</span>
+  </div>
+);
 
 export const LocalGraphRunnerPanel = () => {
   const system = useSystem();
@@ -47,185 +83,105 @@ export const LocalGraphRunnerPanel = () => {
     }
   };
 
-  const getStatusBadge = () => {
-    if (isExecuting && isPaused) {
-      return <VscodeBadge>Paused</VscodeBadge>;
-    }
-    if (isExecuting) {
-      return <VscodeBadge>Running</VscodeBadge>;
-    }
-    return <VscodeBadge>Idle</VscodeBadge>;
+  const applyPreset = (speed: number, delay: number, tick: number) => {
+    store.getState().setExecutionSpeed(speed);
+    store.getState().setStepDelay(delay);
+    store.getState().setTickInterval(tick);
+    setSpeedInput(speed.toString());
+    setDelayInput(delay.toString());
+    setTickIntervalInput(tick.toString());
   };
 
+  const statusLabel = isExecuting ? (isPaused ? 'Paused' : 'Running') : 'Idle';
+
   return (
-    <div className={styles.panel}>
-      <div className={styles.scrollContainer}>
-        <h3 className={styles.title}>Local Graph Runner</h3>
+    <BasePanel>
+      <SectionTitle>Status</SectionTitle>
+      <div className={styles.statusRow}>
+        <span className={styles.label}>Status</span>
+        <VscodeBadge>{statusLabel}</VscodeBadge>
+      </div>
+      <div className={styles.statusRow}>
+        <span className={styles.label}>Active runs</span>
+        <span className={styles.statusValue}>{activeRuns}</span>
+      </div>
 
-        {/* Status Section */}
-        <div className={styles.section}>
-          <div className={styles.statusRow}>
-            <VscodeLabel>Status:</VscodeLabel>
-            {getStatusBadge()}
-          </div>
-          <div className={styles.statusRow}>
-            <VscodeLabel>Active Runs:</VscodeLabel>
-            <span>{activeRuns}</span>
-          </div>
-        </div>
+      <VscodeDivider className={styles.divider} />
+      <SectionTitle>Execution Speed</SectionTitle>
 
-        {/* Execution Speed Controls */}
-        <div className={styles.section}>
-          <h4 className={styles.sectionTitle}>Execution Speed</h4>
+      <NumberControl
+        label="Speed Multiplier"
+        hint="0.1 = slow, 1.0 = normal, 10 = fast"
+        value={speedInput}
+        current={`${executionSpeed}x`}
+        onChange={setSpeedInput}
+        onApply={handleSetSpeed}
+        placeholder="1.0"
+        min={0.01}
+        max={10}
+        step={0.01}
+      />
 
-          <div className={styles.formGroup}>
-            <VscodeLabel>
-              Speed Multiplier
-              <span className={styles.helpText}>
-                (0.1 = slow, 1.0 = normal, 10 = fast)
-              </span>
-            </VscodeLabel>
-            <div className={styles.inputGroup}>
-              <VscodeTextfield
-                value={speedInput}
-                onChange={(e: any) => setSpeedInput(e.target.value)}
-                placeholder="1.0"
-                min={0.01}
-                step={0.01}
-                max={1}
-                type="number"
-                className={styles.formField}
-              />
-              <VscodeButton onClick={handleSetSpeed}>Apply</VscodeButton>
-            </div>
-            <div className={styles.currentValue}>
-              Current: {executionSpeed}x
-            </div>
-          </div>
+      <NumberControl
+        label="Step Delay (ms)"
+        hint="delay between execution steps"
+        value={delayInput}
+        current={`${stepDelay}ms`}
+        onChange={setDelayInput}
+        onApply={handleSetDelay}
+        placeholder="0"
+        min={0}
+      />
 
-          <div className={styles.formGroup}>
-            <VscodeLabel>
-              Step Delay (ms)
-              <span className={styles.helpText}>
-                (delay between execution steps)
-              </span>
-            </VscodeLabel>
-            <div className={styles.inputGroup}>
-              <VscodeTextfield
-                value={delayInput}
-                onChange={(e: any) => setDelayInput(e.target.value)}
-                placeholder="0"
-                type="number"
-                className={styles.formField}
-              />
-              <VscodeButton onClick={handleSetDelay}>Apply</VscodeButton>
-            </div>
-            <div className={styles.currentValue}>Current: {stepDelay}ms</div>
-          </div>
+      <NumberControl
+        label="Tick Interval (ms)"
+        hint="delay between tick events"
+        value={tickIntervalInput}
+        current={`${tickInterval}ms`}
+        onChange={setTickIntervalInput}
+        onApply={handleSetTickInterval}
+        placeholder="50"
+        min={0}
+      />
 
-          <div className={styles.formGroup}>
-            <VscodeLabel>
-              Tick Interval (ms)
-              <span className={styles.helpText}>
-                (delay between tick events)
-              </span>
-            </VscodeLabel>
-            <div className={styles.inputGroup}>
-              <VscodeTextfield
-                value={tickIntervalInput}
-                onChange={(e: any) => setTickIntervalInput(e.target.value)}
-                placeholder="50"
-                type="number"
-                className={styles.formField}
-              />
-              <VscodeButton onClick={handleSetTickInterval}>Apply</VscodeButton>
-            </div>
-            <div className={styles.currentValue}>Current: {tickInterval}ms</div>
-          </div>
-
-          {/* Quick Presets */}
-          <div className={styles.formGroup}>
-            <VscodeLabel>Quick Presets</VscodeLabel>
-            <div className={styles.presetButtons}>
-              <VscodeButton
-                secondary
-                onClick={() => {
-                  store.getState().setExecutionSpeed(0.1);
-                  store.getState().setStepDelay(500);
-                  store.getState().setTickInterval(1000);
-                  setSpeedInput('0.1');
-                  setDelayInput('500');
-                  setTickIntervalInput('1000');
-                }}
-              >
-                Very Slow
-              </VscodeButton>
-              <VscodeButton
-                secondary
-                onClick={() => {
-                  store.getState().setExecutionSpeed(0.5);
-                  store.getState().setStepDelay(100);
-                  store.getState().setTickInterval(200);
-                  setSpeedInput('0.5');
-                  setDelayInput('100');
-                  setTickIntervalInput('200');
-                }}
-              >
-                Slow
-              </VscodeButton>
-              <VscodeButton
-                secondary
-                onClick={() => {
-                  store.getState().setExecutionSpeed(1.0);
-                  store.getState().setStepDelay(0);
-                  store.getState().setTickInterval(50);
-                  setSpeedInput('1.0');
-                  setDelayInput('0');
-                  setTickIntervalInput('50');
-                }}
-              >
-                Normal
-              </VscodeButton>
-              <VscodeButton
-                secondary
-                onClick={() => {
-                  store.getState().setExecutionSpeed(5.0);
-                  store.getState().setStepDelay(0);
-                  store.getState().setTickInterval(16);
-                  setSpeedInput('5.0');
-                  setDelayInput('0');
-                  setTickIntervalInput('16');
-                }}
-              >
-                Fast
-              </VscodeButton>
-            </div>
-          </div>
-        </div>
-
-        {/* Help Section */}
-        <div className={styles.section}>
-          <h4 className={styles.sectionTitle}>How to Use</h4>
-          <ul className={styles.helpList}>
-            <li>
-              <strong>Speed Multiplier:</strong> Controls how fast the engine
-              executes. Lower values = slower execution, good for debugging.
-            </li>
-            <li>
-              <strong>Step Delay:</strong> Adds a delay between each execution
-              step. Useful for visualizing graph execution flow.
-            </li>
-            <li>
-              <strong>Tick Interval:</strong> Controls the delay between tick
-              events (default 50ms). Lower values = faster ticks.
-            </li>
-            <li>
-              <strong>Pause/Step:</strong> Use the toolbar buttons to pause
-              execution and step through one node at a time.
-            </li>
-          </ul>
+      <div className={styles.field}>
+        <span className={styles.label}>Quick Presets</span>
+        <div className={styles.presets}>
+          <VscodeButton secondary onClick={() => applyPreset(0.1, 500, 1000)}>
+            Very Slow
+          </VscodeButton>
+          <VscodeButton secondary onClick={() => applyPreset(0.5, 100, 200)}>
+            Slow
+          </VscodeButton>
+          <VscodeButton secondary onClick={() => applyPreset(1.0, 0, 50)}>
+            Normal
+          </VscodeButton>
+          <VscodeButton secondary onClick={() => applyPreset(5.0, 0, 16)}>
+            Fast
+          </VscodeButton>
         </div>
       </div>
-    </div>
+
+      <VscodeDivider className={styles.divider} />
+      <SectionTitle>How to Use</SectionTitle>
+      <ul className={styles.helpList}>
+        <li>
+          <strong>Speed Multiplier:</strong> Controls how fast the engine
+          executes. Lower values = slower execution, good for debugging.
+        </li>
+        <li>
+          <strong>Step Delay:</strong> Adds a delay between each execution step.
+          Useful for visualizing graph execution flow.
+        </li>
+        <li>
+          <strong>Tick Interval:</strong> Controls the delay between tick events
+          (default 50ms). Lower values = faster ticks.
+        </li>
+        <li>
+          <strong>Pause/Step:</strong> Use the toolbar buttons to pause execution
+          and step through one node at a time.
+        </li>
+      </ul>
+    </BasePanel>
   );
 };

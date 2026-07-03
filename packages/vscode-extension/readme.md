@@ -16,13 +16,25 @@ This is a proof of concept exploration of embedding the graph engine inside of V
 
 Frontend plugins can be loaded dynamically via the use of a `plugin.js` file adjacent to a graph.
 
+## Examples
+
+Ready-to-run example graphs live in [`examples/`](examples). Open an example's
+`.kbgraph` in the editor and press **Run**; the adjacent `registry.ts` is loaded
+automatically so its custom nodes are available. The set covers a headless
+**workflow**, a Web-Audio-style **audio** chain (custom value type + node kind),
+a **game** loop on `RealtimeEngine`, and an **embed** value type. See
+[examples/README.md](examples/README.md).
+
 ## Custom Registry Support
 
-The GraphRunnerServer supports loading custom registries to extend or replace the default core profile nodes. When you load a `.kbgraph` if there is a `registry.js` file next to the file it will be dynamically loaded 
+The GraphRunnerServer loads custom registries to extend or replace the default
+core profile nodes. When you open a `.kbgraph`, an adjacent `registry.ts` /
+`registry.js` (or one named by a `.kbworkspace`) is dynamically loaded — TS is
+transpiled on demand, so a `.ts` registry works without a build step.
 
 ### Usage
 
-Create a `registry.ts` or `registry.js` file that exports a configured Registry:
+Create a `registry.ts` (or `.js`) that exports a configured registry:
 
 ```typescript
 import { registerCoreProfile, ManualLifecycleEventEmitter } from '@kiberon-labs/behave-graph';
@@ -39,15 +51,18 @@ export const registry = registerCoreProfile({
 });
 ```
 
-Then pass the path when creating the server:
+A registry module may also export two optional seams the run server honors:
 
-```typescript
-const server = await GraphRunnerServer.create(transport, {
-  customRegistryPath: '/absolute/path/to/registry.ts'
-});
-```
+- **`executionHandlers`** — a map of custom node *kind* → handler, taught to the
+  engine via `registerNodeExecutionHandler`. This lets you add brand-new node
+  *kinds* (not just node types). See
+  [examples/audio/registry.ts](examples/audio/registry.ts).
+- **`createEngine`** — a factory `(graph, registry) => Engine` to run on a
+  different engine, e.g. `RealtimeEngine`. See
+  [examples/game/registry.ts](examples/game/registry.ts).
 
-See [example/custom-registry.ts](example/custom-registry.ts) for a complete example.
+See [example/registry.ts](example/registry.ts) for the minimal template and
+[examples/](examples) for complete, runnable registries.
 
 
 ## Requirements

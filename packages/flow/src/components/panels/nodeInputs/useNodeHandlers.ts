@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import type { IBehaveNode } from '@/types/nodes';
-import type { System } from '@/system';
+import type { GraphSession } from '@/system/graphSession';
 
 export function useNodeHandlers(
-  system: System,
+  system: GraphSession,
   selectedNode: IBehaveNode | null
 ) {
   const handleSaveTitle = useCallback(

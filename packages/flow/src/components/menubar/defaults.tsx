@@ -114,9 +114,15 @@ export const defaultMenuDataFactory = (): IMenu => ({
       items: [
         {
           name: 'newGraph',
-          render: (rest) => {
+          render: function NewGraph(rest) {
+            const system = useSystem();
             return (
-              <MenuItemElement key="new" icon={<PagePlusIn />} {...rest}>
+              <MenuItemElement
+                key="new"
+                icon={<PagePlusIn />}
+                onClick={() => system.newGraph()}
+                {...rest}
+              >
                 New Graph
               </MenuItemElement>
             );
@@ -194,7 +200,7 @@ export const defaultMenuDataFactory = (): IMenu => ({
             const system = useSystem();
 
             const onSave = () => {
-              system.actionStore.getState().actions.save();
+              void system.runCommand('editor.save');
             };
 
             return (
@@ -285,7 +291,7 @@ export const defaultMenuDataFactory = (): IMenu => ({
             const canUndo = useStore(sys.undoManager.store, (s) => s.canUndo);
             return (
               <MenuItemElement
-                onClick={() => canUndo && sys.undoManager.undo()}
+                onClick={() => canUndo && sys.runCommand('editor.undo')}
                 disabled={!canUndo}
                 key={key}
                 icon={<Undo />}
@@ -304,7 +310,7 @@ export const defaultMenuDataFactory = (): IMenu => ({
             const canRedo = useStore(sys.undoManager.store, (s) => s.canRedo);
             return (
               <MenuItemElement
-                onClick={() => canRedo && sys.undoManager.redo()}
+                onClick={() => canRedo && sys.runCommand('editor.redo')}
                 disabled={!canRedo}
                 key={key}
                 icon={<Redo />}
@@ -326,19 +332,35 @@ export const defaultMenuDataFactory = (): IMenu => ({
         },
         {
           name: 'copy',
-          render: ({ key, ...rest }) => (
-            <MenuItemElement key={key} icon={<Redo />} {...rest}>
-              Copy
-            </MenuItemElement>
-          )
+          render: function Copy({ key, ...rest }) {
+            const sys = useSystem();
+            return (
+              <MenuItemElement
+                key={key}
+                icon={<Redo />}
+                onClick={() => sys.runCommand('selection.copy')}
+                {...rest}
+              >
+                Copy
+              </MenuItemElement>
+            );
+          }
         },
         {
           name: 'paste',
-          render: ({ key, ...rest }) => (
-            <MenuItemElement key={key} icon={<Redo />} {...rest}>
-              Paste
-            </MenuItemElement>
-          )
+          render: function Paste({ key, ...rest }) {
+            const sys = useSystem();
+            return (
+              <MenuItemElement
+                key={key}
+                icon={<Redo />}
+                onClick={() => void sys.runCommand('selection.paste')}
+                {...rest}
+              >
+                Paste
+              </MenuItemElement>
+            );
+          }
         },
         new Seperator(),
         windowButton({

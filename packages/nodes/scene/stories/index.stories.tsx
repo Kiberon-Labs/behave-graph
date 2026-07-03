@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
   docsPlugin,
+  GraphProvider,
   LayoutController,
   localGraphRunnerPlugin,
   System,
@@ -53,6 +54,7 @@ const nodeRegistry = {
 };
 
 const defaultSys = new System(nodeRegistry);
+const defaultSession = defaultSys.createSession('graph');
 
 defaultSys.controlStore.getState().registerControl('color', Vec3Control);
 defaultSys.controlStore.getState().registerControl('vec3', Vec3Control);
@@ -75,7 +77,9 @@ export const Default: Story = {
   render: () => {
     return (
       <SystemProvider value={defaultSys}>
-        <LayoutController />
+        <GraphProvider value={defaultSession}>
+          <LayoutController />
+        </GraphProvider>
       </SystemProvider>
     );
   },
@@ -104,6 +108,7 @@ const clickNodeRegistry = {
 };
 
 const clickSys = new System(clickNodeRegistry);
+const clickSession = clickSys.createSession('graph');
 
 clickSys.controlStore.getState().registerControl('color', Vec3Control);
 clickSys.controlStore.getState().registerControl('vec3', Vec3Control);
@@ -122,13 +127,15 @@ clickSys.registerPlugin(sceneViewerPlugin, {
 });
 
 // Preload the click demo graph so the OnAnyMeshClicked event node is present
-clickSys.flowStore.getState().setGraph(clickDemoGraph);
+clickSession.flowStore.getState().setGraph(clickDemoGraph);
 
 export const ClickDemo: Story = {
   render: () => {
     return (
       <SystemProvider value={clickSys}>
-        <LayoutController />
+        <GraphProvider value={clickSession}>
+          <LayoutController />
+        </GraphProvider>
       </SystemProvider>
     );
   },

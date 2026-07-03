@@ -90,7 +90,7 @@ export const NodeTitleEditor: React.FC<NodeTitleEditorProps> = ({
             </button>
           )}
         </div>
-        <div className={styles.panelId}>{selectedNode.id}</div>
+        <div className={styles.panelId}>#{selectedNode.id}</div>
       </>
     );
   }
