@@ -1,0 +1,48 @@
+---
+// Override of Starlight's header SocialIcons so we can add a "Playground"
+// button next to the built-in social icons (GitHub). Renders the default
+// component unchanged, then our own link.
+import Default from '@astrojs/starlight/components/SocialIcons.astro';
+import { Icon } from '@astrojs/starlight/components';
+
+// Base-aware so the link resolves under both root and subpath deploys.
+const playgroundHref = import.meta.env.BASE_URL + 'editor/';
+---
+
+<a class="playground-link sl-flex" href={playgroundHref}>
+  <Icon name="rocket" size="1rem" />
+  <span class="playground-label">Playground</span>
+</a>
+<Default><slot /></Default>
+
+<style>
+  @layer starlight.components {
+    .playground-link {
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.25rem 0.65rem;
+      margin-inline-end: 0.25rem;
+      border: 1px solid var(--sl-color-gray-5);
+      border-radius: 999rem;
+      color: var(--sl-color-white);
+      font-size: var(--sl-text-xs);
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .playground-link:hover {
+      background: var(--sl-color-gray-6);
+      opacity: 1;
+    }
+    /* Collapse to an icon-only button on narrow screens to save header space. */
+    @media (max-width: 30rem) {
+      .playground-label {
+        display: none;
+      }
+      .playground-link {
+        padding: 0.35rem;
+      }
+    }
+  }
+</style>

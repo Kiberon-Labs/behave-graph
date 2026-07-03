@@ -1,0 +1,30 @@
+---
+// Extends Starlight's default <head> with Open Graph / Twitter card image tags.
+// Starlight already emits og:title/description/url and twitter:card; the missing
+// piece is the image. We use the branded Behave Graph card (public/
+// og-behave-graph.png), plus explicit twitter title/description (per page).
+// Mirrors the graph-grammar docs site for cross-site consistency.
+import Default from '@astrojs/starlight/components/Head.astro';
+
+const { entry } = Astro.locals.starlightRoute;
+const base = import.meta.env.BASE_URL; // always begins and ends with '/'
+const ogPath = `${base}og-behave-graph.png`;
+// Social crawlers require an absolute URL; `Astro.site` is set in the deploy.
+const ogImage = Astro.site ? new URL(ogPath, Astro.site).href : ogPath;
+const alt = 'Behave Graphs, a visual behavior graph in the browser editor';
+---
+
+<Default />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1053" />
+<meta property="og:image:height" content="513" />
+<meta property="og:image:alt" content={alt} />
+<meta name="twitter:image" content={ogImage} />
+<meta name="twitter:image:alt" content={alt} />
+<meta name="twitter:title" content={entry.data.title} />
+{
+  entry.data.description && (
+    <meta name="twitter:description" content={entry.data.description} />
+  )
+}
