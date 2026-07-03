@@ -7,8 +7,11 @@ hero:
 
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkButton } from '@astrojs/starlight/components';
 
+<LinkButton href={import.meta.env.BASE_URL + 'editor/'} variant="primary" icon="rocket" iconPlacement="start">
+	Open the live editor
+</LinkButton>
 
 ## What are Behave Graphs?
 

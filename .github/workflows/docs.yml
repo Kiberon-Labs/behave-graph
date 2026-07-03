@@ -10,6 +10,13 @@ permissions:
   contents: read
 
 
+# Allow one concurrent Pages deployment; let an in-flight run finish rather than
+# cancelling it (recommended for the github-pages environment).
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+
 jobs:
 
   build:

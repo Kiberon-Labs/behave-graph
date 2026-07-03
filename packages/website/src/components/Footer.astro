@@ -1,0 +1,27 @@
+---
+// Wraps Starlight's default footer (pagination, last-updated, edit link) and
+// appends a backlink to the company site on every page. Mirrors the
+// graph-grammar docs site for cross-site brand consistency.
+import Default from '@astrojs/starlight/components/Footer.astro';
+---
+
+<Default><slot /></Default>
+
+<p class="kiberon-credit">
+  Built by <a href="https://kiberonlabs.com" rel="noopener">Kiberon Labs</a>
+</p>
+
+<style>
+  .kiberon-credit {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--sl-color-hairline);
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+    text-align: center;
+  }
+  .kiberon-credit a {
+    color: var(--sl-color-text-accent);
+    font-weight: 600;
+  }
+</style>

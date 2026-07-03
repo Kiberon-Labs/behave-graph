@@ -15,6 +15,8 @@
     "@astrojs/react": "^4.4.2",
     "@astrojs/starlight": "^0.36.2",
     "@astrojs/starlight-tailwind": "^4.0.2",
+    "@fontsource-variable/geist": "^5.2.9",
+    "@fontsource-variable/geist-mono": "^5.2.8",
     "@iconify/react": "^6.0.2",
     "@kiberon-labs/behave-graph": "*",
     "@kiberon-labs/behave-graph-flow": "*",

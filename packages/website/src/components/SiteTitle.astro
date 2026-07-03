@@ -1,0 +1,62 @@
+---
+// Co-branded header: the Kiberon Labs badge × the Behave Graph mark, beside the
+// site title. Replaces Starlight's default SiteTitle (which only supports a
+// single `logo`). Keeps the default's home link + accessible title text.
+// Mirrors the graph-grammar docs site for cross-site brand consistency.
+import KiberonMark from '../assets/kiberon-mark.svg';
+import BehaveGraphMark from '../assets/behave-graph-mark.svg';
+
+const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<a href={siteTitleHref} class="site-title sl-flex">
+  <span class="logos" aria-hidden="true">
+    <KiberonMark class="logo-mark" />
+    <span class="cross">×</span>
+    <BehaveGraphMark class="logo-mark" />
+  </span>
+  <span class="title" translate="no">{siteTitle}</span>
+</a>
+
+<style>
+  @layer starlight.core {
+    .site-title {
+      align-items: center;
+      gap: var(--sl-nav-gap);
+      font-size: var(--sl-text-h4);
+      font-weight: 600;
+      color: var(--sl-color-text-accent);
+      text-decoration: none;
+      white-space: nowrap;
+      min-width: 0;
+    }
+    .logos {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-shrink: 0;
+    }
+    /* The marks are square (viewBox 0 0 309.7 309.7); pin both dimensions so the
+       Illustrator width/height attributes can't stretch them in the header. */
+    .logo-mark {
+      height: calc(var(--sl-nav-height) - 2 * var(--sl-nav-pad-y));
+      width: calc(var(--sl-nav-height) - 2 * var(--sl-nav-pad-y));
+    }
+    .cross {
+      font-size: var(--sl-text-base);
+      font-weight: 400;
+      color: var(--sl-color-gray-3);
+    }
+    .title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* On narrow viewports Starlight already tightens the header; drop the
+       title text and keep just the co-branded marks so nothing wraps. */
+    @media (max-width: 30rem) {
+      .title {
+        display: none;
+      }
+    }
+  }
+</style>
