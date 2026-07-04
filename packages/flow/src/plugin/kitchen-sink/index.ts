@@ -4,6 +4,7 @@ import { docsPlugin } from '@/plugin/docs';
 import { alignmentPlugin } from '@/plugin/alignment';
 import { layoutPlugin } from '@/plugin/layout';
 import { notesPlugin } from '@/plugin/notes';
+import { autosavePlugin } from '@/plugin/autosave';
 
 /**
  * Batteries-included bundle of the standard editor plugins. Register this once
@@ -18,7 +19,8 @@ import { notesPlugin } from '@/plugin/notes';
  * - {@link docsPlugin} — the in-editor node documentation browser;
  * - {@link alignmentPlugin} — node alignment + distribution;
  * - {@link layoutPlugin} — Dagre/ELK auto-layout (heavy deps, opt-in);
- * - {@link notesPlugin} — markdown note nodes (tiptap/prosemirror, opt-in).
+ * - {@link notesPlugin} — markdown note nodes (tiptap/prosemirror, opt-in);
+ * - {@link autosavePlugin} — client-side local backups of open graphs.
  *
  * It intentionally does **not** register a graph runner: runners
  * ({@link localGraphRunnerPlugin}, the remote client, ...) need host-specific
@@ -30,6 +32,7 @@ export const kitchenSinkPlugin = plugin(
     await system.registerPlugin(alignmentPlugin);
     await system.registerPlugin(layoutPlugin);
     await system.registerPlugin(notesPlugin);
+    await system.registerPlugin(autosavePlugin);
   },
   { name: 'kitchen-sink' }
 );

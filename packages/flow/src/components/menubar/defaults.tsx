@@ -53,6 +53,8 @@ export interface IWindowButton {
   name: string;
   icon?: JSX.Element;
   content: JSX.Element;
+  /** Command id whose shortcut is shown next to this item. */
+  commandId?: string;
 }
 /**
  * A simple button that toggles a window panel
@@ -64,7 +66,8 @@ const windowButton = ({
   id,
   title,
   icon,
-  content
+  content,
+  commandId
 }: IWindowButton): IMenuItem => ({
   name: name,
   render: function Toggle() {
@@ -99,7 +102,12 @@ const windowButton = ({
       }
     };
     return (
-      <MenuItemElement onClick={onToggle} key={title} icon={icon}>
+      <MenuItemElement
+        onClick={onToggle}
+        key={title}
+        icon={icon}
+        commandId={commandId}
+      >
         {title}
       </MenuItemElement>
     );
@@ -208,6 +216,7 @@ export const defaultMenuDataFactory = (): IMenu => ({
                 key={'saveUI'}
                 icon={<Download />}
                 onClick={onSave}
+                commandId="editor.save"
                 {...rest}
               >
                 Save Graph
@@ -295,6 +304,7 @@ export const defaultMenuDataFactory = (): IMenu => ({
                 disabled={!canUndo}
                 key={key}
                 icon={<Undo />}
+                commandId="editor.undo"
                 {...rest}
               >
                 Undo
@@ -314,6 +324,7 @@ export const defaultMenuDataFactory = (): IMenu => ({
                 disabled={!canRedo}
                 key={key}
                 icon={<Redo />}
+                commandId="editor.redo"
                 {...rest}
               >
                 Redo
@@ -339,6 +350,7 @@ export const defaultMenuDataFactory = (): IMenu => ({
                 key={key}
                 icon={<Redo />}
                 onClick={() => sys.runCommand('selection.copy')}
+                commandId="selection.copy"
                 {...rest}
               >
                 Copy
@@ -355,6 +367,7 @@ export const defaultMenuDataFactory = (): IMenu => ({
                 key={key}
                 icon={<Redo />}
                 onClick={() => void sys.runCommand('selection.paste')}
+                commandId="selection.paste"
                 {...rest}
               >
                 Paste
@@ -367,7 +380,8 @@ export const defaultMenuDataFactory = (): IMenu => ({
           name: 'find',
           id: 'find',
           title: 'Find',
-          content: <SearchPanel />
+          content: <SearchPanel />,
+          commandId: 'editor.find'
         })
       ]
     },

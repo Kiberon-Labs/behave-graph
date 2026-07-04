@@ -21,6 +21,7 @@
     "audit": "fallow",
     "dev": "tsdown --watch src",
     "build": "tsdown",
+    "release": "npm publish --provenance",
     "test": "vitest",
     "test:visual": "vitest run --config vitest.visual.config.ts",
     "test:visual:update": "vitest run --config vitest.visual.config.ts --update",

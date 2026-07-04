@@ -107,10 +107,9 @@ export const KeymapsPanel = () => {
               <VscodeTableRow key={action}>
                 <VscodeTableCell className={styles.actionCell}>
                   <div className={styles.actionInfo}>
-                    <div className={styles.actionLabel}>
+                    <div className={styles.actionLabel} title={action}>
                       {getDescription(action)}
                     </div>
-                    <code className={styles.actionId}>{action}</code>
                   </div>
                 </VscodeTableCell>
 

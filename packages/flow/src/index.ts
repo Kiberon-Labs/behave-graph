@@ -64,6 +64,7 @@ export * from './plugin/docs/index.js';
 export * from './plugin/alignment/index.js';
 export * from './plugin/layout/index.js';
 export * from './plugin/notes/index.js';
+export * from './plugin/autosave/index.js';
 export * from './plugin/kitchen-sink/index.js';
 export * from './plugin/graphrunner/index.js';
 export * from './plugin/graphrunner-local/index.js';

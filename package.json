@@ -33,7 +33,7 @@
     "lint:ci": "turbo run lint --filter=\"[origin/$BASE_REF...HEAD]\"",
     "format": "turbo run format",
     "changeset": "changeset",
-    "release": "npm run build -- --filter=\"[HEAD^1...HEAD]\"  && npm run changeset publish -- --provenance",
+    "release": "turbo run release && npm run changeset tag",
     "vers": "npm run changeset version",
     "typecheck": "turbo run typecheck"
   },

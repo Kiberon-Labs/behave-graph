@@ -21,6 +21,14 @@
         ".env.local"
       ]
     },
+    // Publishable packages opt in by defining a "release" script that
+    // publishes the package with provenance.
+    "release": {
+      "dependsOn": [
+        "build"
+      ],
+      "cache": false
+    },
     "test": {
       "dependsOn": [
         "^build"

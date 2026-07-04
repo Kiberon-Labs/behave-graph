@@ -7,14 +7,84 @@ export type HotkeyStore = {
   keymap: Record<string, string | string[]>;
   handlers: Record<string, Handler>;
   descriptions: Record<string, string>;
+  /** Reverse map: command id -> keymap action, so any UI surface that runs a
+   * command can look up its live shortcut without knowing the action name. */
+  commandToAction: Record<string, string>;
   register(val: {
     action: string;
     trigger: string | string[];
     description?: string;
     handler?: Handler;
+    /** Command id this binding invokes; enables shortcut hints in menus. */
+    command?: string;
   }): void;
   registerDescription(action: string, description: string): void;
   registerHandler(action: string, handler: Handler): void;
+  /**
+   * Formatted shortcut hint for a command id (e.g. `'Ctrl+Shift+←'`), derived
+   * live from the keymap, or undefined if the command has no bound key.
+   */
+  getCommandKeybinding(commandId: string): string | undefined;
+};
+
+const MODIFIER_LABELS: Record<string, string> = {
+  ctrl: 'Ctrl',
+  control: 'Ctrl',
+  cmd: 'Cmd',
+  command: 'Cmd',
+  meta: 'Cmd',
+  shift: 'Shift',
+  alt: 'Alt',
+  option: 'Alt'
+};
+
+const KEY_LABELS: Record<string, string> = {
+  left: '←',
+  right: '→',
+  up: '↑',
+  down: '↓',
+  plus: '+',
+  minus: '-',
+  esc: 'Esc',
+  escape: 'Esc',
+  del: 'Del',
+  delete: 'Del',
+  backspace: 'Backspace',
+  enter: 'Enter',
+  return: 'Enter',
+  space: 'Space',
+  tab: 'Tab'
+};
+
+const formatKeyPart = (part: string): string => {
+  const lower = part.toLowerCase();
+  if (MODIFIER_LABELS[lower]) return MODIFIER_LABELS[lower];
+  if (KEY_LABELS[lower]) return KEY_LABELS[lower];
+  if (part.length === 1) return part.toUpperCase();
+  return part.charAt(0).toUpperCase() + part.slice(1);
+};
+
+/**
+ * Format a keymap trigger into a human-readable hint, e.g. `'ctrl+shift+left'`
+ * -> `'Ctrl+Shift+←'`. When several triggers are bound (cross-platform), prefer
+ * the `ctrl` variant so menus show one stable shortcut. Returns undefined for an
+ * empty/unset trigger.
+ */
+export const formatTrigger = (
+  trigger: string | string[] | undefined
+): string | undefined => {
+  let chosen: string | undefined;
+  if (Array.isArray(trigger)) {
+    chosen =
+      trigger.find((t) => t.toLowerCase().includes('ctrl')) ?? trigger[0];
+  } else {
+    chosen = trigger;
+  }
+  if (!chosen) return undefined;
+  return chosen
+    .split('+')
+    .map((p) => formatKeyPart(p.trim()))
+    .join('+');
 };
 
 /**
@@ -30,6 +100,11 @@ type HotkeyBinding = {
   description: string;
   /** Dispatch this command id (with preventDefault/stopPropagation). */
   command?: string;
+  /**
+   * For handler-based bindings, the command id this key maps to. Used only to
+   * surface the shortcut hint in menus; does not affect what the key does.
+   */
+  hintCommand?: string;
   /** Or run custom key-specific logic. */
   handler?: (sys: System, e?: KeyboardEvent) => void;
 };
@@ -158,12 +233,14 @@ const defaultBindings: HotkeyBinding[] = [
     action: 'TRACE_UPSTREAM',
     trigger: 'ctrl+shift+left',
     description: 'Trace Upstream',
+    hintCommand: 'node.traceUpstream',
     handler: traceFromSelection('node.traceUpstream')
   },
   {
     action: 'TRACE_DOWNSTREAM',
     trigger: 'ctrl+shift+right',
     description: 'Trace Downstream',
+    hintCommand: 'node.traceDownstream',
     handler: traceFromSelection('node.traceDownstream')
   },
   {
@@ -207,10 +284,14 @@ const buildDefaults = (sys: System) => {
   const keymap: Record<string, string | string[]> = {};
   const descriptions: Record<string, string> = {};
   const handlers: Record<string, Handler> = {};
+  const commandToAction: Record<string, string> = {};
 
   for (const binding of defaultBindings) {
     keymap[binding.action] = binding.trigger;
     descriptions[binding.action] = binding.description;
+
+    const hintTarget = binding.command ?? binding.hintCommand;
+    if (hintTarget) commandToAction[hintTarget] = binding.action;
 
     if (binding.command) {
       const commandId = binding.command;
@@ -225,16 +306,18 @@ const buildDefaults = (sys: System) => {
     }
   }
 
-  return { keymap, descriptions, handlers };
+  return { keymap, descriptions, handlers, commandToAction };
 };
 
 export const hotKeyStoreFactory = (sys: System) => {
-  const { keymap, descriptions, handlers } = buildDefaults(sys);
+  const { keymap, descriptions, handlers, commandToAction } =
+    buildDefaults(sys);
 
-  return create<HotkeyStore>((set) => ({
+  return create<HotkeyStore>((set, get) => ({
     keymap,
     descriptions,
     handlers,
+    commandToAction,
 
     register(val) {
       set((s) => ({
@@ -249,6 +332,10 @@ export const hotKeyStoreFactory = (sys: System) => {
         descriptions: {
           ...s.descriptions,
           ...(val.description ? { [val.action]: val.description } : {})
+        },
+        commandToAction: {
+          ...s.commandToAction,
+          ...(val.command ? { [val.command]: val.action } : {})
         }
       }));
     },
@@ -267,6 +354,11 @@ export const hotKeyStoreFactory = (sys: System) => {
           [name]: desc
         }
       }));
+    },
+    getCommandKeybinding(commandId) {
+      const action = get().commandToAction[commandId];
+      if (!action) return undefined;
+      return formatTrigger(get().keymap[action]);
     }
   }));
 };

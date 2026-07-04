@@ -7,10 +7,25 @@
 }
 
 .inner {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    padding: 0.25rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
     width: 100%;
     min-width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.label {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.keybinding {
+    flex: 0 0 auto;
+    font-size: 0.85em;
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }

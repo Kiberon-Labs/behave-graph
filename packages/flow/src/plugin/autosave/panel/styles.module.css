@@ -1,0 +1,56 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.helpText {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+.toolbar {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.table {
+    width: 100%;
+}
+
+.nameCell {
+    width: 40%;
+}
+
+.name {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.actionsCell {
+    text-align: right;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.empty {
+    font-size: 0.8125rem;
+    opacity: 0.7;
+    padding: 1rem 0;
+}

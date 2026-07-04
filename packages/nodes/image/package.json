@@ -40,6 +40,7 @@
   },
   "scripts": {
     "build": "tsdown && behave-graph-manifest dist/manifest.source.js --out dist",
+    "release": "npm publish --provenance",
     "check": "oxfmt --check",
     "format": "oxfmt",
     "test": "vitest --passWithNoTests",

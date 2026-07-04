@@ -26,9 +26,12 @@ export const DynamicContextMenu = ({
   const session = useGraph();
   const editor = session.editor;
 
-  // Subscribe so the menu re-renders when items/commands change.
+  // Subscribe so the menu re-renders when items/commands/keymap change.
   useStore(editor.contextMenuStore, (s) => s.items);
   useStore(editor.commandStore, (s) => s.commands);
+  useStore(editor.hotKeyStore, (s) => s.keymap);
+
+  const hotKeys = editor.hotKeyStore.getState();
 
   const ctx: CommandContext = { editor, session, ...context };
 
@@ -44,10 +47,15 @@ export const DynamicContextMenu = ({
       data.push({ separator: true });
     }
     lastGroup = item.group;
+    // Auto-detect the shortcut from the command's live keymap binding; fall
+    // back to a static hint only when the command has no bound key.
+    const derived = item.commandId
+      ? hotKeys.getCommandKeybinding(item.commandId)
+      : undefined;
     data.push({
       label: typeof item.label === 'function' ? item.label(ctx) : item.label,
       value: item.id,
-      keybinding: item.keybinding
+      keybinding: derived ?? item.keybinding
     });
   }
 
