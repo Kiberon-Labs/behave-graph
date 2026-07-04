@@ -3,6 +3,7 @@
   "version": "1.2.0",
   "type": "module",
   "files": [
+    "bin",
     "dist"
   ],
   "exports": {
@@ -18,7 +19,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "behave-graph-manifest": "./dist/Manifest/cli.js"
+    "behave-graph-manifest": "./bin/behave-graph-manifest.js"
   },
   "publishConfig": {
     "provenance": true,
