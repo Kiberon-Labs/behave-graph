@@ -11,14 +11,15 @@ const base = import.meta.env.BASE_URL; // always begins and ends with '/'
 const ogPath = `${base}og-behave-graph.png`;
 // Social crawlers require an absolute URL; `Astro.site` is set in the deploy.
 const ogImage = Astro.site ? new URL(ogPath, Astro.site).href : ogPath;
-const alt = 'Behave Graphs, a visual behavior graph in the browser editor';
+const alt =
+  'The Behave Graphs editor: a node-based behavior graph on the canvas, with layers, traces, node inputs and settings panels';
 ---
 
 <Default />
 <meta property="og:image" content={ogImage} />
 <meta property="og:image:type" content="image/png" />
-<meta property="og:image:width" content="1053" />
-<meta property="og:image:height" content="513" />
+<meta property="og:image:width" content="1606" />
+<meta property="og:image:height" content="841" />
 <meta property="og:image:alt" content={alt} />
 <meta name="twitter:image" content={ogImage} />
 <meta name="twitter:image:alt" content={alt} />

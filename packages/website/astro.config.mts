@@ -85,6 +85,13 @@ export default defineConfig({
           label: 'GitHub',
           href: 'https://github.com/Kiberon-Labs/behave-graph'
         },
+        // Also makes Starlight emit twitter:site, attributing social cards
+        // to the Kiberon Labs account.
+        {
+          icon: 'x.com',
+          label: 'X',
+          href: 'https://x.com/kiberonlabs'
+        },
         {
           icon: 'discord',
           label: 'Community Discord',
