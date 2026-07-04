@@ -9,7 +9,7 @@
   "author": "kiberonlabsdev",
   "scripts": {
     "build": "tsdown",
-    "release": "npm publish --provenance",
+    "release": "npm publish --dry-run",
     "check": "oxfmt --check",
     "format": "oxfmt",
     "test": "vitest --passWithNoTests",

@@ -28,7 +28,7 @@
   "scripts": {
     "audit": "fallow",
     "build": "tsdown",
-    "release": "npm publish --provenance",
+    "release": "npm publish --dry-run",
     "format": "oxfmt",
     "check": "oxfmt --check",
     "test": "vitest",
