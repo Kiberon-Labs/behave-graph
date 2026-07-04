@@ -16,7 +16,6 @@ import { HistoryPanel } from '@/components/panels/history';
 import { HotKeys } from '@/components/hotKeys';
 import { NodePickerPanel } from '@/components/panels/nodePicker';
 import { PanelPanel } from '@/components/panels/panel';
-import { ConversationPanel } from '@/components/panels/conversation';
 import { LayersPanel } from '@/components/panels/layers';
 import { GraphPropertiesPanel } from '@/components/panels/graphProperties';
 import { GraphProvider } from './provider';
@@ -44,9 +43,7 @@ export class TabLoader {
 
     // The default graph tab. Other graphs are loaded dynamically by id
     // (see `loadGraphTab`).
-    this.register(DEFAULT_GRAPH_ID, () =>
-      this.buildGraphTab(DEFAULT_GRAPH_ID)
-    );
+    this.register(DEFAULT_GRAPH_ID, () => this.buildGraphTab(DEFAULT_GRAPH_ID));
 
     this.register('system:settings', () => {
       return {
@@ -258,20 +255,9 @@ export class TabLoader {
       };
     });
 
-    this.register('conversation', () => {
-      return {
-        id: 'conversation',
-        closable: true,
-        cached: true,
-        title: 'Conversation',
-        group: 'default',
-        content: () => (
-          <ErrorBoundary fallback={'whoops'}>
-            <ConversationPanel />
-          </ErrorBoundary>
-        )
-      };
-    });
+    // The 'conversation' tab is provided by the AI nodes package's editor
+    // plugin (`@kiberon-labs/behave-graph-nodes-ai/ui`), which owns the chat
+    // store and panel.
   }
 
   load(tab: TabBase): TabData | undefined {

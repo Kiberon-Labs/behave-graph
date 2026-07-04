@@ -59,7 +59,7 @@ export interface IWindowButton {
  * @param param0
  * @returns
  */
-export const windowButton = ({
+const windowButton = ({
   name,
   id,
   title,

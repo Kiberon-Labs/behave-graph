@@ -5,7 +5,7 @@ import type { BoxBase, LayoutBase, PanelBase, TabData } from 'rc-dock';
  * (session id `graph`); every other graph uses `graph:<sessionId>`. These three
  * helpers are the single source of truth for the convention.
  */
-export const GRAPH_TAB_PREFIX = 'graph:';
+const GRAPH_TAB_PREFIX = 'graph:';
 export const DEFAULT_GRAPH_ID = 'graph';
 
 export function isGraphTabId(id: string | undefined): id is string {
@@ -45,9 +45,7 @@ export function collectGraphSessionIds(layout: LayoutBase): Set<string> {
   return ids;
 }
 
-export function recurseFindGraphPanel(
-  base: BoxBase | PanelBase
-): PanelBase | null {
+function recurseFindGraphPanel(base: BoxBase | PanelBase): PanelBase | null {
   if (base.id === 'graphs') {
     return base as PanelBase;
   }

@@ -49,7 +49,11 @@ const CallSubgraphGenerator: React.FC<SocketGeneratorRenderProps> = ({
   );
 
   const config = node.data.configuration as
-    | { subgraphId?: string; inputs?: ContractParam[]; outputs?: ContractParam[] }
+    | {
+        subgraphId?: string;
+        inputs?: ContractParam[];
+        outputs?: ContractParam[];
+      }
     | undefined;
   const subgraphId = String(config?.subgraphId ?? '');
   const portsKey = JSON.stringify({

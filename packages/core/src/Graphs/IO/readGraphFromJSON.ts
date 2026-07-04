@@ -87,70 +87,11 @@ export function readGraphFromJSON({
   Object.entries(nodes).forEach(([nodeId, node]) => {
     // initialize the inputs by resolving to the reference nodes.
     node.inputs.forEach((inputSocket) => {
-      inputSocket.links.forEach((link) => {
-        if (!(link.nodeId in nodes)) {
-          throw new Error(
-            `node '${node.description.typeName}' with id ${node.id} specifies an input '${inputSocket.name}' whose link goes to ` +
-              `a nonexistent upstream node id: ${link.nodeId}`
-          );
-        }
-        const upstreamNode = nodes[link.nodeId]!;
-        const upstreamOutputSocket = upstreamNode.outputs.find(
-          (socket) => socket.name === link.socketName
-        );
-        if (upstreamOutputSocket === undefined) {
-          throw new Error(
-            `node '${node.description.typeName}' with id ${node.id} specifies an input '${inputSocket.name}' whose link goes to ` +
-              `a nonexistent output '${link.socketName}' on upstream node '${upstreamNode.description.typeName}'`
-          );
-        }
-
-        // add, only if unique
-        const upstreamLink = new Link(nodeId, inputSocket.name);
-        if (
-          upstreamOutputSocket.links.findIndex(
-            (value) =>
-              value.nodeId == upstreamLink.nodeId &&
-              value.socketName == upstreamLink.socketName
-          ) < 0
-        ) {
-          upstreamOutputSocket.links.push(upstreamLink);
-        }
-      });
+      wireSocketLinks(nodes, node, nodeId, inputSocket, 'input');
     });
 
     node.outputs.forEach((outputSocket) => {
-      outputSocket.links.forEach((link) => {
-        if (!(link.nodeId in nodes)) {
-          throw new Error(
-            `node '${node.description.typeName}' with id ${node.id} specifies an output '${outputSocket.name}' whose link goes to ` +
-              `a nonexistent downstream node id ${link.nodeId}`
-          );
-        }
-
-        const downstreamNode = nodes[link.nodeId]!;
-        const downstreamInputSocket = downstreamNode.inputs.find(
-          (socket) => socket.name === link.socketName
-        );
-        if (downstreamInputSocket === undefined) {
-          throw new Error(
-            `node '${node.description.typeName}' with id ${node.id} specifies an output '${outputSocket.name}' whose link goes to ` +
-              `a nonexistent input '${link.socketName}' on downstream node '${downstreamNode.description.typeName}'`
-          );
-        }
-
-        // add, only if unique
-        const downstreamLink = new Link(nodeId, outputSocket.name);
-        if (
-          downstreamInputSocket.links.findIndex(
-            (value) =>
-              value.nodeId == downstreamLink.nodeId &&
-              value.socketName == downstreamLink.socketName
-          ) < 0
-        ) {
-          downstreamInputSocket.links.push(downstreamLink);
-        }
-      });
+      wireSocketLinks(nodes, node, nodeId, outputSocket, 'output');
     });
   });
 
@@ -162,6 +103,58 @@ export function readGraphFromJSON({
     customEvents,
     variables
   };
+}
+
+// Resolve every link declared on `socket` to its counterpart socket on the
+// referenced node and add the reciprocal back-link there (deduped). Input
+// sockets link to upstream outputs; output sockets link to downstream inputs.
+// The logic is identical in both directions, so `direction` only selects which
+// counterpart list to search and how to phrase the diagnostics.
+function wireSocketLinks(
+  nodes: GraphNodes,
+  node: INode,
+  nodeId: string,
+  socket: Socket,
+  direction: 'input' | 'output'
+): void {
+  const isInput = direction === 'input';
+  socket.links.forEach((link) => {
+    if (!(link.nodeId in nodes)) {
+      const relation = isInput ? 'upstream' : 'downstream';
+      throw new Error(
+        `node '${node.description.typeName}' with id ${node.id} specifies an ${direction} '${socket.name}' whose link goes to ` +
+          `a nonexistent ${relation} node id: ${link.nodeId}`
+      );
+    }
+
+    const counterpartNode = nodes[link.nodeId]!;
+    const counterpartSockets = isInput
+      ? counterpartNode.outputs
+      : counterpartNode.inputs;
+    const counterpartSocket = counterpartSockets.find(
+      (candidate) => candidate.name === link.socketName
+    );
+    if (counterpartSocket === undefined) {
+      const counterpartKind = isInput ? 'output' : 'input';
+      const relation = isInput ? 'upstream' : 'downstream';
+      throw new Error(
+        `node '${node.description.typeName}' with id ${node.id} specifies an ${direction} '${socket.name}' whose link goes to ` +
+          `a nonexistent ${counterpartKind} '${link.socketName}' on ${relation} node '${counterpartNode.description.typeName}'`
+      );
+    }
+
+    // add, only if unique
+    const backLink = new Link(nodeId, socket.name);
+    if (
+      counterpartSocket.links.findIndex(
+        (value) =>
+          value.nodeId == backLink.nodeId &&
+          value.socketName == backLink.socketName
+      ) < 0
+    ) {
+      counterpartSocket.links.push(backLink);
+    }
+  });
 }
 
 function readNodeJSON({

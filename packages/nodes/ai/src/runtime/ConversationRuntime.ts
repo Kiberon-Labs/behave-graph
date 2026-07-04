@@ -23,6 +23,7 @@ import {
 import { create, type StoreApi } from 'zustand';
 import { createModel, resolveApiKey } from '../providers/index.js';
 import { imageBytesToDataUrl } from './imageDataUrl.js';
+import { chatStoreFactory } from '../store/chat.js';
 
 /** A node in the conversation tree, for the exploration panel. */
 export interface ConversationNode {
@@ -182,6 +183,12 @@ export class ConversationRuntime implements IConversationService {
   constructor(system: System, credentials?: IAICredentials) {
     this.system = system;
     this.credentials = credentials;
+    // Own the chat store (moved out of flow core). Ensure it exists as early as
+    // possible , the moment a runtime is constructed , so the panel and every
+    // runtime method share one store regardless of plugin-registration order.
+    if (!system.chatStore) {
+      system.decorate('chatStore', chatStoreFactory());
+    }
     this.store = create<ConversationsState>(() => ({
       conversations: [],
       focusedId: DEFAULT_CONVERSATION_ID
@@ -294,8 +301,7 @@ export class ConversationRuntime implements IConversationService {
         role: message.role,
         content: partsToText(message.content),
         timestamp: new Date(),
-        attachments:
-          images.length > 0 ? imagesToAttachments(images) : undefined
+        attachments: images.length > 0 ? imagesToAttachments(images) : undefined
       });
     }
     // focusedId changed , update the tree so the panel highlights this branch.
@@ -442,88 +448,128 @@ export class ConversationRuntime implements IConversationService {
 
     // Fail fast with a clear message when no key resolves (vs a confusing 401).
     if (!resolveApiKey(agent.provider, this.credentials)) {
-      const ref = agent.provider.credentialRef || agent.provider.kind;
-      if (isFocused) {
-        this.system.chatStore.getState().addMessage({
-          id: nextId('msg'),
-          role: 'assistant',
-          content: `⚠️ No API key configured for "${ref}". The host's credential resolver (IAICredentials) returned no key , e.g. set VITE_${ref.toUpperCase()}_API_KEY for the Storybook demo.`,
-          timestamp: new Date()
-        });
-      }
+      this.emitMissingKeyNotice(agent, isFocused);
       return '';
     }
 
-    const chat = this.system.chatStore.getState();
-    const assistantId = isFocused ? nextId('msg') : undefined;
-
-    if (isFocused && assistantId) {
-      chat.addMessage({
-        id: assistantId,
-        role: 'assistant',
-        content: '',
-        timestamp: new Date(),
-        isStreaming: true
-      });
-      chat.setIsStreaming(true);
-    }
-
+    const assistantId = this.beginAssistantMessage(isFocused);
     try {
-      // streamText routes request errors to onError rather than throwing; without
-      // this, a failed call surfaces only as the SDK's generic "No output
-      // generated" when `result.text` is read. Capture the real cause here.
-      let streamError: unknown;
-      const result = streamText({
+      return await this.streamAssistantReply(
+        conversationId,
+        conversation,
+        agent,
         model,
-        system: agent.systemPrompt,
-        messages: conversation.messages,
-        tools: this.buildTools(agent.tools),
-        stopWhen: stepCountIs(MAX_TOOL_ROUNDS),
-        temperature: agent.temperature,
-        onError: ({ error }) => {
-          streamError = error;
-          console.error('AI completion failed:', error);
-        }
-      });
-
-      let streamed = '';
-      for await (const delta of result.textStream) {
-        streamed += delta;
-        if (isFocused && assistantId) {
-          this.system.chatStore
-            .getState()
-            .updateStreamingMessage(assistantId, streamed);
-        }
-      }
-
-      // Surface the real provider error instead of the SDK's empty-output wrapper.
-      if (streamError) throw streamError;
-
-      const finalText = (await result.text) || streamed;
-      if (isFocused && assistantId) {
-        const focusChat = this.system.chatStore.getState();
-        focusChat.updateStreamingMessage(assistantId, finalText);
-        focusChat.finalizeStreamingMessage(assistantId);
-      }
-
-      conversation.messages.push({ role: 'assistant', content: finalText });
-      this.notify(conversationId, { role: 'assistant', content: finalText });
-      this.publishTree();
-
-      return finalText;
+        assistantId
+      );
     } catch (error) {
-      const text = describeError(error);
-      if (isFocused && assistantId) {
-        const focusChat = this.system.chatStore.getState();
-        focusChat.updateStreamingMessage(assistantId, `⚠️ ${text}`);
-        focusChat.finalizeStreamingMessage(assistantId);
-      }
+      this.renderStreamError(assistantId, describeError(error));
       return '';
     } finally {
       if (isFocused) {
         this.system.chatStore.getState().setIsStreaming(false);
       }
     }
+  }
+
+  /**
+   * Render the "no API key" notice in the panel (focused conversations only).
+   * Non-focused branches stay silent , they never scribble on the panel.
+   */
+  private emitMissingKeyNotice(agent: AgentSpec, isFocused: boolean): void {
+    if (!isFocused) return;
+    const ref = agent.provider.credentialRef || agent.provider.kind;
+    this.system.chatStore.getState().addMessage({
+      id: nextId('msg'),
+      role: 'assistant',
+      content: `⚠️ No API key configured for "${ref}". The host's credential resolver (IAICredentials) returned no key , e.g. set VITE_${ref.toUpperCase()}_API_KEY for the Storybook demo.`,
+      timestamp: new Date()
+    });
+  }
+
+  /**
+   * Seed an empty streaming assistant bubble in the panel and flip the streaming
+   * flag. Returns the bubble id to update as deltas arrive, or `undefined` when
+   * the conversation isn't focused (so nothing renders).
+   */
+  private beginAssistantMessage(isFocused: boolean): string | undefined {
+    if (!isFocused) return undefined;
+    const assistantId = nextId('msg');
+    const chat = this.system.chatStore.getState();
+    chat.addMessage({
+      id: assistantId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      isStreaming: true
+    });
+    chat.setIsStreaming(true);
+    return assistantId;
+  }
+
+  /**
+   * Stream the SDK completion for one conversation, mirroring deltas into the
+   * panel bubble (when focused), then record and return the final assistant text.
+   */
+  private async streamAssistantReply(
+    conversationId: string,
+    conversation: Conversation,
+    agent: AgentSpec,
+    model: LanguageModel,
+    assistantId: string | undefined
+  ): Promise<string> {
+    // streamText routes request errors to onError rather than throwing; without
+    // this, a failed call surfaces only as the SDK's generic "No output
+    // generated" when `result.text` is read. Capture the real cause here.
+    let streamError: unknown;
+    const result = streamText({
+      model,
+      system: agent.systemPrompt,
+      messages: conversation.messages,
+      tools: this.buildTools(agent.tools),
+      stopWhen: stepCountIs(MAX_TOOL_ROUNDS),
+      temperature: agent.temperature,
+      onError: ({ error }) => {
+        streamError = error;
+        console.error('AI completion failed:', error);
+      }
+    });
+
+    let streamed = '';
+    for await (const delta of result.textStream) {
+      streamed += delta;
+      if (assistantId) {
+        this.system.chatStore
+          .getState()
+          .updateStreamingMessage(assistantId, streamed);
+      }
+    }
+
+    // Surface the real provider error instead of the SDK's empty-output wrapper.
+    if (streamError) throw streamError;
+
+    const finalText = (await result.text) || streamed;
+    if (assistantId) {
+      const focusChat = this.system.chatStore.getState();
+      focusChat.updateStreamingMessage(assistantId, finalText);
+      focusChat.finalizeStreamingMessage(assistantId);
+    }
+
+    conversation.messages.push({ role: 'assistant', content: finalText });
+    this.notify(conversationId, { role: 'assistant', content: finalText });
+    this.publishTree();
+
+    return finalText;
+  }
+
+  /** Replace the streaming bubble with an error notice (focused only). */
+  private renderStreamError(
+    assistantId: string | undefined,
+    text: string
+  ): void {
+    if (!assistantId) return;
+    const focusChat = this.system.chatStore.getState();
+    focusChat.updateStreamingMessage(assistantId, `⚠️ ${text}`);
+    focusChat.finalizeStreamingMessage(assistantId);
   }
 
   /**

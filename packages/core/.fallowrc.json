@@ -12,5 +12,31 @@
         "unused-files": "error",
         "unused-exports": "warn",
         "unused-types": "off"
-    }
+    },
+    "ignoreExports": [
+        {
+            "file": "src/Profiles/Core/Values/BooleanNodes.ts",
+            "exports": [
+                "*"
+            ]
+        },
+        {
+            "file": "src/Profiles/Core/Values/FloatNodes.ts",
+            "exports": [
+                "*"
+            ]
+        },
+        {
+            "file": "src/Profiles/Core/Values/IntegerNodes.ts",
+            "exports": [
+                "*"
+            ]
+        },
+        {
+            "file": "src/Profiles/Core/Values/StringNodes.ts",
+            "exports": [
+                "*"
+            ]
+        }
+    ]
 }

@@ -24,7 +24,11 @@ const outputBoundary = (
   id,
   type: 'behaveNode',
   position: { x: 0, y: 0 },
-  data: { type: 'graph/output', configuration: { parameters: params }, ports: {} }
+  data: {
+    type: 'graph/output',
+    configuration: { parameters: params },
+    ports: {}
+  }
 });
 
 const callNode = (id: string, subgraphId: string): Node => ({
@@ -49,7 +53,9 @@ describe('call subgraph contract sync', () => {
 
     // A call node referencing `sub`, created while `sub` has no outputs yet.
     caller.nodeStore.getState().setNodes(() => [callNode('call1', sub.id)]);
-    expect(getNode(caller, 'call1').data.configuration.outputs ?? []).toEqual([]);
+    expect(getNode(caller, 'call1').data.configuration.outputs ?? []).toEqual(
+      []
+    );
 
     // Now author the subgraph's output contract.
     sub.nodeStore
@@ -102,9 +108,13 @@ describe('call subgraph contract sync', () => {
 
     const before = getNode(caller, 'call1');
     // A position-only change to the subgraph must not churn the call node.
-    sub.nodeStore.getState().setNodes((prev: Node[]) =>
-      prev.map((n) => (n.id === 'out' ? { ...n, position: { x: 50, y: 50 } } : n))
-    );
+    sub.nodeStore
+      .getState()
+      .setNodes((prev: Node[]) =>
+        prev.map((n) =>
+          n.id === 'out' ? { ...n, position: { x: 50, y: 50 } } : n
+        )
+      );
     const after = getNode(caller, 'call1');
 
     // Same object identity ⇒ the call node was not rewritten.
@@ -131,6 +141,8 @@ describe('call subgraph contract sync', () => {
       ]);
 
     // No sync after dispose ⇒ contract not propagated.
-    expect(getNode(caller, 'call1').data.configuration.outputs ?? []).toEqual([]);
+    expect(getNode(caller, 'call1').data.configuration.outputs ?? []).toEqual(
+      []
+    );
   });
 });

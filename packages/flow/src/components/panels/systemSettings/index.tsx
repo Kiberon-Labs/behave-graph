@@ -9,10 +9,7 @@ import {
 } from '@vscode-elements/react-elements';
 import { Undo } from 'iconoir-react';
 import { useSystem } from '@/system/provider';
-import type {
-  SettingDescriptor,
-  SettingsValues
-} from '@/store/settingsSchema';
+import type { SettingDescriptor, SettingsValues } from '@/store/settingsSchema';
 import styles from './styles.module.css';
 import { BasePanel } from '../base';
 import { SectionTitle } from '../common/SectionTitle';
@@ -76,7 +73,9 @@ const SettingControl = ({ descriptor, value, setValue }: RowProps) => {
       );
     case 'custom': {
       const Render = descriptor.render;
-      return <Render value={value} setValue={setValue} descriptor={descriptor} />;
+      return (
+        <Render value={value} setValue={setValue} descriptor={descriptor} />
+      );
     }
   }
 };
@@ -109,8 +108,7 @@ const Label = ({
 /** A single auto-generated setting row. Booleans put the control inline with the
  *  label (toggle layout); other types stack the control under the label. */
 const SettingRow = ({ descriptor, value, setValue }: RowProps) => {
-  const modified =
-    descriptor.type !== 'custom' && value !== descriptor.default;
+  const modified = descriptor.type !== 'custom' && value !== descriptor.default;
   const reset = () => setValue(descriptor.default);
 
   if (descriptor.type === 'custom') {
@@ -122,7 +120,11 @@ const SettingRow = ({ descriptor, value, setValue }: RowProps) => {
         {descriptor.description && (
           <span className={styles.description}>{descriptor.description}</span>
         )}
-        <SettingControl descriptor={descriptor} value={value} setValue={setValue} />
+        <SettingControl
+          descriptor={descriptor}
+          value={value}
+          setValue={setValue}
+        />
       </div>
     );
   }
@@ -130,7 +132,11 @@ const SettingRow = ({ descriptor, value, setValue }: RowProps) => {
   if (descriptor.type === 'boolean') {
     return (
       <div className={`${styles.setting} ${styles.toggle}`}>
-        <SettingControl descriptor={descriptor} value={value} setValue={setValue} />
+        <SettingControl
+          descriptor={descriptor}
+          value={value}
+          setValue={setValue}
+        />
         <div className={styles.body}>
           <Label descriptor={descriptor} modified={modified} />
           {descriptor.description && (
@@ -151,7 +157,11 @@ const SettingRow = ({ descriptor, value, setValue }: RowProps) => {
       {descriptor.description && (
         <span className={styles.description}>{descriptor.description}</span>
       )}
-      <SettingControl descriptor={descriptor} value={value} setValue={setValue} />
+      <SettingControl
+        descriptor={descriptor}
+        value={value}
+        setValue={setValue}
+      />
     </div>
   );
 };
@@ -219,7 +229,10 @@ export const Settings = () => {
                 <Fragment key={descriptor.key}>
                   <SettingRow
                     descriptor={descriptor}
-                    value={values[descriptor.key]}
+                    // Fall back to the descriptor default so plugin-registered
+                    // settings (whose value is not seeded into the settings
+                    // store until first changed) show their real initial state.
+                    value={values[descriptor.key] ?? descriptor.default}
                     setValue={(next) => values.setSetting(descriptor.key, next)}
                   />
                   {/* The conversions editor is a bespoke built-in control shown

@@ -1,20 +1,9 @@
-.collapserContainer {
-    height: 0;
-    overflow: hidden;
-}
-
-.collapserContent {
-    position: relative;
-    padding: var(--component-spacing-xs);
-    padding-bottom: var(--component-spacing-md);
-}
-
 .nodeWrapper {
     position: relative;
     box-shadow: var(--shadows-contextMenu);
     border-radius: var(--component-radii-md);
     background: var(--color-neutral-canvas-default-bg);
-    border: 2px solid var(--color-neutral-stroke-subtle);
+    border: 1px solid var(--color-neutral-stroke-subtle);
     flex: 1;
     display: flex;
 }
@@ -57,10 +46,6 @@
     }
 }
 
-.nodeContent {
-    flex: 1;
-}
-
 .icons {
     display: flex;
 }
@@ -100,14 +85,3 @@
     color: var(--color-neutral-canvas-minimal-fg-subtle);
 }
 
-.descriptionIcon {
-    display: flex;
-    align-items: center;
-    color: var(--ds-fg-muted);
-    opacity: 0.7;
-    cursor: help;
-}
-
-.descriptionIcon:hover {
-    opacity: 1;
-}

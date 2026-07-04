@@ -24,7 +24,12 @@ const sceneViewerPluginLoader = (
       closable: true,
       title: '3D Scene Viewer',
       group: 'default',
-      content: () => <SceneViewerPanel scene={scene} />
+      content: () =>
+        scene ? (
+          <SceneViewerPanel scene={scene} />
+        ) : (
+          <div style={{ padding: 8 }}>No scene provided to the viewer.</div>
+        )
     };
   });
 

@@ -191,7 +191,9 @@ export class Engine {
           fiberCompletedListener,
           node
         );
-        this.onNodeCommit.emit({ node, socket: outputFlowSocketName });
+        if (this.onNodeCommit.listenerCount > 0) {
+          this.onNodeCommit.emit({ node, socket: outputFlowSocketName });
+        }
 
         this.fiberQueue.push(fiber);
       }
@@ -206,23 +208,39 @@ export class Engine {
     limitInSeconds = 100,
     limitInSteps = 100000000
   ): Promise<number> {
+    if (limitInSeconds <= 0 || limitInSteps <= 0) {
+      return 0;
+    }
     const startDateTime = Date.now();
-    let elapsedSeconds = 0;
+    const limitInMs = limitInSeconds * 1000;
     let elapsedSteps = 0;
-    while (
-      elapsedSteps < limitInSteps &&
-      elapsedSeconds < limitInSeconds &&
-      this.fiberQueue.length > 0
-    ) {
+    // Date.now() per step is measurable at millions of steps/sec, so the time
+    // limit is checked every TIME_CHECK_INTERVAL sync steps (and immediately
+    // after any async step, since those dominate their own cost anyway).
+    const TIME_CHECK_INTERVAL = 128;
+    let stepsUntilTimeCheck = TIME_CHECK_INTERVAL;
+    while (elapsedSteps < limitInSteps && this.fiberQueue.length > 0) {
       //Safe assertion as we know the queue length is >0
       const currentFiber = this.fiberQueue[0]!;
       const startingFiberExecutionSteps = currentFiber.executionSteps;
-      await currentFiber.executeStep();
+      // executeStep only returns a promise when the step actually performed
+      // async work; skipping the await on the sync path avoids a microtask
+      // per step, which dominates throughput on large graphs.
+      const stepResult = currentFiber.executeStep();
+      if (stepResult !== undefined) {
+        await stepResult;
+        stepsUntilTimeCheck = 0;
+      }
       elapsedSteps += currentFiber.executionSteps - startingFiberExecutionSteps;
       if (currentFiber.isCompleted()) {
         this.fiberQueue.shift();
       }
-      elapsedSeconds = (Date.now() - startDateTime) * 0.001;
+      if (--stepsUntilTimeCheck <= 0) {
+        stepsUntilTimeCheck = TIME_CHECK_INTERVAL;
+        if (Date.now() - startDateTime >= limitInMs) {
+          break;
+        }
+      }
     }
     this.executionSteps += elapsedSteps;
 

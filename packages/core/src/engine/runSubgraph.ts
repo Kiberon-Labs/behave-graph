@@ -64,52 +64,23 @@ export async function runSubgraph({
   }
 
   const outputs: Record<string, any> = {};
-  let returned = false;
-  let signalReturn: () => void = () => {};
-  const returnSignal = new Promise<void>((resolve) => {
-    signalReturn = resolve;
-  });
-  const run: ISubgraphRun = {
-    getInput: (name) => inputs[name],
-    setOutput: (name, value) => {
-      // Ignore writes after the first return (a loop hitting output again).
-      if (!returned) outputs[name] = value;
-    },
-    done: () => {
-      if (!returned) {
-        returned = true;
-        signalReturn();
-      }
-    }
-  };
+  const collector = createRunCollector(inputs, outputs);
 
   // The stack the child engine's nested calls see (this graph is now running).
   const childStack = graphId !== undefined ? [...stack, graphId] : [...stack];
 
-  const guardedApi: IGraphApi | undefined = resolveGraph
-    ? {
-        getGraph: (id) => resolveGraph(id),
-        runGraph: (id, childInputs) => {
-          const childGraph = resolveGraph(id);
-          if (!childGraph) return Promise.resolve({});
-          return runSubgraph({
-            graphJson: childGraph,
-            registry,
-            inputs: childInputs,
-            resolveGraph,
-            graphId: id,
-            stack: childStack,
-            maxDepth
-          });
-        }
-      }
-    : undefined;
+  const guardedApi = createGuardedApi({
+    registry,
+    resolveGraph,
+    childStack,
+    maxDepth
+  });
 
   const childRegistry: IRegistry = {
     ...registry,
     dependencies: {
       ...registry.dependencies,
-      ISubgraphRun: run,
+      ISubgraphRun: collector.run,
       ...(guardedApi ? { IGraphApi: guardedApi } : {})
     }
   };
@@ -133,11 +104,79 @@ export async function runSubgraph({
     // like a function: it returns once, at the output boundary, rather than
     // running every loop iteration to completion.
     const execution = engine.executeAllAsync().catch(() => {});
-    await Promise.race([returnSignal, execution]);
+    await Promise.race([collector.returnSignal, execution]);
   } finally {
     // Stop any remaining work (e.g. the rest of a loop after the return).
     engine.dispose();
   }
 
   return outputs;
+}
+
+/** The per-run output collector plus the promise that resolves on first return. */
+type RunCollector = {
+  run: ISubgraphRun;
+  returnSignal: Promise<void>;
+};
+
+// Build the `ISubgraphRun` the child engine writes through. It records outputs
+// until the first `done()` (the subgraph's "return"), then ignores further
+// writes so a loop hitting the output boundary again cannot clobber the result.
+function createRunCollector(
+  inputs: Record<string, any>,
+  outputs: Record<string, any>
+): RunCollector {
+  let returned = false;
+  let signalReturn: () => void = () => {};
+  const returnSignal = new Promise<void>((resolve) => {
+    signalReturn = resolve;
+  });
+  const run: ISubgraphRun = {
+    getInput: (name) => inputs[name],
+    setOutput: (name, value) => {
+      // Ignore writes after the first return (a loop hitting output again).
+      if (!returned) outputs[name] = value;
+    },
+    done: () => {
+      if (!returned) {
+        returned = true;
+        signalReturn();
+      }
+    }
+  };
+  return { run, returnSignal };
+}
+
+// Build the cycle/depth-guarded `IGraphApi` a child engine uses to run nested
+// subgraphs. Returns undefined when no resolver is available (nested calls are
+// then impossible). `childStack` already includes the current graph, so any
+// nested run inherits it for cycle detection.
+function createGuardedApi({
+  registry,
+  resolveGraph,
+  childStack,
+  maxDepth
+}: {
+  registry: IRegistry;
+  resolveGraph: ResolveGraph | undefined;
+  childStack: string[];
+  maxDepth: number;
+}): IGraphApi | undefined {
+  if (!resolveGraph) return undefined;
+  return {
+    getGraph: (id) => resolveGraph(id),
+    runGraph: (id, childInputs) => {
+      const childGraph = resolveGraph(id);
+      if (!childGraph) return Promise.resolve({});
+      return runSubgraph({
+        graphJson: childGraph,
+        registry,
+        inputs: childInputs,
+        resolveGraph,
+        graphId: id,
+        stack: childStack,
+        maxDepth
+      });
+    }
+  };
 }

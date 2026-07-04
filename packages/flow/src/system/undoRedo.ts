@@ -27,7 +27,7 @@ export type UndoStore = {
   }) => void;
 };
 
-export const undoStoreFactory = () =>
+const undoStoreFactory = () =>
   create<UndoStore>((set) => ({
     canUndo: false,
     canRedo: false,

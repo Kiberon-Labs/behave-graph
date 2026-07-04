@@ -1,4 +1,7 @@
-import { makeEventNodeDefinition, NodeCategory } from '@kiberon-labs/behave-graph';
+import {
+  makeEventNodeDefinition,
+  NodeCategory
+} from '@kiberon-labs/behave-graph';
 import type { ChatMessage, ConversationHandle } from '../abstractions/types.js';
 
 type State = {

@@ -2,6 +2,7 @@ import {
   GraphProvider,
   System,
   SystemProvider,
+  kitchenSinkPlugin,
   localGraphRunnerPlugin
 } from '@kiberon-labs/behave-graph-flow';
 import {
@@ -38,7 +39,7 @@ const OPENROUTER_HEADERS = {
 };
 
 /** A free OpenRouter model , no spend, good for verifying the UI end to end. */
-const FREE_MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
+const FREE_MODEL = 'openai/gpt-oss-120b';
 
 /** Poll `predicate` until it's true or the timeout elapses. */
 async function waitUntil(
@@ -99,6 +100,7 @@ export function makeAiStory(
   );
 
   void (async () => {
+    await system.registerPlugin(kitchenSinkPlugin);
     await system.registerPlugin(localGraphRunnerPlugin, {
       registry: executionRegistry,
       tickStrategy: async () => {

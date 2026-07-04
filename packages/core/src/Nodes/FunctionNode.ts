@@ -14,6 +14,7 @@ import {
 } from './NodeDefinitions.js';
 import { type IFunctionNode, type INode, NodeType } from './NodeInstance.js';
 import { readInputFromSockets, writeOutputsToSocket } from './NodeSockets.js';
+import { isThenable } from '../utils/isThenable.js';
 import type { NodeCategoryType } from './Registry/NodeCategory.js';
 import { NodeDescription } from './Registry/NodeDescription.js';
 import { makeCommonProps } from './nodeFactory.js';
@@ -87,6 +88,13 @@ export class FunctionNodeInstance<
   implements IFunctionNode
 {
   private execInner: TFunctionNodeDef['exec'];
+  // exec params are identical between calls for the same target node, so the
+  // object (and its read/write closures) is allocated once and reused. This
+  // is a hot path: function nodes re-execute for every value resolution.
+  private _execParams:
+    | (Parameters<TFunctionNodeDef['exec']>[0] & { node: INode })
+    | undefined;
+
   constructor(
     nodeProps: Omit<INode, 'nodeType'> & Pick<TFunctionNodeDef, 'exec'>
   ) {
@@ -95,21 +103,28 @@ export class FunctionNodeInstance<
     this.execInner = nodeProps.exec;
   }
 
-  exec = async (node: INode) => {
-    await this.execInner({
-      read: (name) =>
-        readInputFromSockets(node.inputs, name, node.description.typeName),
-      write: (name, value) =>
-        writeOutputsToSocket(
-          node.outputs,
-          name,
-          value,
-          node.description.typeName
-        ),
-      node,
-      configuration: this.configuration,
-      graph: this.graph
-    });
+  // Not declared async: returns the inner exec's result directly so callers
+  // can stay synchronous when the node's exec is synchronous.
+  exec = (node: INode): void | Promise<void> => {
+    let params = this._execParams;
+    if (params === undefined || params.node !== node) {
+      params = {
+        read: (name: string) =>
+          readInputFromSockets(node.inputs, name, node.description.typeName),
+        write: (name: string, value: any) =>
+          writeOutputsToSocket(
+            node.outputs,
+            name,
+            value,
+            node.description.typeName
+          ),
+        node,
+        configuration: this.configuration,
+        graph: this.graph
+      } as typeof this._execParams;
+      this._execParams = params;
+    }
+    return this.execInner(params!) as void | Promise<void>;
   };
 }
 
@@ -179,22 +194,53 @@ export function makeInNOutFunctionDesc({
   const outList = typeof out === 'string' ? [out] : out;
   const outputSockets = makeSocketsList(outList, outputKeyFunc);
 
+  const singleResult =
+    outputSockets.length === 1 && outputSockets[0]!.key === 'result';
+
+  const writeResults = (
+    write: (key: string, value: any) => void,
+    results: any
+  ) => {
+    if (singleResult) {
+      write('result', results);
+    } else {
+      for (const { key } of outputSockets) {
+        write(key, results[key]);
+      }
+    }
+  };
+
   const definition = makeFunctionNodeDefinition({
     typeName: rest.name,
     label: rest.label,
     in: () => inputSockets,
     out: () => outputSockets,
     category,
-    exec: async ({ read, write }) => {
-      const args = inputSockets.map(({ key }) => read(key));
-      const results = await exec(...args);
-      if (outputSockets.length === 1 && outputSockets[0]!.key === 'result') {
-        write('result', results);
-      } else {
-        outputSockets.forEach(({ key }) => {
-          write(key, results[key]);
-        });
+    // Not declared async: most math/logic execs are synchronous, and keeping
+    // this wrapper synchronous avoids a promise allocation per evaluation.
+    // The common 1- and 2-input arities skip the argument-array allocation.
+    exec: ({ read, write }) => {
+      let results;
+      switch (inputSockets.length) {
+        case 0:
+          results = exec();
+          break;
+        case 1:
+          results = exec(read(inputSockets[0]!.key));
+          break;
+        case 2:
+          results = exec(
+            read(inputSockets[0]!.key),
+            read(inputSockets[1]!.key)
+          );
+          break;
+        default:
+          results = exec(...inputSockets.map(({ key }) => read(key)));
       }
+      if (isThenable(results)) {
+        return results.then((resolved) => writeResults(write, resolved));
+      }
+      writeResults(write, results);
     }
   });
 

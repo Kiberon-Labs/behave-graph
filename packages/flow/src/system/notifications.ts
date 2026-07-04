@@ -3,7 +3,6 @@ import type { Renderable, Toast } from 'react-hot-toast';
 
 export type NotificationType = 'info' | 'success' | 'error' | 'loading';
 
-
 export interface NotificationData {
   type: NotificationType;
   message: string;

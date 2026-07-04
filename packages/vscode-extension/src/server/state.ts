@@ -33,10 +33,6 @@ export class ServerState {
     return client;
   }
 
-  removeClient(clientId: string): void {
-    this.clients.delete(clientId);
-  }
-
   getClient(clientId: string): ClientConnection | undefined {
     return this.clients.get(clientId);
   }

@@ -126,15 +126,15 @@ export class BehaveGraphMcpServer {
             .optional()
             .describe(
               'Free-text search string. Matches against tool ' +
-              'name, title, description, category, and tags.'
+                'name, title, description, category, and tags.'
             ),
           category: z
             .string()
             .optional()
             .describe(
               'Filter by category (e.g. "inspection", ' +
-              '"authoring", "variables", "events", ' +
-              '"editor", "execution").'
+                '"authoring", "variables", "events", ' +
+                '"editor", "execution").'
             )
         }
       },
@@ -168,10 +168,10 @@ export class BehaveGraphMcpServer {
           tags: d.tags ?? [],
           parameters: d.inputSchema
             ? Object.entries(d.inputSchema).map(([pName, pSchema]) => ({
-              name: pName,
-              type: pSchema.type ?? 'unknown',
-              description: pSchema.description ?? null
-            }))
+                name: pName,
+                type: pSchema.type ?? 'unknown',
+                description: pSchema.description ?? null
+              }))
             : []
         }));
 

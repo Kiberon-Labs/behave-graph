@@ -21,6 +21,17 @@ import { EventEmitter } from '@kiberon-labs/behave-graph';
 import type { IScene } from '@/Abstractions/IScene';
 import type { ChoiceJSON } from '@kiberon-labs/behave-graph';
 
+// Copies whichever of x/y/z are present on the incoming value onto a target
+// Vector3/Euler-like object, leaving unspecified axes untouched.
+function assignVectorComponents(
+  target: { x: number; y: number; z: number },
+  value: any
+): void {
+  for (const axis of ['x', 'y', 'z'] as const) {
+    if (value[axis] !== undefined) target[axis] = value[axis];
+  }
+}
+
 export class DemoScene implements IScene {
   public readonly scene: Scene;
   public readonly onSceneChanged = new EventEmitter<void>();
@@ -143,19 +154,13 @@ export class DemoScene implements IScene {
 
     switch (propertyName) {
       case 'position':
-        if (value.x !== undefined) obj.position.x = value.x;
-        if (value.y !== undefined) obj.position.y = value.y;
-        if (value.z !== undefined) obj.position.z = value.z;
+        assignVectorComponents(obj.position, value);
         break;
       case 'rotation':
-        if (value.x !== undefined) obj.rotation.x = value.x;
-        if (value.y !== undefined) obj.rotation.y = value.y;
-        if (value.z !== undefined) obj.rotation.z = value.z;
+        assignVectorComponents(obj.rotation, value);
         break;
       case 'scale':
-        if (value.x !== undefined) obj.scale.x = value.x;
-        if (value.y !== undefined) obj.scale.y = value.y;
-        if (value.z !== undefined) obj.scale.z = value.z;
+        assignVectorComponents(obj.scale, value);
         break;
       case 'visible':
         obj.visible = Boolean(value);

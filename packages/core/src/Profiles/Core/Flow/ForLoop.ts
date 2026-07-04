@@ -20,7 +20,9 @@ export const ForLoop = makeFlowNodeDefinition({
   // as a number to stay JSON-serializable.
   initialState: { nextIndex: null as number | null },
   triggered: ({ read, write, commit, state }) => {
-    const endIndex = read<bigint>('endIndex');
+    // compare in the number domain; converting the bound once per trigger
+    // avoids two BigInt allocations per iteration on the hot path
+    const endIndex = Number(read<bigint>('endIndex'));
 
     // a fresh run starts at startIndex; a rehydrated run resumes mid-loop
     if (state.nextIndex === null) {
@@ -29,12 +31,10 @@ export const ForLoop = makeFlowNodeDefinition({
 
     const loopBodyIteration = () => {
       const i = state.nextIndex;
-      if (i !== null && BigInt(i) < endIndex) {
+      if (i !== null && i < endIndex) {
         write('index', BigInt(i));
         state.nextIndex = i + 1;
-        commit('loopBody', () => {
-          loopBodyIteration();
-        });
+        commit('loopBody', loopBodyIteration);
       } else {
         state.nextIndex = null;
         commit('completed');

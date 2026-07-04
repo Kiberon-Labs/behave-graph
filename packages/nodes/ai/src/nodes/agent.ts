@@ -1,4 +1,7 @@
-import { makePureInOutFunctionDesc, NodeCategory } from '@kiberon-labs/behave-graph';
+import {
+  makePureInOutFunctionDesc,
+  NodeCategory
+} from '@kiberon-labs/behave-graph';
 import type {
   AgentSpec,
   ProviderConfig,

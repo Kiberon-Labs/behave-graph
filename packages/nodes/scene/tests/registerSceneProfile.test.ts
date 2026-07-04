@@ -1,10 +1,13 @@
 import {
   validateValueRegistry,
   registerCoreProfile,
+  DefaultLogger,
+  ManualLifecycleEventEmitter,
   type IRegistry
 } from '@kiberon-labs/behave-graph';
 
 import { registerSceneProfile } from '../src/registerSceneProfile.js';
+import { DummyScene } from '../src/Abstractions/Drivers/DummyScene.js';
 import { describe, test, expect } from 'vitest';
 
 describe('scene profile', () => {
@@ -12,7 +15,9 @@ describe('scene profile', () => {
     nodes: {},
     values: {},
     dependencies: {
-      IScene: null
+      ILogger: new DefaultLogger(),
+      ILifecycleEventEmitter: new ManualLifecycleEventEmitter(),
+      IScene: new DummyScene()
     }
   };
   registry = registerCoreProfile(registry);

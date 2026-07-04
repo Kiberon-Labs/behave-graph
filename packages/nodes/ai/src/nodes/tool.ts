@@ -1,4 +1,7 @@
-import { makePureInOutFunctionDesc, NodeCategory } from '@kiberon-labs/behave-graph';
+import {
+  makePureInOutFunctionDesc,
+  NodeCategory
+} from '@kiberon-labs/behave-graph';
 import type { ToolParameterSchema, ToolSpec } from '../abstractions/types.js';
 
 function parseParameters(raw: string): ToolParameterSchema {

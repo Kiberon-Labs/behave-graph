@@ -411,6 +411,7 @@ export function initializeGraphWorker(options: GraphWorkerOptions): void {
     }
 
     run.status = 'stopped';
+    run.flushTracing?.();
     run.engine.dispose();
     activeRuns.delete(message.runId);
 
@@ -570,6 +571,7 @@ export function initializeGraphWorker(options: GraphWorkerOptions): void {
     }
 
     run.status = 'stopped';
+    run.flushTracing?.();
     run.engine.dispose();
     activeRuns.delete(message.runId);
 

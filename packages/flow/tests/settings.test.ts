@@ -63,7 +63,9 @@ describe('plugin-contributed settings (schema registry)', () => {
 
     expect(sys.getSetting('myPlugin.apiUrl')).toBe('https://example.com');
     expect(
-      sys.settingsSchema.getState().settings.some((s) => s.key === 'myPlugin.apiUrl')
+      sys.settingsSchema
+        .getState()
+        .settings.some((s) => s.key === 'myPlugin.apiUrl')
     ).toBe(true);
     expect(sys.settingsSchema.getState().sectionOrder).toContain('My Plugin');
   });

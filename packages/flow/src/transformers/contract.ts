@@ -21,8 +21,7 @@ export type GraphContract = {
 };
 
 /** Stable identity of a param , its id, falling back to name for legacy data. */
-export const paramId = (param: ContractParam): string =>
-  param.id ?? param.name;
+export const paramId = (param: ContractParam): string => param.id ?? param.name;
 
 const readParams = (node: Node): ContractParam[] => {
   const params = (node.data as any)?.configuration?.parameters;
@@ -64,9 +63,7 @@ export const deriveContract = (nodes: Node[]): GraphContract => {
  * , the form stored in a Call Subgraph node's configuration. The socket `key`
  * is the stable param id; its `label` is the display name.
  */
-export const contractToParams = (
-  sockets: GraphSocketJSON[]
-): ContractParam[] =>
+export const contractToParams = (sockets: GraphSocketJSON[]): ContractParam[] =>
   sockets.map((s) => ({
     id: s.key,
     name: s.label ?? s.key,

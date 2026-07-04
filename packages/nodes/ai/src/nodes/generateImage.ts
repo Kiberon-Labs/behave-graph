@@ -1,4 +1,7 @@
-import { makePureInOutFunctionDesc, NodeCategory } from '@kiberon-labs/behave-graph';
+import {
+  makePureInOutFunctionDesc,
+  NodeCategory
+} from '@kiberon-labs/behave-graph';
 import { generateImage } from 'ai';
 import type { ProviderConfig } from '../abstractions/types.js';
 import { createImageModel } from '../providers/index.js';

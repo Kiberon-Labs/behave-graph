@@ -8,8 +8,20 @@ import {
 } from '../src/util/autoConvert.js';
 
 const specs = [
-  { type: 'src', label: '', category: '', inputs: [], outputs: [{ name: 'out', valueType: 'integer' }] },
-  { type: 'dst', label: '', category: '', inputs: [{ name: 'in', valueType: 'string' }], outputs: [] },
+  {
+    type: 'src',
+    label: '',
+    category: '',
+    inputs: [],
+    outputs: [{ name: 'out', valueType: 'integer' }]
+  },
+  {
+    type: 'dst',
+    label: '',
+    category: '',
+    inputs: [{ name: 'in', valueType: 'string' }],
+    outputs: []
+  },
   {
     type: 'math/toString/integer',
     label: 'To String',
@@ -70,7 +82,9 @@ describe('resolveConverter (configurable rules)', () => {
   ] as unknown as NodeSpecJSON[];
 
   it('prefers a registered custom rule over the spec heuristic', () => {
-    const rules = [{ from: 'integer', to: 'string', nodeType: 'custom/intToStr' }];
+    const rules = [
+      { from: 'integer', to: 'string', nodeType: 'custom/intToStr' }
+    ];
     expect(resolveConverter(customSpecs, 'integer', 'string', rules)).toEqual({
       nodeType: 'custom/intToStr',
       inputName: 'x',
@@ -119,9 +133,9 @@ describe('resolveConverter (configurable rules)', () => {
 
   it('resolves a multi-port converter by type when keys are omitted', () => {
     const rules = [{ from: 'integer', to: 'string', nodeType: 'multi' }];
-    expect(resolveConverter(multiPortSpecs, 'integer', 'string', rules)).toEqual(
-      { nodeType: 'multi', inputName: 'n', outputName: 'text' }
-    );
+    expect(
+      resolveConverter(multiPortSpecs, 'integer', 'string', rules)
+    ).toEqual({ nodeType: 'multi', inputName: 'n', outputName: 'text' });
   });
 
   it('honours explicit keys to pick a specific port among several of a type', () => {
@@ -206,8 +220,16 @@ describe('buildConverterInsertion', () => {
     // Converter emits both a boolean and a string; from→to is integer→string,
     // so the splice must use the `string` output (`text`), not the first output.
     const multiOutSpecs = [
-      { type: 'src', inputs: [], outputs: [{ name: 'out', valueType: 'integer' }] },
-      { type: 'dst', inputs: [{ name: 'in', valueType: 'string' }], outputs: [] },
+      {
+        type: 'src',
+        inputs: [],
+        outputs: [{ name: 'out', valueType: 'integer' }]
+      },
+      {
+        type: 'dst',
+        inputs: [{ name: 'in', valueType: 'string' }],
+        outputs: []
+      },
       {
         type: 'multiOut',
         inputs: [{ name: 'a', valueType: 'integer' }],
@@ -231,8 +253,16 @@ describe('buildConverterInsertion', () => {
 
   it('honours an explicit outputKey to pin a specific output port', () => {
     const twoStrOutSpecs = [
-      { type: 'src', inputs: [], outputs: [{ name: 'out', valueType: 'integer' }] },
-      { type: 'dst', inputs: [{ name: 'in', valueType: 'string' }], outputs: [] },
+      {
+        type: 'src',
+        inputs: [],
+        outputs: [{ name: 'out', valueType: 'integer' }]
+      },
+      {
+        type: 'dst',
+        inputs: [{ name: 'in', valueType: 'string' }],
+        outputs: []
+      },
       {
         type: 'twoOut',
         inputs: [{ name: 'a', valueType: 'integer' }],
@@ -261,8 +291,16 @@ describe('buildConverterInsertion', () => {
 
   it('returns null for same-type connections', () => {
     const sameSpecs = [
-      { type: 'src', inputs: [], outputs: [{ name: 'out', valueType: 'integer' }] },
-      { type: 'dstI', inputs: [{ name: 'in', valueType: 'integer' }], outputs: [] }
+      {
+        type: 'src',
+        inputs: [],
+        outputs: [{ name: 'out', valueType: 'integer' }]
+      },
+      {
+        type: 'dstI',
+        inputs: [{ name: 'in', valueType: 'integer' }],
+        outputs: []
+      }
     ] as unknown as NodeSpecJSON[];
     const ns = [node('s', 'src', 0), node('t', 'dstI', 100)];
     expect(
@@ -272,8 +310,16 @@ describe('buildConverterInsertion', () => {
 
   it('returns null when no converter is available', () => {
     const noConv = [
-      { type: 'src', inputs: [], outputs: [{ name: 'out', valueType: 'integer' }] },
-      { type: 'dstB', inputs: [{ name: 'in', valueType: 'boolean' }], outputs: [] }
+      {
+        type: 'src',
+        inputs: [],
+        outputs: [{ name: 'out', valueType: 'integer' }]
+      },
+      {
+        type: 'dstB',
+        inputs: [{ name: 'in', valueType: 'boolean' }],
+        outputs: []
+      }
     ] as unknown as NodeSpecJSON[];
     const ns = [node('s', 'src', 0), node('t', 'dstB', 100)];
     expect(

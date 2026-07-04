@@ -87,3 +87,12 @@ export const webWorkerGraphRunnerStoreFactory =
       setStepDelay: (delay) => set({ stepDelay: delay }),
       setExecutionSpeed: (speed) => set({ executionSpeed: speed })
     }));
+
+declare module '@/system/system' {
+  interface System {
+    /**
+     * Web Worker Graph Runner store
+     */
+    webWorkerGraphRunnerStore: StoreApi<WebWorkerGraphRunnerStore>;
+  }
+}

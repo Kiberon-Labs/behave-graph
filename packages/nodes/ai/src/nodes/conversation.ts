@@ -1,4 +1,7 @@
-import { makePureInOutFunctionDesc, NodeCategory } from '@kiberon-labs/behave-graph';
+import {
+  makePureInOutFunctionDesc,
+  NodeCategory
+} from '@kiberon-labs/behave-graph';
 import {
   DEFAULT_CONVERSATION_ID,
   type ConversationHandle

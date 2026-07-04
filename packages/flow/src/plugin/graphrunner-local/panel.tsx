@@ -178,8 +178,8 @@ export const LocalGraphRunnerPanel = () => {
           (default 50ms). Lower values = faster ticks.
         </li>
         <li>
-          <strong>Pause/Step:</strong> Use the toolbar buttons to pause execution
-          and step through one node at a time.
+          <strong>Pause/Step:</strong> Use the toolbar buttons to pause
+          execution and step through one node at a time.
         </li>
       </ul>
     </BasePanel>

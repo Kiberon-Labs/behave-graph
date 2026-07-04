@@ -4,61 +4,129 @@
     {
       "id": "start",
       "type": "lifecycle/onStart",
-      "metadata": { "positionX": "-260", "positionY": "320" },
-      "flows": { "flow": { "nodeId": "setup", "socket": "flow" } }
+      "metadata": {
+        "positionX": "-260",
+        "positionY": "320"
+      },
+      "flows": {
+        "flow": {
+          "nodeId": "setup",
+          "socket": "flow"
+        }
+      }
     },
     {
       "id": "provider",
       "type": "ai/provider",
-      "metadata": { "positionX": "-260", "positionY": "0" },
-      "parameters": { "kind": { "value": "openrouter" } }
+      "metadata": {
+        "positionX": "-260",
+        "positionY": "0"
+      },
+      "parameters": {
+        "kind": {
+          "value": "openrouter"
+        }
+      }
     },
     {
       "id": "agent",
       "type": "ai/agent",
-      "metadata": { "positionX": "60", "positionY": "40" },
+      "metadata": {
+        "positionX": "60",
+        "positionY": "40"
+      },
       "parameters": {
-        "provider": { "link": { "nodeId": "provider", "socket": "provider" } },
-        "model": { "value": "meta-llama/llama-3.3-70b-instruct:free" },
-        "systemPrompt": { "value": "You are concise." }
+        "provider": {
+          "link": {
+            "nodeId": "provider",
+            "socket": "provider"
+          }
+        },
+        "model": {
+          "value": "openai/gpt-oss-120b"
+        },
+        "systemPrompt": {
+          "value": "You are concise."
+        }
       }
     },
     {
       "id": "setup",
       "type": "ai/setupConversation",
-      "metadata": { "positionX": "360", "positionY": "200" },
-      "flows": { "flow": { "nodeId": "fork", "socket": "flow" } },
+      "metadata": {
+        "positionX": "360",
+        "positionY": "200"
+      },
+      "flows": {
+        "flow": {
+          "nodeId": "fork",
+          "socket": "flow"
+        }
+      },
       "parameters": {
-        "agent": { "link": { "nodeId": "agent", "socket": "agent" } }
+        "agent": {
+          "link": {
+            "nodeId": "agent",
+            "socket": "agent"
+          }
+        }
       }
     },
     {
       "id": "conversation",
       "type": "ai/conversation",
-      "metadata": { "positionX": "360", "positionY": "440" },
-      "parameters": { "id": { "value": "" } }
+      "metadata": {
+        "positionX": "360",
+        "positionY": "440"
+      },
+      "parameters": {
+        "id": {
+          "value": ""
+        }
+      }
     },
     {
       "id": "fork",
       "type": "ai/forkConversation",
-      "metadata": { "positionX": "680", "positionY": "260" },
-      "flows": { "flow": { "nodeId": "send", "socket": "flow" } },
+      "metadata": {
+        "positionX": "680",
+        "positionY": "260"
+      },
+      "flows": {
+        "flow": {
+          "nodeId": "send",
+          "socket": "flow"
+        }
+      },
       "parameters": {
         "conversation": {
-          "link": { "nodeId": "conversation", "socket": "conversation" }
+          "link": {
+            "nodeId": "conversation",
+            "socket": "conversation"
+          }
         }
       }
     },
     {
       "id": "send",
       "type": "ai/sendMessage",
-      "metadata": { "positionX": "1000", "positionY": "260" },
+      "metadata": {
+        "positionX": "1000",
+        "positionY": "260"
+      },
       "parameters": {
-        "role": { "value": "user" },
+        "role": {
+          "value": "user"
+        },
         "content": {
           "value": "Explain quantum computing in one sentence."
         },
-        "conversation": { "link": { "nodeId": "fork", "socket": "forked" } }
+        "conversation": {
+          "link": {
+            "nodeId": "fork",
+            "socket": "forked"
+          }
+        }
       }
     }
   ],

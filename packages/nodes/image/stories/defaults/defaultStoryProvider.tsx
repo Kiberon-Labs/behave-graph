@@ -1,7 +1,8 @@
 import {
   GraphProvider,
   System,
-  SystemProvider
+  SystemProvider,
+  kitchenSinkPlugin
 } from '@kiberon-labs/behave-graph-flow';
 import {
   registerCoreProfile,
@@ -25,7 +26,10 @@ const nodeRegistry = {
 const defaultSys = new System(nodeRegistry);
 const defaultSession = defaultSys.createSession('graph');
 
-defaultSys.registerPlugin(imagePlugin).then(() => {
+Promise.all([
+  defaultSys.registerPlugin(kitchenSinkPlugin),
+  defaultSys.registerPlugin(imagePlugin)
+]).then(() => {
   defaultSys.tabStore.getState().setLayout({
     dockbox: {
       mode: 'vertical',
@@ -132,7 +136,7 @@ defaultSys.registerPlugin(imagePlugin).then(() => {
         parameters: {
           url: {
             value:
-              'https://imgs.search.brave.com/k4E2998A3YKELJpQWpw_L4cMhvNDhN-3Oz0PHzDGD50/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS1waG90/by9hYnN0cmFjdC13/aXRjaC1maWd1cmUt/Y29sb3JmdWwtd2hp/cmx3aW5kLW1hZ2lj/XzExNjYxMDktMTIw/MTkuanBnP3NlbXQ9/YWlzX2h5YnJpZCZ3/PTc0MCZxPTgw'
+              'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=480&q=80&fm=jpg'
           }
         }
       },
@@ -171,7 +175,7 @@ defaultSys.registerPlugin(imagePlugin).then(() => {
         parameters: {
           url: {
             value:
-              'https://imgs.search.brave.com/FkZm-FNVegayeANp2Uap0X6aPGGfEQAxZ9lHdSIZc64/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/cGl4YWJheS5jb20v/cGhvdG8vMjAyNC8w/MS8xMS8xMy81Mi9h/aS1nZW5lcmF0ZWQt/ODUwMTcxMl82NDAu/cG5n'
+              'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=480&q=80&fm=jpg'
           }
         }
       },
@@ -204,7 +208,7 @@ defaultSys.registerPlugin(imagePlugin).then(() => {
         parameters: {
           url: {
             value:
-              'https://imgs.search.brave.com/mI_NsYVxXMJMCA1C0jPMzGZlVkHK5R7DYtv45OE83nM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNzAv/NDM3LzU1MC9zbWFs/bC92aWJyYW50LWNv/bG9yLXNwbGFzaC1h/YnN0cmFjdC1wYWlu/dC1leHBsb3Npb25n/cmFwaHktcGhvdG8u/anBn'
+              'https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=480&q=80&fm=jpg'
           }
         }
       },

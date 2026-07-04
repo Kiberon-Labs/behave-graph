@@ -1,6 +1,6 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { FC } from 'react';
-import { EDGE_TYPE, LAYOUT_TYPE } from './settings';
+import { EDGE_TYPE } from './settings';
 
 /**
  * Schema-driven settings.
@@ -102,15 +102,6 @@ export const DEFAULT_SETTINGS: SettingDescriptor[] = [
     description: 'Select the type of edge to use in the graph editor.'
   },
   {
-    key: 'layoutType',
-    section: 'Layout',
-    type: 'enum',
-    default: LAYOUT_TYPE.dagre,
-    options: toOptions(Object.values(LAYOUT_TYPE)),
-    title: 'Layout Type',
-    description: 'Select the type of layout engine to use in the graph editor.'
-  },
-  {
     key: 'inlineTypes',
     section: 'Accessibility',
     type: 'boolean',
@@ -202,7 +193,8 @@ export const settingsSchemaStoreFactory = (
     const settings: SettingDescriptor[] = [];
     const sectionOrder: string[] = [];
     for (const descriptor of initial) {
-      if (settings.some((existing) => existing.key === descriptor.key)) continue;
+      if (settings.some((existing) => existing.key === descriptor.key))
+        continue;
       settings.push(descriptor);
       if (!sectionOrder.includes(descriptor.section)) {
         sectionOrder.push(descriptor.section);

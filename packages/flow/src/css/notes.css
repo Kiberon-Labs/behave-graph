@@ -1,0 +1,135 @@
+/*
+ * Markdown note nodes (notes plugin). Global classes rather than a CSS module:
+ * the note component is lazy-loaded, and the bundler emits a lazy chunk's CSS
+ * module into a separate dist asset that hosts never load — only the entry CSS
+ * (dist/index.css) ships. Rich-text content styling comes from the shared
+ * .ProseMirror rules in prosemirror.css.
+ */
+
+.notes-node-root {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-width: 160px;
+    min-height: 80px;
+}
+
+.notes-node {
+    display: flex;
+    flex-direction: column;
+    background: var(--ds-editor-bg);
+    color: var(--ds-editor-fg);
+    border: 1px solid var(--ds-blockquote-border);
+    border-radius: 2px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.notes-node__header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    background: var(--colors-bgSurface);
+    border-bottom: 1px solid var(--ds-border-subtle);
+    color: var(--ds-fg);
+    cursor: grab;
+    user-select: none;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.notes-node__grip {
+    opacity: 0.6;
+}
+
+.notes-node__editor {
+    flex: 1;
+    padding: 4px 10px;
+    cursor: text;
+    overflow: auto;
+    color: var(--ds-editor-fg);
+}
+
+.notes-node__editor .ProseMirror {
+    outline: none;
+    min-height: 100%;
+    caret-color: var(--ds-editor-fg);
+}
+
+.notes-node__editor .ProseMirror blockquote {
+    border-left: 3px solid var(--ds-blockquote-border);
+    padding-left: 1em;
+    margin: 0.5em 0;
+    font-style: italic;
+}
+
+/* Embedded videos (tiptap youtube extension) scale to the note width. */
+.notes-node__editor .ProseMirror div[data-youtube-video] {
+    margin: 0.5em 0;
+}
+
+.notes-node__editor .ProseMirror div[data-youtube-video] iframe {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    border-radius: 3px;
+}
+
+.notes-toolbar {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--ds-widget-bg);
+    border: 1px solid var(--ds-border-subtle);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    z-index: 1000;
+    animation: notes-toolbar-fade-in 0.15s ease;
+    pointer-events: auto;
+}
+
+.notes-toolbar__row {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.notes-toolbar__embed {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.notes-toolbar__embed vscode-textfield {
+    flex: 1;
+    min-width: 220px;
+}
+
+@keyframes notes-toolbar-fade-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.notes-toolbar__separator {
+    width: 1px;
+    height: 20px;
+    background: var(--ds-border-subtle);
+    margin: 0 4px;
+}

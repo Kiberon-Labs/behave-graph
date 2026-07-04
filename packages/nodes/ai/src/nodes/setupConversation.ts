@@ -1,4 +1,7 @@
-import { makeFlowNodeDefinition, NodeCategory } from '@kiberon-labs/behave-graph';
+import {
+  makeFlowNodeDefinition,
+  NodeCategory
+} from '@kiberon-labs/behave-graph';
 import type { AgentSpec, ConversationHandle } from '../abstractions/types.js';
 
 /**

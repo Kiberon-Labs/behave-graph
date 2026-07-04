@@ -1,0 +1,77 @@
+name: Publish VS Code Extension
+
+# Dual-publishes the packaged VSIX to the VS Code Marketplace and Open VSX.
+# Runs automatically from release.yml when changesets tags a new version of
+# the behave-graph extension package, or manually via workflow_dispatch
+# (e.g. for the first publish or to backfill a registry).
+#
+# Required repository secrets:
+#   VSCE_PAT - Azure DevOps PAT with Marketplace > Manage scope
+#   OVSX_PAT - open-vsx.org access token
+# See packages/vscode-extension/PUBLISHING.md for one-time setup.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  publish:
+    name: Publish to VS Code Marketplace and Open VSX
+    if: github.repository == 'kiberon-labs/behave-graph'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm i
+
+      - name: Build extension and workspace dependencies
+        run: pnpm turbo build --filter=behave-graph
+
+      - name: Package VSIX
+        working-directory: packages/vscode-extension
+        run: pnpm run package
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: behave-graph-vsix
+          path: packages/vscode-extension/behave-graph.vsix
+
+      # The two registries are published independently so an outage or auth
+      # failure on one does not block the other. --skip-duplicate makes
+      # re-runs safe: an already-published version is a no-op, not an error.
+      - name: Publish to VS Code Marketplace
+        id: vs-marketplace
+        continue-on-error: true
+        working-directory: packages/vscode-extension
+        run: pnpm run publish:vs-marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Publish to Open VSX
+        id: open-vsx
+        continue-on-error: true
+        working-directory: packages/vscode-extension
+        run: pnpm run publish:open-vsx
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+
+      - name: Report publish results
+        if: steps.vs-marketplace.outcome == 'failure' || steps.open-vsx.outcome == 'failure'
+        run: |
+          echo "VS Code Marketplace: ${{ steps.vs-marketplace.outcome }}"
+          echo "Open VSX: ${{ steps.open-vsx.outcome }}"
+          echo "::error::One or more registry publishes failed. Re-run this workflow after fixing; already-published registries are skipped via --skip-duplicate."
+          exit 1

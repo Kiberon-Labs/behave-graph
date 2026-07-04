@@ -1,0 +1,103 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--component-spacing-xs) var(--component-spacing-sm);
+}
+
+.empty {
+  padding: var(--component-spacing-md);
+  opacity: 0.6;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.branch {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Nested branches hang off a guide line under their parent. */
+.children {
+  display: flex;
+  flex-direction: column;
+  margin-left: 9px;
+  padding-left: 8px;
+  border-left: 1px solid var(--ds-border-subtle, var(--ds-panel-border));
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 6px;
+  margin: 1px 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.9em;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row:hover {
+  background: var(--ds-list-hover-bg);
+}
+
+.focused,
+.focused:hover {
+  background: var(--ds-list-active-bg);
+  color: var(--ds-list-active-fg);
+  border-color: var(--ds-focus-border);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model {
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8em;
+  color: var(--ds-fg-muted);
+}
+
+.focused .model {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.count {
+  flex-shrink: 0;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--ds-badge-bg);
+  color: var(--ds-badge-fg);
+  font-size: 0.75em;
+  line-height: 16px;
+  text-align: center;
+}

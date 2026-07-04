@@ -75,7 +75,8 @@ function displayValue(
 ): string {
   let serialized: unknown = value;
   try {
-    serialized = registry.values[valueTypeName]?.serialize(value as never) ?? value;
+    serialized =
+      registry.values[valueTypeName]?.serialize(value as never) ?? value;
   } catch {
     /* fall back to the raw value */
   }
@@ -115,6 +116,134 @@ async function editSingle(
     : coerce(registry, def.valueTypeName, raw.trim());
 }
 
+type RunFormItem = vscode.QuickPickItem & {
+  action?: 'run' | 'json' | 'output' | 'browse';
+  def?: GraphInputDef;
+};
+
+/** Seed each input with its declared default, or the value type's zero value. */
+function seedInputValues(
+  defs: GraphInputDef[],
+  registry: IRegistry
+): Record<string, unknown> {
+  const values: Record<string, unknown> = {};
+  for (const def of defs) {
+    values[def.name] =
+      def.defaultValue !== undefined
+        ? coerce(registry, def.valueTypeName, def.defaultValue)
+        : registry.values[def.valueTypeName]?.creator?.();
+  }
+  return values;
+}
+
+/** Build the QuickPick items for the run form: a Run action, one row per input,
+ *  the output-path controls, and (when there are inputs) a JSON bulk-edit. */
+function buildRunFormItems(
+  defs: GraphInputDef[],
+  registry: IRegistry,
+  values: Record<string, unknown>,
+  outputPath: string
+): RunFormItem[] {
+  const items: RunFormItem[] = [
+    {
+      label: '$(play) Run',
+      description: 'execute and save to the output path below',
+      action: 'run'
+    }
+  ];
+  if (defs.length) {
+    items.push({ label: 'Inputs', kind: vscode.QuickPickItemKind.Separator });
+    for (const def of defs) {
+      items.push({
+        label: `$(symbol-parameter) ${def.name}`,
+        description: def.valueTypeName,
+        detail: `= ${displayValue(registry, def.valueTypeName, values[def.name])}`,
+        def
+      });
+    }
+  }
+  items.push({ label: 'Output', kind: vscode.QuickPickItemKind.Separator });
+  items.push({
+    label: '$(save) Output file',
+    detail: outputPath,
+    action: 'output'
+  });
+  items.push({
+    label: '$(folder) Browse…',
+    description: 'pick a location with a dialog',
+    action: 'browse'
+  });
+  if (defs.length) {
+    items.push({ label: '', kind: vscode.QuickPickItemKind.Separator });
+    items.push({ label: '$(json) Enter all inputs as JSON…', action: 'json' });
+  }
+  return items;
+}
+
+/** Prompt for a new output path via an input box; returns the trimmed path or
+ *  the existing one if cancelled/empty. */
+async function promptOutputPath(current: string): Promise<string> {
+  const raw = await vscode.window.showInputBox({
+    title: 'Output file',
+    prompt: 'Path to write the run output to',
+    value: current,
+    ignoreFocusOut: true,
+    validateInput: (v) => (v.trim() ? undefined : 'Enter a path')
+  });
+  return raw ? raw.trim() : current;
+}
+
+/** Prompt for an output path via a native save dialog; returns the picked path
+ *  or the existing one if cancelled. */
+async function browseOutputPath(current: string): Promise<string> {
+  const picked = await vscode.window.showSaveDialog({
+    defaultUri: vscode.Uri.file(current),
+    title: 'Save graph run output',
+    saveLabel: 'Use This Path',
+    filters: { JSON: ['json'], 'All Files': ['*'] }
+  });
+  return picked ? picked.fsPath : current;
+}
+
+/** Bulk-edit every input as one JSON object; mutates `values` in place. */
+async function editInputsAsJson(
+  defs: GraphInputDef[],
+  registry: IRegistry,
+  values: Record<string, unknown>
+): Promise<void> {
+  const serialized: Record<string, unknown> = {};
+  for (const def of defs) {
+    try {
+      serialized[def.name] =
+        registry.values[def.valueTypeName]?.serialize(
+          values[def.name] as never
+        ) ?? values[def.name];
+    } catch {
+      serialized[def.name] = values[def.name];
+    }
+  }
+  const raw = await vscode.window.showInputBox({
+    title: 'All inputs as JSON',
+    prompt: 'Edit every input value as one JSON object',
+    value: JSON.stringify(serialized),
+    ignoreFocusOut: true,
+    validateInput: (v) => {
+      try {
+        JSON.parse(v);
+        return undefined;
+      } catch {
+        return 'Invalid JSON';
+      }
+    }
+  });
+  if (raw === undefined) return;
+  const obj = JSON.parse(raw) as Record<string, unknown>;
+  for (const def of defs) {
+    if (def.name in obj)
+      values[def.name] = coerce(registry, def.valueTypeName, obj[def.name]);
+  }
+}
+
 /**
  * Collect all input values through a single QuickPick "form": every input is
  * shown at once with its current (default-filled) value, so the user can hit
@@ -128,56 +257,11 @@ async function promptRunForm(
 ): Promise<
   { inputs: Record<string, unknown>; outputPath: string } | undefined
 > {
-  // Seed each input with its declared default, or the value type's zero value.
-  const values: Record<string, unknown> = {};
-  for (const def of defs) {
-    values[def.name] =
-      def.defaultValue !== undefined
-        ? coerce(registry, def.valueTypeName, def.defaultValue)
-        : registry.values[def.valueTypeName]?.creator?.();
-  }
+  const values = seedInputValues(defs, registry);
   let outputPath = defaultOutputPath;
 
-  type Item = vscode.QuickPickItem & {
-    action?: 'run' | 'json' | 'output' | 'browse';
-    def?: GraphInputDef;
-  };
-
   for (;;) {
-    const items: Item[] = [
-      {
-        label: '$(play) Run',
-        description: 'execute and save to the output path below',
-        action: 'run'
-      }
-    ];
-    if (defs.length) {
-      items.push({ label: 'Inputs', kind: vscode.QuickPickItemKind.Separator });
-      for (const def of defs) {
-        items.push({
-          label: `$(symbol-parameter) ${def.name}`,
-          description: def.valueTypeName,
-          detail: `= ${displayValue(registry, def.valueTypeName, values[def.name])}`,
-          def
-        });
-      }
-    }
-    items.push({ label: 'Output', kind: vscode.QuickPickItemKind.Separator });
-    items.push({
-      label: '$(save) Output file',
-      detail: outputPath,
-      action: 'output'
-    });
-    items.push({
-      label: '$(folder) Browse…',
-      description: 'pick a location with a dialog',
-      action: 'browse'
-    });
-    if (defs.length) {
-      items.push({ label: '', kind: vscode.QuickPickItemKind.Separator });
-      items.push({ label: '$(json) Enter all inputs as JSON…', action: 'json' });
-    }
-
+    const items = buildRunFormItems(defs, registry, values, outputPath);
     const pick = await vscode.window.showQuickPick(items, {
       title: 'Run graph',
       placeHolder: 'Run to execute, or pick a field to change it'
@@ -185,69 +269,19 @@ async function promptRunForm(
     if (!pick) return undefined; // cancelled the whole run
 
     if (pick.action === 'run') return { inputs: values, outputPath };
-
-    if (pick.action === 'output') {
-      const raw = await vscode.window.showInputBox({
-        title: 'Output file',
-        prompt: 'Path to write the run output to',
-        value: outputPath,
-        ignoreFocusOut: true,
-        validateInput: (v) => (v.trim() ? undefined : 'Enter a path')
-      });
-      if (raw) outputPath = raw.trim();
-      continue;
-    }
-
-    if (pick.action === 'browse') {
-      const picked = await vscode.window.showSaveDialog({
-        defaultUri: vscode.Uri.file(outputPath),
-        title: 'Save graph run output',
-        saveLabel: 'Use This Path',
-        filters: { JSON: ['json'], 'All Files': ['*'] }
-      });
-      if (picked) outputPath = picked.fsPath;
-      continue;
-    }
-
-    if (pick.action === 'json') {
-      const serialized: Record<string, unknown> = {};
-      for (const def of defs) {
-        try {
-          serialized[def.name] =
-            registry.values[def.valueTypeName]?.serialize(
-              values[def.name] as never
-            ) ?? values[def.name];
-        } catch {
-          serialized[def.name] = values[def.name];
-        }
-      }
-      const raw = await vscode.window.showInputBox({
-        title: 'All inputs as JSON',
-        prompt: 'Edit every input value as one JSON object',
-        value: JSON.stringify(serialized),
-        ignoreFocusOut: true,
-        validateInput: (v) => {
-          try {
-            JSON.parse(v);
-            return undefined;
-          } catch {
-            return 'Invalid JSON';
-          }
-        }
-      });
-      if (raw !== undefined) {
-        const obj = JSON.parse(raw) as Record<string, unknown>;
-        for (const def of defs) {
-          if (def.name in obj)
-            values[def.name] = coerce(registry, def.valueTypeName, obj[def.name]);
-        }
-      }
-      continue; // back to the form to review, then Run
-    }
-
-    // Edit one input, then return to the form.
-    if (pick.def) {
-      const edited = await editSingle(pick.def, values[pick.def.name], registry);
+    else if (pick.action === 'output')
+      outputPath = await promptOutputPath(outputPath);
+    else if (pick.action === 'browse')
+      outputPath = await browseOutputPath(outputPath);
+    else if (pick.action === 'json')
+      await editInputsAsJson(defs, registry, values);
+    else if (pick.def) {
+      // Edit one input, then return to the form.
+      const edited = await editSingle(
+        pick.def,
+        values[pick.def.name],
+        registry
+      );
       if (edited !== undefined) values[pick.def.name] = edited;
     }
   }
@@ -286,7 +320,9 @@ function resolvePreferredOutputDir(graphDir: string): string | undefined {
  * the outputs to a `<DATE>-<RUNID>.json` next to the graph.
  */
 export async function executeGraphFile(uri: vscode.Uri): Promise<void> {
-  const text = new TextDecoder().decode(await vscode.workspace.fs.readFile(uri));
+  const text = new TextDecoder().decode(
+    await vscode.workspace.fs.readFile(uri)
+  );
   let flow: any;
   try {
     flow = extractFlow(JSON.parse(text));
@@ -304,7 +340,17 @@ export async function executeGraphFile(uri: vscode.Uri): Promise<void> {
   }
 
   const logger = new CollectingLogger();
-  const registry = await loadGraphRegistry(path.dirname(uri.fsPath), logger);
+  let registry;
+  try {
+    registry = await loadGraphRegistry(path.dirname(uri.fsPath), logger);
+  } catch (err) {
+    // Most commonly a registry.ts that could not be transpiled/imported, or no
+    // workspace transpiler (esbuild/typescript) available to strip its types.
+    vscode.window.showErrorMessage(
+      `Failed to load graph registry: ${err instanceof Error ? err.message : String(err)}`
+    );
+    return;
+  }
 
   const registryErrors = validateRegistry(registry);
   if (registryErrors.length > 0) {

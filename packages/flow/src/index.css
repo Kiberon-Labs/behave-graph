@@ -8,6 +8,7 @@
 @import "./css/rc-dock.css";
 @import "./css/rc-menu.css";
 @import "./css/prosemirror.css";
+@import "./css/notes.css";
 
 *{
     box-sizing: border-box;

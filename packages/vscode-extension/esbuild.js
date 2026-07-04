@@ -37,10 +37,10 @@ async function main() {
     sourcesContent: false,
     platform: 'node',
     outfile: 'dist/extension.js',
-    // 'esbuild' is imported lazily at runtime to transpile `.ts` custom
-    // registries on demand; keep it external so its native binary is resolved
-    // from node_modules instead of being bundled.
-    external: ['vscode', 'esbuild'],
+    // 'esbuild'/'typescript' are resolved from the *workspace* at runtime (via
+    // capabilities/transpile.ts) to transpile `.ts` registries/plugins on
+    // demand; keep them external so they're never bundled into the extension.
+    external: ['vscode', 'esbuild', 'typescript'],
     logLevel: 'silent',
     plugins: [
       /* add to the end of plugins array */

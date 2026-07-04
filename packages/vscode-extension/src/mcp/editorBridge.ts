@@ -84,13 +84,6 @@ export class EditorBridge {
   }
 
   /**
-   * Returns true if there is at least one open editor.
-   */
-  public hasEditor(): boolean {
-    return this.editors.size > 0;
-  }
-
-  /**
    * Get the active editor's document URI, or null.
    */
   public getActiveEditorUri(): string | null {

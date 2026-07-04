@@ -19,6 +19,7 @@ import type {
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { transpileInWorkspace } from '../capabilities/transpile.js';
 import type { ServerConfig } from './config';
 import type { Session, GraphRun, ServerTransport } from './types';
 import { createDefaultConfig } from './config';
@@ -36,10 +37,7 @@ import {
  * `RealtimeEngine` instead of the default `Engine`. This is the extension's
  * surface for the engine's execution-strategy seam.
  */
-export type EngineFactory = (
-  graph: GraphInstance,
-  registry: IRegistry
-) => Engine;
+type EngineFactory = (graph: GraphInstance, registry: IRegistry) => Engine;
 
 /**
  * What a custom registry module can contribute to the runner: the registry
@@ -179,9 +177,10 @@ export class GraphRunnerServer {
    * Dynamically import a registry module, transpiling TypeScript on demand.
    *
    * The extension host's Node may not strip types from `.ts` files, so when a
-   * direct import of a `.ts` registry fails we transpile it with esbuild and
-   * import the emitted ESM from a sibling temp file (kept adjacent so that
-   * bare-specifier resolution against the project's `node_modules` still works).
+   * direct import of a `.ts` registry fails we transpile it with a compiler
+   * resolved from the workspace (esbuild or typescript) and import the emitted
+   * ESM from a sibling temp file (kept adjacent so that bare-specifier
+   * resolution against the project's `node_modules` still works).
    */
   private static async importRegistryModule(
     registryPath: string
@@ -205,14 +204,17 @@ export class GraphRunnerServer {
       console.log(
         `Direct import of ${registryPath} failed; transpiling TypeScript on demand`
       );
-      const esbuild = await import('esbuild');
       const source = fs.readFileSync(registryPath, 'utf8');
-      const { code } = await esbuild.transform(source, {
-        loader: 'ts',
-        format: 'esm',
-        target: 'es2021',
-        sourcefile: registryPath
-      });
+      const { code } = await transpileInWorkspace(
+        source,
+        {
+          loader: 'ts',
+          format: 'esm',
+          target: 'es2021',
+          sourcefile: registryPath
+        },
+        path.dirname(registryPath)
+      );
       const tmpPath = registryPath.replace(
         /\.ts$/,
         `.__compiled.${process.pid}.${Date.now()}.mjs`
@@ -257,8 +259,9 @@ export class GraphRunnerServer {
         await GraphRunnerServer.importRegistryModule(registryPath);
 
       // Check for named export 'registry' or default export
-      const registry = (registryModule.registry ??
-        registryModule.default) as IRegistry | undefined;
+      const registry = (registryModule.registry ?? registryModule.default) as
+        | IRegistry
+        | undefined;
 
       if (!registry) {
         throw new Error(
@@ -428,6 +431,7 @@ export class GraphRunnerServer {
 
     run.status = 'stopped';
     run.completedAt = Date.now();
+    run.flushTracing?.();
 
     // Clean up from all sessions
     this.state.sessions.forEach((session) => {
@@ -515,6 +519,10 @@ export class GraphRunnerServer {
         run.completedAt = Date.now();
         run.result = {};
 
+        // Deliver buffered trace events before `completed` , the client
+        // unregisters the run id on completion and would drop a late batch.
+        run.flushTracing?.();
+
         send(transport, {
           type: 'completed',
           runId: run.runId,
@@ -531,6 +539,7 @@ export class GraphRunnerServer {
       run.status = 'error';
       run.error = error;
       run.completedAt = Date.now();
+      run.flushTracing?.();
 
       sendError(transport, 'NODE_EXECUTION_ERROR', String(error), {
         runId: run.runId,
@@ -1002,14 +1011,55 @@ export class GraphRunnerServer {
         startedAt: run.startedAt
       });
 
-      // Set up tracing if enabled
+      // Set up tracing if enabled. Events are buffered and flushed as a single
+      // `traceBatch` message per ~frame , per-event messages meant one WebSocket
+      // frame per node execution, which dominated per-tick cost on fast graphs.
       if (message.options?.trace && this.config.enableTrace) {
-        engine.onNodeExecutionStart.addListener((node) => {
-          run.performance.nodesExecuted++;
+        const TRACE_FLUSH_INTERVAL_MS = 16;
+        const TRACE_FLUSH_MAX_EVENTS = 2048;
+        let traceBuffer: Array<{
+          nodeId: string;
+          event: string;
+          data?: unknown;
+          timestamp: number;
+        }> = [];
+        let traceFlushTimer: ReturnType<typeof setTimeout> | undefined;
+
+        const flushTraces = () => {
+          traceFlushTimer = undefined;
+          if (traceBuffer.length === 0) return;
+          const events = traceBuffer;
+          traceBuffer = [];
           send(transport, {
-            type: 'trace',
+            type: 'traceBatch',
             runId,
             graphId: message.graphId,
+            events
+          });
+        };
+
+        run.flushTracing = flushTraces;
+
+        const pushTrace = (event: {
+          nodeId: string;
+          event: string;
+          data?: unknown;
+          timestamp: number;
+        }) => {
+          traceBuffer.push(event);
+          if (traceBuffer.length >= TRACE_FLUSH_MAX_EVENTS) {
+            if (traceFlushTimer !== undefined) clearTimeout(traceFlushTimer);
+            flushTraces();
+            return;
+          }
+          if (traceFlushTimer === undefined) {
+            traceFlushTimer = setTimeout(flushTraces, TRACE_FLUSH_INTERVAL_MS);
+          }
+        };
+
+        engine.onNodeExecutionStart.addListener((node) => {
+          run.performance.nodesExecuted++;
+          pushTrace({
             nodeId: node.id,
             event: 'start',
             data: {},
@@ -1018,10 +1068,7 @@ export class GraphRunnerServer {
         });
 
         engine.onNodeExecutionEnd.addListener((node) => {
-          send(transport, {
-            type: 'trace',
-            runId,
-            graphId: message.graphId,
+          pushTrace({
             nodeId: node.id,
             event: 'end',
             data: {},

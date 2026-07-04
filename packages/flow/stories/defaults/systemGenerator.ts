@@ -1,11 +1,12 @@
 import { System } from '@/system/system';
+import { kitchenSinkPlugin } from '@/plugin/kitchen-sink';
 import {
   registerCoreProfile,
   writeNodeSpecsToJSON,
   type ValueType
 } from '@kiberon-labs/behave-graph';
 
-export const ColorValue: ValueType = {
+const ColorValue: ValueType = {
   name: 'color',
   creator: () => '#000000',
   deserialize: (value: string) => value,
@@ -35,5 +36,8 @@ const nodeRegistry = {
 export const systemGenerator = () => {
   const defaultSys = new System(nodeRegistry);
   defaultSys.createSession('graph');
+  // Standard editor UI bundle (docs, alignment, layout, notes) so stories built
+  // on this generator get the full editor without wiring plugins per story.
+  defaultSys.registerPlugin(kitchenSinkPlugin);
   return defaultSys;
 };

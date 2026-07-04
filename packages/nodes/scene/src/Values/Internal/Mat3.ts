@@ -5,10 +5,10 @@ import {
   toSafeString
 } from '@kiberon-labs/behave-graph';
 
-import { Mat4 } from './Mat4.js';
+import type { Mat4 } from './Mat4.js';
 import { Vec2 } from './Vec2.js';
 import { Vec3 } from './Vec3.js';
-import { Vec4 } from './Vec4.js';
+import type { Vec4 } from './Vec4.js';
 
 // uses OpenGL matrix layout where each column is specified subsequently in order from left to right.
 // ( x, y, 1 ) x [ 0  3  6 ] = ( x', y', 1 )

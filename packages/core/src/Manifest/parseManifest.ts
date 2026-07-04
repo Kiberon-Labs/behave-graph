@@ -37,7 +37,21 @@ export function parseManifest(input: unknown): ParseManifestResult {
     );
   }
 
-  const pkg = input.package;
+  validatePackage(input.package, errors);
+
+  validateValues(input.values, errors);
+  validateNodes(input.nodes, errors);
+  validateContributions(input.contributions, errors);
+  validateRequirements(input.requirements, errors);
+
+  validateOptionalFields(input, errors);
+
+  if (errors.length > 0) return { ok: false, errors };
+  // Shape validated above; the cast is sound at this point.
+  return { ok: true, manifest: input as unknown as ManifestJSON };
+}
+
+function validatePackage(pkg: unknown, errors: string[]): void {
   if (
     !isObject(pkg) ||
     typeof pkg.name !== 'string' ||
@@ -45,12 +59,14 @@ export function parseManifest(input: unknown): ParseManifestResult {
   ) {
     errors.push('package must be { name: string, version: string }');
   }
+}
 
-  validateValues(input.values, errors);
-  validateNodes(input.nodes, errors);
-  validateContributions(input.contributions, errors);
-  validateRequirements(input.requirements, errors);
-
+// The optional top-level scalars/collections: absent is fine, but a present
+// value must match its declared shape.
+function validateOptionalFields(
+  input: Record<string, unknown>,
+  errors: string[]
+): void {
   if (input.runtime !== undefined && typeof input.runtime !== 'string') {
     errors.push('runtime must be a string when present');
   }
@@ -66,10 +82,6 @@ export function parseManifest(input: unknown): ParseManifestResult {
   if (input.metadata !== undefined && !isObject(input.metadata)) {
     errors.push('metadata must be an object when present');
   }
-
-  if (errors.length > 0) return { ok: false, errors };
-  // Shape validated above; the cast is sound at this point.
-  return { ok: true, manifest: input as unknown as ManifestJSON };
 }
 
 function validateValues(values: unknown, errors: string[]): void {

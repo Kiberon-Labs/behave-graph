@@ -45,4 +45,5 @@ export const lerpValue = <TValue, TJson>(
   start: TValue,
   end: TValue,
   t: number
-): TValue => (valueType.lerp ? valueType.lerp(start, end, t) : t < 0.5 ? start : end);
+): TValue =>
+  valueType.lerp ? valueType.lerp(start, end, t) : t < 0.5 ? start : end;

@@ -15,7 +15,10 @@ export const GraphRunnerButtons = () => {
   const controller = session.runController;
   if (!controller) return null;
   return (
-    <Buttons controller={controller} connectionStore={session.editor.runner.store} />
+    <Buttons
+      controller={controller}
+      connectionStore={session.editor.runner.store}
+    />
   );
 };
 

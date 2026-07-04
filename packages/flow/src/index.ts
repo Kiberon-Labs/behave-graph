@@ -9,6 +9,10 @@ export * from './components/contextMenus/NodePicker.js';
 export * from './components/contextMenus/NodePicker.js';
 export * from './components/sockets/output/index.js';
 export * from './components/menubar/menuItem';
+// Presentational panel primitives, exported so plugin packages (e.g. the AI
+// nodes package's conversation panel) can author panels that match the editor.
+export * from './components/panels/base/index.js';
+export * from './components/primitives/icon.js';
 
 //================== Reusable hooks =================//
 export * from './hooks/useChangeNodeData.js';
@@ -57,6 +61,10 @@ export * from './types/graph';
 export * from './system/plugin';
 export * from './manifest/index.js';
 export * from './plugin/docs/index.js';
+export * from './plugin/alignment/index.js';
+export * from './plugin/layout/index.js';
+export * from './plugin/notes/index.js';
+export * from './plugin/kitchen-sink/index.js';
 export * from './plugin/graphrunner/index.js';
 export * from './plugin/graphrunner-local/index.js';
 export * from './plugin/graphrunner-webworker/index.js';

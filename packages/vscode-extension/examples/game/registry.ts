@@ -43,7 +43,10 @@ interface World {
 
 const WorldKey = defineCapability<World>('demo/world');
 
-const readCapability = <T>(graph: IGraph, key: CapabilityKey<T>): T | undefined =>
+const readCapability = <T>(
+  graph: IGraph,
+  key: CapabilityKey<T>
+): T | undefined =>
   (graph.getDependency as unknown as (id: string, suppress?: boolean) => T)(
     key.id,
     true
@@ -111,7 +114,5 @@ export const registry: IRegistry = registerCoreProfile({
 });
 
 /** Run this graph on RealtimeEngine instead of the default Engine. */
-export const createEngine = (
-  graph: GraphInstance,
-  reg: IRegistry
-): Engine => new RealtimeEngine(graph, reg);
+export const createEngine = (graph: GraphInstance, reg: IRegistry): Engine =>
+  new RealtimeEngine(graph, reg);

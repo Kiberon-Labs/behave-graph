@@ -301,7 +301,10 @@ export class GraphRunnerClient {
       graph: options?.graph as GraphJSON,
       inputs: options?.inputs,
       options: {
-        trace: options?.trace ?? true
+        // Default off , tracing is a debugging aid with a real per-node cost;
+        // callers opt in explicitly (the run controller passes the panel's
+        // "Enable execution tracing" preference).
+        trace: options?.trace ?? false
       }
     });
 

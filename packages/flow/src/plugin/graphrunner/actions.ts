@@ -2,15 +2,87 @@ import type { GraphSession } from '@/system/graphSession';
 import type { GraphRunnerClient } from './client';
 import type { GraphRunner } from './runner';
 import { executing } from '@/annotations';
-import { sleep } from '@/util/sleep';
 import { type ValueJSON } from '@kiberon-labs/behave-graph';
+import type { TraceBatchEvent } from './types';
 
-// Helper to clear executing state from all nodes of a session
-async function clearAllExecutingStates(session: GraphSession) {
-  await sleep(1); // Delay to allow any final traces to process
-  session.nodeStore.getState().setNodes((nodes) =>
-    nodes.map((node) => {
+/**
+ * Per-session batcher for the `executing` node annotation.
+ *
+ * Trace events arrive per node execution (start + end), which at display-rate
+ * ticking means hundreds of events per frame. Writing the annotation straight
+ * through did a full O(nodes) copy-map of the node array per event; instead,
+ * accumulate the net executing state here and apply it once per animation
+ * frame with a single identity-preserving setNodes pass.
+ */
+type ExecutingBatch = {
+  pending: Map<string, boolean>;
+  scheduled: boolean;
+};
+
+const executingBatches = new WeakMap<GraphSession, ExecutingBatch>();
+
+const scheduleFrame = (cb: () => void): void => {
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(cb);
+  } else {
+    setTimeout(cb, 16);
+  }
+};
+
+function flushExecutingState(session: GraphSession, batch: ExecutingBatch) {
+  batch.scheduled = false;
+  if (batch.pending.size === 0) return;
+  const updates = batch.pending;
+  batch.pending = new Map();
+
+  session.nodeStore.getState().setNodes((nodes) => {
+    let changed = false;
+    const next = nodes.map((node) => {
+      if (!('data' in node)) return node;
+      const target = updates.get(node.id);
+      if (target === undefined) return node;
+      if (Boolean(node.data.annotations?.[executing]) === target) return node;
+      changed = true;
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          annotations: {
+            ...node.data.annotations,
+            [executing]: target
+          }
+        }
+      };
+    });
+    // Keep the original array identity when nothing changed so selector-based
+    // subscribers (the React Flow canvas) skip the re-render entirely.
+    return changed ? next : nodes;
+  });
+}
+
+function markExecuting(session: GraphSession, nodeId: string, state: boolean) {
+  let batch = executingBatches.get(session);
+  if (!batch) {
+    batch = { pending: new Map(), scheduled: false };
+    executingBatches.set(session, batch);
+  }
+  batch.pending.set(nodeId, state);
+  if (!batch.scheduled) {
+    batch.scheduled = true;
+    scheduleFrame(() => flushExecutingState(session, batch));
+  }
+}
+
+// Clear executing state from all nodes of a session, dropping any queued
+// per-node updates so a pending flush can't re-highlight after the run ended.
+function clearAllExecutingStates(session: GraphSession) {
+  const batch = executingBatches.get(session);
+  if (batch) batch.pending.clear();
+  session.nodeStore.getState().setNodes((nodes) => {
+    let changed = false;
+    const next = nodes.map((node) => {
       if ('data' in node && node.data.annotations?.[executing]) {
+        changed = true;
         return {
           ...node,
           data: {
@@ -23,8 +95,42 @@ async function clearAllExecutingStates(session: GraphSession) {
         };
       }
       return node;
-    })
-  );
+    });
+    return changed ? next : nodes;
+  });
+}
+
+/** Apply one trace event to the session's trace spans + executing annotation. */
+function processTraceEvent(session: GraphSession, ev: TraceBatchEvent) {
+  const traceStore = session.traceStore.getState();
+  if (ev.event === 'start') {
+    let name = ev.nodeId;
+    if (ev.data && typeof ev.data === 'object' && 'typeName' in ev.data) {
+      const typeName = (ev.data as { typeName?: unknown }).typeName;
+      if (typeof typeName === 'string') {
+        name = typeName;
+      }
+    }
+    traceStore.addSpan({
+      nodeId: ev.nodeId,
+      name,
+      // `??` not `||`: the worker sends run-relative ms, so 0 is a valid (and
+      // common, for the first node) start , `||` fell back to the main thread's
+      // performance.now(), producing huge, wrong-clock timestamps.
+      start: ev.timestamp ?? performance.now(),
+      // Open span: NaN until the matching `end` event arrives. The store/render
+      // treat NaN as "still running"; a literal end let it render mis-sized.
+      end: Number.NaN
+      // lane omitted: let the store allocate/free lanes so concurrent spans
+      // stack instead of all piling into lane 0.
+    });
+    markExecuting(session, ev.nodeId, true);
+  } else if (ev.event === 'end') {
+    traceStore.updateSpan(ev.nodeId, {
+      end: ev.timestamp ?? performance.now()
+    });
+    markExecuting(session, ev.nodeId, false);
+  }
 }
 
 /**
@@ -53,80 +159,20 @@ export function setupClientEventListeners(
   const sessionFor = (runId: string): GraphSession | null =>
     runner.runIndex.get(runId)?.session ?? null;
 
-  // Listen for trace events
-  client.on('trace', async (message) => {
+  // Batched trace events (one message per flush window, many events inside).
+  client.on('traceBatch', (message) => {
     const session = sessionFor(message.runId);
     if (!session) return;
-    const traceStore = session.traceStore.getState();
-    if (message.event === 'start') {
-      let name = message.nodeId;
-      if (
-        message.data &&
-        typeof message.data === 'object' &&
-        'typeName' in message.data
-      ) {
-        const typeName = (message.data as { typeName?: unknown }).typeName;
-        if (typeof typeName === 'string') {
-          name = typeName;
-        }
-      }
-      traceStore.addSpan({
-        nodeId: message.nodeId,
-        name,
-        // `?? `not `||`: the worker sends run-relative ms, so 0 is a valid (and
-        // common, for the first node) start , `||` fell back to the main thread's
-        // performance.now(), producing huge, wrong-clock timestamps.
-        start: message.timestamp ?? performance.now(),
-        // Open span: NaN until the matching `end` event arrives. The store/render
-        // treat NaN as "still running"; a literal end let it render mis-sized.
-        end: Number.NaN
-        // lane omitted: let the store allocate/free lanes so concurrent spans
-        // stack instead of all piling into lane 0.
-      });
-
-      // Mark node as executing
-      session.nodeStore.getState().setNodes((nodes) =>
-        nodes.map((node) =>
-          node.id === message.nodeId && 'data' in node
-            ? {
-              ...node,
-              data: {
-                ...node.data,
-                annotations: {
-                  ...node.data.annotations,
-                  [executing]: true
-                }
-              }
-            }
-            : node
-        )
-      );
-    } else if (message.event === 'end') {
-      traceStore.updateSpan(message.nodeId, {
-        end: message.timestamp ?? performance.now()
-      });
-
-      //Delay to allow UI to show executing state
-      await sleep(1);
-
-      // Mark node as no longer executing
-      session.nodeStore.getState().setNodes((nodes) =>
-        nodes.map((node) =>
-          node.id === message.nodeId && 'data' in node
-            ? {
-              ...node,
-              data: {
-                ...node.data,
-                annotations: {
-                  ...node.data.annotations,
-                  [executing]: false
-                }
-              }
-            }
-            : node
-        )
-      );
+    for (const ev of message.events) {
+      processTraceEvent(session, ev);
     }
+  });
+
+  // Single trace events , kept for remote servers that predate `traceBatch`.
+  client.on('trace', (message) => {
+    const session = sessionFor(message.runId);
+    if (!session) return;
+    processTraceEvent(session, message);
   });
 
   // Listen for log messages
@@ -143,28 +189,49 @@ export function setupClientEventListeners(
     });
   });
 
-  // Listen for variable change events from server
+  // Listen for variable change events from server. A tick-driven graph writes
+  // variables every frame, so coalesce to the latest value per variable and
+  // apply once per animation frame instead of one store write per change.
+  const pendingVariableUpdates = new Map<GraphSession, Map<string, unknown>>();
+  let variableFlushScheduled = false;
+
+  const flushVariableUpdates = () => {
+    variableFlushScheduled = false;
+    for (const [session, updates] of pendingVariableUpdates) {
+      const variableStore = session.variableStore.getState();
+      for (const [id, newValue] of updates) {
+        const existingVariable = variableStore.variables[id];
+        if (existingVariable) {
+          variableStore.setVariable(id, {
+            ...existingVariable,
+            initialValue: newValue as ValueJSON
+          });
+        } else {
+          const inferredType = typeof newValue;
+          variableStore.setVariable(id, {
+            id,
+            name: id,
+            valueTypeName: inferredType === 'object' ? 'string' : inferredType,
+            initialValue: newValue as ValueJSON
+          });
+        }
+      }
+    }
+    pendingVariableUpdates.clear();
+  };
+
   client.on('variableChanged', (message) => {
     const session = sessionFor(message.runId);
     if (!session) return;
-    const variableStore = session.variableStore.getState();
-    const id = message.variableName;
-
-    const existingVariable = variableStore.variables[id];
-
-    if (existingVariable) {
-      variableStore.setVariable(id, {
-        ...existingVariable,
-        initialValue: message.newValue as ValueJSON
-      });
-    } else {
-      const inferredType = typeof message.newValue;
-      variableStore.setVariable(id, {
-        id,
-        name: message.variableName,
-        valueTypeName: inferredType === 'object' ? 'string' : inferredType,
-        initialValue: message.newValue as ValueJSON
-      });
+    let updates = pendingVariableUpdates.get(session);
+    if (!updates) {
+      updates = new Map();
+      pendingVariableUpdates.set(session, updates);
+    }
+    updates.set(message.variableName, message.newValue);
+    if (!variableFlushScheduled) {
+      variableFlushScheduled = true;
+      scheduleFrame(flushVariableUpdates);
     }
   });
 

@@ -4,7 +4,10 @@ import { nodes } from './nodes/index.js';
 import { values } from './values/index.js';
 import { ImageControl } from './components/controls/image/index.js';
 import { ImageOutputPanel } from './components/panels/output.js';
-import { imagePreviewSpecific } from './components/preview/index.js';
+import {
+  imageAlwaysPreviewSpecific,
+  imagePreviewSpecific
+} from './components/preview/index.js';
 import { plugin } from '@kiberon-labs/behave-graph-flow';
 import {
   DefaultLogger,
@@ -19,7 +22,10 @@ import {
 // contributions (`./ui.js#ImageControl`, etc.) without loading the whole plugin.
 export { ImageControl } from './components/controls/image/index.js';
 export { ImageOutputPanel } from './components/panels/output.js';
-export { imagePreviewSpecific } from './components/preview/index.js';
+export {
+  imagePreviewSpecific,
+  imageAlwaysPreviewSpecific
+} from './components/preview/index.js';
 
 /**
  * Tab loader for the Image Output panel. Exported as a manifest `panel`
@@ -91,6 +97,9 @@ export const imagePlugin = plugin<ImagePluginOptions | void>(
 
     sys.controlStore.getState().registerControl('image', ImageControl);
     sys.specificStore.getState().registerSpecific(imagePreviewSpecific);
+    // The dedicated `image/preview` node always shows its preview, even when the
+    // `image.showPreview` setting below is turned off.
+    sys.specificStore.getState().registerSpecific(imageAlwaysPreviewSpecific);
 
     // Contribute a setting so users can toggle the inline image previews on
     // image nodes from the Settings panel (auto-generated + persisted).

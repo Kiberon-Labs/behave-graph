@@ -1,4 +1,7 @@
-import { makeAsyncNodeDefinition, NodeCategory } from '@kiberon-labs/behave-graph';
+import {
+  makeAsyncNodeDefinition,
+  NodeCategory
+} from '@kiberon-labs/behave-graph';
 import type { ChatRole, ConversationHandle } from '../abstractions/types.js';
 
 /**

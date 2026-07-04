@@ -235,7 +235,7 @@ export function emitCompiledNodesSourceFile(args: {
   };
 }
 
-export function emitNodeClass(info: AnalyzedNodeFunction): ts.ClassDeclaration {
+function emitNodeClass(info: AnalyzedNodeFunction): ts.ClassDeclaration {
   const ctor = emitConstructor(info);
   const modifiers = info.isDefaultExport
     ? [
@@ -449,23 +449,21 @@ function castExpression(
   return ts.factory.createAsExpression(expr, typeNode);
 }
 
+/** True when the statement declares a type/interface/class/enum named
+ *  typeName. */
+function statementDeclaresType(stmt: ts.Statement, typeName: string): boolean {
+  if (ts.isTypeAliasDeclaration(stmt)) return stmt.name.text === typeName;
+  if (ts.isInterfaceDeclaration(stmt)) return stmt.name.text === typeName;
+  if (ts.isClassDeclaration(stmt)) return stmt.name?.text === typeName;
+  if (ts.isEnumDeclaration(stmt)) return stmt.name.text === typeName;
+  return false;
+}
+
 function isTypeDefinedInSourceFile(
   sourceFile: ts.SourceFile,
   typeName: string
 ): boolean {
-  for (const stmt of sourceFile.statements) {
-    if (ts.isTypeAliasDeclaration(stmt) && stmt.name.text === typeName) {
-      return true;
-    }
-    if (ts.isInterfaceDeclaration(stmt) && stmt.name.text === typeName) {
-      return true;
-    }
-    if (ts.isClassDeclaration(stmt) && stmt.name?.text === typeName) {
-      return true;
-    }
-    if (ts.isEnumDeclaration(stmt) && stmt.name.text === typeName) {
-      return true;
-    }
-  }
-  return false;
+  return sourceFile.statements.some((stmt) =>
+    statementDeclaresType(stmt, typeName)
+  );
 }

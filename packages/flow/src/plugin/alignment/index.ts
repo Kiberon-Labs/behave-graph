@@ -2,6 +2,7 @@ import { align, distribute, ALIGNMENT } from '@/components/panels/alignment';
 import type { GraphSession } from '@/system/graphSession';
 import type { Node } from 'reactflow';
 import { plugin } from '@/system/plugin';
+import type { System } from '@/system/system';
 import { pinned } from '@/annotations';
 
 const partitionSelectedNodes = (nodes: Node[]) => {
@@ -72,10 +73,19 @@ export const setupSessionActions = (session: GraphSession) => {
 };
 
 /**
- * Alignment behaviour is now wired per-graph from the GraphSession constructor
- * (see {@link setupSessionActions}), so this plugin is a no-op kept for
- * backwards compatibility.
+ * Adds node alignment + distribution to the editor. The behaviour is opt-in: it
+ * subscribes each graph's pubsub (via a session extension, so it covers graphs
+ * already open and any opened later) to the `alignment:align` /
+ * `alignment:distribute` events the FloatingToolbar and Alignment panel publish.
+ *
+ * Register it directly or via the kitchen-sink plugin. Without it those events
+ * have no subscriber and the alignment controls simply no-op.
  */
-export const alignmentPlugin = plugin(() => {}, {
-  name: 'alignment'
-});
+export const alignmentPlugin = plugin(
+  (system: System) => {
+    system.registerSessionExtension((session) => {
+      setupSessionActions(session);
+    });
+  },
+  { name: 'alignment' }
+);

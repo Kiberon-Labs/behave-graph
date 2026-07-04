@@ -14,7 +14,10 @@ export function useNodeInputsData(system: GraphSession) {
   const edges = useStore(system.edgeStore, (x) => x.edges);
   const controls = useStore(system.controlStore, (x) => x.controls);
   const defaultControl = useStore(system.controlStore, (x) => x.defaultControl);
-  const generators = useStore(system.editor.socketGeneratorStore, (s) => s.generators);
+  const generators = useStore(
+    system.editor.socketGeneratorStore,
+    (s) => s.generators
+  );
   const generatorLocation = useStore(
     system.editor.systemSettings,
     (s) => s.generatorLocation

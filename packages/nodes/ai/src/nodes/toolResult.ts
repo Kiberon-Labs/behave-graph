@@ -1,4 +1,7 @@
-import { makeFlowNodeDefinition, NodeCategory } from '@kiberon-labs/behave-graph';
+import {
+  makeFlowNodeDefinition,
+  NodeCategory
+} from '@kiberon-labs/behave-graph';
 
 /**
  * Answers a tool call requested by the model. Pair with `ai/onToolCall`: thread
@@ -20,7 +23,10 @@ export const ToolResult = makeFlowNodeDefinition({
   initialState: undefined,
   triggered: ({ read, commit, graph }) => {
     const conversation = graph.getDependency('IConversationService');
-    conversation?.provideToolResult(read<string>('callId'), read<string>('result'));
+    conversation?.provideToolResult(
+      read<string>('callId'),
+      read<string>('result')
+    );
     commit('flow');
   }
 });

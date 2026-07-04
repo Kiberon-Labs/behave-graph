@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { transpileInWorkspace } from './capabilities/transpile.js';
 
 /**
  * Candidate plugin filenames next to a graph, in resolution order. Compiled
@@ -51,14 +52,17 @@ export async function loadEditorPlugin(
       return { code: cached.code, sourcePath };
     }
 
-    // Transpile TypeScript/TSX → JS in the extension host (esbuild is bundled
-    // external and resolved from node_modules at runtime).
-    const esbuild = await import('esbuild');
-    const { code } = await esbuild.transform(fs.readFileSync(sourcePath, 'utf8'), {
-      loader: sourcePath.endsWith('.tsx') ? 'tsx' : 'ts',
-      target: 'es2021',
-      sourcefile: sourcePath
-    });
+    // Transpile TypeScript/TSX → JS with a compiler resolved from the user's
+    // workspace (esbuild or typescript), so the extension embeds neither.
+    const { code } = await transpileInWorkspace(
+      fs.readFileSync(sourcePath, 'utf8'),
+      {
+        loader: sourcePath.endsWith('.tsx') ? 'tsx' : 'ts',
+        target: 'es2021',
+        sourcefile: sourcePath
+      },
+      documentDir
+    );
     transpileCache.set(sourcePath, { mtimeMs, code });
     console.log(`Transpiled editor plugin from ${sourcePath}`);
     return { code, sourcePath };

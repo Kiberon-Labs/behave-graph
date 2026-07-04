@@ -184,6 +184,26 @@ export interface TraceMessage {
   timestamp: number;
 }
 
+/** A single node-execution event inside a {@link TraceBatchMessage}. */
+export interface TraceBatchEvent {
+  nodeId: string;
+  event: string;
+  data?: unknown;
+  timestamp: number;
+}
+
+/**
+ * Coalesced trace events for one run. Runners buffer per-node execution events
+ * and flush them roughly once per frame, so a tick that executes hundreds of
+ * nodes costs one message instead of hundreds.
+ */
+export interface TraceBatchMessage {
+  type: 'traceBatch';
+  runId: string;
+  graphId: string;
+  events: TraceBatchEvent[];
+}
+
 export interface LogMessage {
   type: 'log';
   runId: string;
@@ -289,6 +309,7 @@ export type ServerGraphRunnerMessage =
   | ValidationResultMessage
   // Events
   | TraceMessage
+  | TraceBatchMessage
   | LogMessage
   | VariableChangedMessage
   | CompletedMessage

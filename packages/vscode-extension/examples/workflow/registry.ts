@@ -42,7 +42,10 @@ const HttpClientKey = defineCapability<HttpClient>('demo/httpClient');
 const ResultSinkKey = defineCapability<ResultSink>('demo/resultSink');
 
 /** Node-side typed read of a capability; suppresses the not-found warning. */
-const readCapability = <T>(graph: IGraph, key: CapabilityKey<T>): T | undefined =>
+const readCapability = <T>(
+  graph: IGraph,
+  key: CapabilityKey<T>
+): T | undefined =>
   (graph.getDependency as unknown as (id: string, suppress?: boolean) => T)(
     key.id,
     true

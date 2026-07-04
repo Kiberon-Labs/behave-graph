@@ -19,7 +19,7 @@ export interface ServerConfig {
   customRegistryPath?: string;
 }
 
-export const defaultAuthProvider = async (
+const defaultAuthProvider = async (
   credentials: AuthCredentials
 ): Promise<{ valid: boolean; userId?: string }> => {
   // Default: accept all connections with 'none' auth type

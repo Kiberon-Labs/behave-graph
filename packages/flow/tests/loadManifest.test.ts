@@ -1,10 +1,17 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { ManifestJSON, PackageRequirement } from '@kiberon-labs/behave-graph';
+import type {
+  ManifestJSON,
+  PackageRequirement
+} from '@kiberon-labs/behave-graph';
 import { System } from '../src/system/system.js';
 import { loadManifest } from '../src/manifest/loadManifest.js';
 
 const Vec2Control = () => null;
-const conversionRule = { from: 'vec2', to: 'object', nodeType: 'convert/vec2ToObject' };
+const conversionRule = {
+  from: 'vec2',
+  to: 'object',
+  nodeType: 'convert/vec2ToObject'
+};
 
 const manifest: ManifestJSON = {
   manifestVersion: 1,
@@ -77,9 +84,7 @@ describe('loadManifest', () => {
 
     expect(system.controlStore.getState().controls['vec2']).toBe(Vec2Control);
     expect(
-      system.conversionStore
-        .getState()
-        .findConversion('vec2', 'object')
+      system.conversionStore.getState().findConversion('vec2', 'object')
     ).toEqual(conversionRule);
   });
 

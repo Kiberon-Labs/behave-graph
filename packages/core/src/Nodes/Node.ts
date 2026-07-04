@@ -36,24 +36,56 @@ export abstract class Node<TNodeType extends NodeType> implements INode {
   public id: string;
   public readonly configuration: NodeConfiguration;
 
+  // Cached state proxy plus the state service resolved at proxy-creation time.
+  // Refreshing the service once per createStateProxy call (i.e. per trigger)
+  // instead of on every property access keeps per-iteration cost low while
+  // still picking up a service registered between triggers.
+  private _stateProxy: any;
+  private _stateService: IStateService | undefined;
+  // Whether _state is owned by this instance (safe to mutate in place). The
+  // initial state object comes from the shared node definition, so it must be
+  // cloned before the first in-place write.
+  private _stateOwned = false;
+
   createStateProxy() {
+    this._stateService = this.graph.getDependency('IStateService', true);
+    if (this._stateProxy) return this._stateProxy;
+
     const handler = {
       get: (_: any, property: string) => {
-        // Get the current state
-        const currentState = this.getState();
-        return currentState[property];
+        const stateService = this._stateService;
+        if (stateService) {
+          const serviceState = stateService.getState(this.id);
+          // handle when state is undefined or null.  This can happen when a
+          // node is first created and has not yet been initialized
+          if (!serviceState) {
+            stateService.setState(this.id, this._state);
+            return this._state?.[property];
+          }
+          return serviceState[property];
+        }
+        return this._state?.[property];
       },
       set: (_: any, property: string, value: any) => {
-        // Set the new value in the state
-        this.setState((prevState) => ({
-          ...prevState,
-          [property]: value
-        }));
+        const stateService = this._stateService;
+        if (stateService) {
+          const prevState = stateService.getState(this.id);
+          stateService.setState(this.id, { ...prevState, [property]: value });
+          return true;
+        }
+        // fast path: mutate in place, cloning once so the shared definition
+        // initial state (or an externally provided object) is never mutated
+        if (!this._stateOwned) {
+          this._state = { ...this._state };
+          this._stateOwned = true;
+        }
+        this._state[property] = value;
         return true; // Indicate that the assignment was successful
       }
     };
 
-    return new Proxy({}, handler);
+    this._stateProxy = new Proxy({}, handler);
+    return this._stateProxy;
   }
 
   getState() {
@@ -87,6 +119,8 @@ export abstract class Node<TNodeType extends NodeType> implements INode {
       return;
     }
     this._state = typeof value === 'function' ? value(this._state) : value;
+    // the new state object came from outside; clone before the next in-place write
+    this._stateOwned = false;
   }
 
   constructor(node: Omit<INode, 'nodeType'> & { nodeType: TNodeType }) {

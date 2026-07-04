@@ -20,7 +20,9 @@ let executableGraphTracker: ExecutableGraphTracker | undefined;
 
 /** The executable-graph tracker, so the editor can eagerly re-evaluate the
  *  graph it is opening (un-greying Execute Graph without the full scan). */
-export function getExecutableGraphTracker(): ExecutableGraphTracker | undefined {
+export function getExecutableGraphTracker():
+  | ExecutableGraphTracker
+  | undefined {
   return executableGraphTracker;
 }
 
@@ -94,7 +96,7 @@ async function startMcp(
       console.error('[MCP] Failed to start HTTP transport:', err);
       vscode.window.showWarningMessage(
         `Behave Graph MCP HTTP server failed to start on port ${settings.httpPort}. ` +
-        `Is the port already in use?`
+          `Is the port already in use?`
       );
       httpTransport = undefined;
     }
@@ -176,11 +178,18 @@ export function activate(context: vscode.ExtensionContext) {
   // greyed out for graphs without an input/output contract.
   executableGraphTracker = new ExecutableGraphTracker(context);
 
-  // Warm up esbuild (used to transpile registry.ts / plugin.ts on demand) so the
-  // first graph that needs it doesn't pay the service cold-start latency.
-  void import('esbuild')
-    .then((es) => es.transform('', { loader: 'ts' }))
-    .catch(() => {});
+  // Warm up the workspace transpiler (esbuild/typescript, used to transpile
+  // registry.ts / plugin.ts on demand) so the first graph that needs it doesn't
+  // pay the resolve + cold-start latency. Resolved from the workspace, not
+  // bundled, so this is a no-op when the project ships no TS to transpile.
+  const warmupDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (warmupDir) {
+    void import('./capabilities/transpile.js')
+      .then(({ transpileInWorkspace }) =>
+        transpileInWorkspace('', { loader: 'ts' }, warmupDir)
+      )
+      .catch(() => {});
+  }
 
   /**
    * Execute a subgraph-style graph: prompt for inputs, run it, and write the
@@ -254,7 +263,7 @@ export function activate(context: vscode.ExtensionContext) {
           : 'VS Code provider: off';
         vscode.window.showInformationMessage(
           `MCP Server | ${httpStatus} | ${providerStatus} | ` +
-          `Editors: ${editorCount} | Active: ${activeUri ?? 'none'}`
+            `Editors: ${editorCount} | Active: ${activeUri ?? 'none'}`
         );
       }
     )

@@ -371,7 +371,9 @@ Get metadata about all available node types and their sockets.
 		"trace": true,
 		"eventFilter": { "variables": ["score", "health"], "events": ["onDeath"] },
 		"maxExecutionTimeMs": 30000,
-		// Whether the graph should complete with no more pending fibres
+		// Whether the run finalizes once no fibres are pending. Defaults to
+		// false: the run stays alive (servicing event-node subscriptions such
+		// as ai/onToolCall) until stopGraph.
 		"autoEnd":true
 	}
 }
@@ -543,6 +545,27 @@ Get metadata about all available node types and their sockets.
 	"nodeId": "node42",
 	"event": "activated",
 	"data": { "inputs": { ... }, "outputs": { ... } }
+}
+```
+
+#### Trace Batch Event
+Servers should prefer `traceBatch` over per-event `trace` messages: node
+execution produces two events per node (start and end), so a graph ticking at
+display rate emits hundreds of events per frame. Buffering them and flushing
+one batch per flush window (roughly one frame, ~16ms) keeps the message
+pipeline off the hot path. Clients accept both; single `trace` messages remain
+valid for servers that predate batching. Timestamps are run-relative
+milliseconds, stamped when the event occurred (not when the batch flushed).
+
+```json
+{
+	"type": "traceBatch",
+	"runId": "abc123",
+	"graphId": "main-graph-1",
+	"events": [
+		{ "nodeId": "node42", "event": "start", "data": { "typeName": "flow/branch" }, "timestamp": 1200 },
+		{ "nodeId": "node42", "event": "end", "data": { "typeName": "flow/branch" }, "timestamp": 1201 }
+	]
 }
 ```
 

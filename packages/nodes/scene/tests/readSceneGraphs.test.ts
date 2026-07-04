@@ -9,17 +9,24 @@ import {
   validateGraphLinks,
   registerCoreProfile,
   validateGraphAcyclic,
+  DefaultLogger,
+  ManualLifecycleEventEmitter,
   type IRegistry,
   type GraphInstance,
   type GraphJSON
 } from '@kiberon-labs/behave-graph';
 import { registerSceneProfile } from '@/registerSceneProfile.js';
+import { DummyScene } from '@/Abstractions/Drivers/DummyScene.js';
 import { describe, test, expect } from 'vitest';
 
 let registry: IRegistry = {
   nodes: {},
   values: {},
-  dependencies: {}
+  dependencies: {
+    ILogger: new DefaultLogger(),
+    ILifecycleEventEmitter: new ManualLifecycleEventEmitter(),
+    IScene: new DummyScene()
+  }
 };
 registry = registerCoreProfile(registry);
 registry = registerSceneProfile(registry);

@@ -4,6 +4,7 @@ import {
   isFlowNode,
   NodeType
 } from '../Nodes/NodeInstance.js';
+import { isThenable } from '../utils/isThenable.js';
 import type { Engine } from './Engine.js';
 import type { Fiber } from './Fiber.js';
 
@@ -39,7 +40,7 @@ export type NodeExecutionHandler = (
  * Synchronous flow node: hand the fiber to the node so it can schedule
  * downstream flow inline, then mark the node done.
  */
-export const flowNodeExecutionHandler: NodeExecutionHandler = async ({
+export const flowNodeExecutionHandler: NodeExecutionHandler = ({
   fiber,
   engine,
   node,
@@ -50,7 +51,15 @@ export const flowNodeExecutionHandler: NodeExecutionHandler = async ({
       `flow handler received non-flow node ${node.description.typeName}`
     );
   }
-  await node.triggered(fiber, socketName);
+  // stay synchronous unless the node's triggered function is actually async;
+  // this keeps the per-step cost free of promise/microtask overhead.
+  const result = node.triggered(fiber, socketName);
+  if (isThenable(result)) {
+    return result.then(() => {
+      engine.onNodeExecutionEnd.emit(node);
+      fiber.executionSteps++;
+    });
+  }
   engine.onNodeExecutionEnd.emit(node);
   fiber.executionSteps++;
 };

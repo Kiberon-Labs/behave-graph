@@ -109,7 +109,10 @@ export const graphRunnerClientStoreFactory = (
     maxActivityMessages: 50,
     clearLogsOnRun: true,
     clearTracesOnRun: true,
-    enableTracing: true,
+    // Off by default: tracing costs two events per node execution and is the
+    // single biggest per-frame overhead for display-rate graphs. Opt in via the
+    // "Enable execution tracing" checkbox in the graph runner panel.
+    enableTracing: false,
 
     // Actions
     setConnectionConfig: (config) =>
@@ -160,6 +163,15 @@ export const graphRunnerClientStoreFactory = (
 
     addMessageActivity: (direction, message) =>
       set((state) => {
+        // Trace traffic is high-frequency (per node execution / per frame) and
+        // has its own dedicated panel; recording it here allocated a new
+        // activity array per event and instantly evicted every other message
+        // from the 50-entry ring. Received server messages are cast into this
+        // union by the callers, so compare the raw type string.
+        const type = (message as { type: string }).type;
+        if (type === 'trace' || type === 'traceBatch') {
+          return state;
+        }
         const activity: MessageActivity = {
           id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           timestamp: Date.now(),

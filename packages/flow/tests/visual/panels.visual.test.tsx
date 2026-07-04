@@ -9,7 +9,6 @@ import { cleanup, render } from 'vitest-browser-react';
 import { DefaultSystemProvider } from '../../stories/defaults/defaultStoryProvider';
 
 import { AlignmentPanel } from '@/components/panels/alignment';
-import { ConversationPanel } from '@/components/panels/conversation';
 import { EventsPanel } from '@/components/panels/events';
 import { HistoryPanel } from '@/components/panels/history';
 import { KeymapsPanel } from '@/components/panels/keymaps';
@@ -32,7 +31,6 @@ import { LocalGraphRunnerPanel } from '@/plugin/graphrunner-local';
  */
 const panels: ReadonlyArray<readonly [name: string, element: ReactElement]> = [
   ['alignment', <AlignmentPanel />],
-  ['conversation', <ConversationPanel />],
   ['events', <EventsPanel />],
   ['history', <HistoryPanel />],
   ['keymaps', <KeymapsPanel />],

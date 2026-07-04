@@ -5,10 +5,7 @@ import {
   type ContributionSpec,
   type Dependencies
 } from '@kiberon-labs/behave-graph';
-import {
-  getSceneNodesMap,
-  getSceneValuesMap
-} from './registerSceneProfile.js';
+import { getSceneNodesMap, getSceneValuesMap } from './registerSceneProfile.js';
 import { DummyScene } from './Abstractions/Drivers/DummyScene.js';
 import pkg from '../package.json' with { type: 'json' };
 

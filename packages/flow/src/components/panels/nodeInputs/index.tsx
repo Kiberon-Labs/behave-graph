@@ -28,7 +28,10 @@ import { Icon } from '@/components/primitives/icon';
 
 export function NodeInputsPanel() {
   const system = useActiveGraph()!;
-  const documentation = useStore(system.editor.documentationStore, (x) => x.docs);
+  const documentation = useStore(
+    system.editor.documentationStore,
+    (x) => x.docs
+  );
 
   const {
     allSpecsJson,
@@ -278,16 +281,17 @@ export function NodeInputsPanel() {
               </div>
             )}
 
-            {generatorNode && (
-              // Generators read per-graph state via useGraph(); bind them to the
-              // active session since this panel lives outside the graph tab.
-              <GraphProvider value={system}>
-                <SocketGenerators
-                  generators={matchingGenerators}
-                  generatorNode={generatorNode}
-                />
-              </GraphProvider>
-            )}
+            {generatorNode &&
+              (
+                // Generators read per-graph state via useGraph(); bind them to the
+                // active session since this panel lives outside the graph tab.
+                <GraphProvider value={system}>
+                  <SocketGenerators
+                    generators={matchingGenerators}
+                    generatorNode={generatorNode}
+                  />
+                </GraphProvider>
+              )}
             {inputsWithControls.length === 0 &&
               matchingGenerators.length === 0 && (
                 <div className={styles.noInputs}>

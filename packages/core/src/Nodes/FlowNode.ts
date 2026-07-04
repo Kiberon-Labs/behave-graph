@@ -80,10 +80,16 @@ export class FlowNodeInstance<TFlowNodeDefinition extends IFlowNodeDefinition>
     this.outputSocketKeys = nodeProps.outputs.map((s) => s.name);
   }
 
-  public triggered = async (fiber: Fiber, triggeringSocketName: string) => {
+  // Not declared async: the engine's hot path stays promise-free when the
+  // node's triggered function is synchronous. The execution handler awaits
+  // the returned value only when it is actually a promise.
+  public triggered = (
+    fiber: Fiber,
+    triggeringSocketName: string
+  ): void | Promise<void> => {
     const stateProxy = this.createStateProxy();
 
-    await this.triggeredInner({
+    return this.triggeredInner({
       commit: (outFlowName, fiberCompletedListener) =>
         fiber.commit(this, outFlowName, fiberCompletedListener),
       read: this.readInput,
@@ -95,6 +101,6 @@ export class FlowNodeInstance<TFlowNodeDefinition extends IFlowNodeDefinition>
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       triggeringSocketName
-    });
+    }) as void | Promise<void>;
   };
 }

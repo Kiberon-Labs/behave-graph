@@ -45,6 +45,12 @@ export interface GraphRun {
   graphInstance?: GraphInstance;
   performance: RunPerformance;
   timeout?: NodeJS.Timeout;
+  /**
+   * Flushes trace events still buffered by the run's trace batcher. Set when
+   * tracing is enabled; call before emitting `completed`/`stopped` so the
+   * client receives the tail of the trace while the run id is still routable.
+   */
+  flushTracing?: () => void;
 }
 
 export interface RegisteredGraph {

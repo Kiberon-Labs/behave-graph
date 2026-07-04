@@ -1,53 +1,39 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { ensureImageMagickInitialized } from '../src/wasm.js';
 import { nodes } from '../src/nodes/index.js';
+import {
+  imageInputKeys,
+  loadImageNodes,
+  makeTestImage,
+  producesImage,
+  runNode,
+  type ImageNodeDef
+} from './harness.js';
 
 /**
  * Executes every image node against a real WASM-decoded image. The manifest
  * test only projects node *specs* (no execution), so this is what actually
  * exercises the ImageMagick API calls inside each node's `exec`.
+ *
+ * Everything here runs in a plain Node process via the harness (which loads the
+ * WASM binary through the Node loader in `src/wasm.ts`), so this doubles as the
+ * proof that the package is usable from a Node backend, not just the browser.
  */
-
-type AnyDef = {
-  typeName: string;
-  in: Record<string, { valueType: string; defaultValue?: unknown }>;
-  out: Record<string, unknown> | ((...args: unknown[]) => unknown);
-  exec: (params: {
-    read: (key: string) => unknown;
-    write: (key: string, value: unknown) => void;
-  }) => Promise<void> | void;
-};
-
-async function runNode(
-  def: AnyDef,
-  overrides: Record<string, unknown> = {}
-): Promise<Record<string, unknown>> {
-  const inputs: Record<string, unknown> = {};
-  for (const [key, socket] of Object.entries(def.in)) {
-    inputs[key] = socket.defaultValue;
-  }
-  Object.assign(inputs, overrides);
-
-  const outputs: Record<string, unknown> = {};
-  await def.exec({
-    read: (key: string) => inputs[key],
-    write: (key: string, value: unknown) => {
-      outputs[key] = value;
-    }
-  });
-  return outputs;
-}
 
 // Nodes that can't run with a synthetic in-memory image: a network fetch and
 // the no-op output sink.
 const SKIP = new Set(['image/fetch', 'output/image']);
 
+// Enumerated synchronously at collection time (listing specs needs no WASM).
+const imageOutNodes = Object.values(nodes as Record<string, ImageNodeDef>)
+  .filter((def) => !SKIP.has(def.typeName) && producesImage(def))
+  .map((def) => [def.typeName, def] as const);
+
 describe('image node runtime execution', () => {
   let base: Uint8Array;
 
   beforeAll(async () => {
-    await ensureImageMagickInitialized();
-    const out = await runNode(nodes['image/solidColor'] as unknown as AnyDef, {
+    const loaded = await loadImageNodes();
+    base = await makeTestImage(loaded, {
       width: 32,
       height: 32,
       r: 128,
@@ -55,7 +41,6 @@ describe('image node runtime execution', () => {
       b: 200,
       a: 255
     });
-    base = out.image as Uint8Array;
   });
 
   it('produces a valid base image from image/solidColor', () => {
@@ -65,7 +50,7 @@ describe('image node runtime execution', () => {
 
   it('reads metadata via image/properties', async () => {
     const props = await runNode(
-      nodes['image/properties'] as unknown as AnyDef,
+      nodes['image/properties'] as unknown as ImageNodeDef,
       { image: base }
     );
     expect(props.width).toBe(32);
@@ -73,21 +58,17 @@ describe('image node runtime execution', () => {
     expect(typeof props.format).toBe('string');
   });
 
-  const imageOutNodes = Object.values(nodes).filter((def) => {
-    const d = def as unknown as AnyDef;
-    if (SKIP.has(d.typeName)) return false;
-    if (typeof d.out === 'function') return false;
-    return 'image' in (d.out as Record<string, unknown>);
-  }) as unknown as AnyDef[];
+  it('covers every image-producing node (guards against untested additions)', () => {
+    // If this drops unexpectedly, a node was added without wiring or removed.
+    expect(imageOutNodes.length).toBeGreaterThanOrEqual(60);
+  });
 
-  it.each(imageOutNodes.map((d) => [d.typeName, d] as const))(
+  it.each(imageOutNodes)(
     'executes %s and returns a non-empty image',
     async (_typeName, def) => {
-      // Supply the base image for every image-typed input (image / a / b).
+      // Supply the base image for every image-typed input (image / a / b / clut).
       const overrides: Record<string, unknown> = {};
-      for (const [key, socket] of Object.entries(def.in)) {
-        if (socket.valueType === 'image') overrides[key] = base;
-      }
+      for (const key of imageInputKeys(def)) overrides[key] = base;
       const out = await runNode(def, overrides);
       expect(out.image).toBeInstanceOf(Uint8Array);
       expect((out.image as Uint8Array).byteLength).toBeGreaterThan(0);

@@ -1,7 +1,7 @@
 {
   "name": "@kiberon-labs/behave-graph-suspendable",
   "description": "An auxiliary engine for the behaviour graph that can be suspended mid execution.",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "type": "module",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
@@ -14,7 +14,7 @@
     "test": "vitest --passWithNoTests",
     "dev": "tsdown --watch src",
     "lint": "oxlint",
-    "typecheck": "tsc"
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",

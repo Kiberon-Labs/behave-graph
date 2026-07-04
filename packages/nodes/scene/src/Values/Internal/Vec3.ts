@@ -6,9 +6,10 @@ import {
   toSafeString
 } from '@kiberon-labs/behave-graph';
 
-import { Mat3, mat4ToMat3, quatToMat3 } from './Mat3.js';
-import { Mat4 } from './Mat4.js';
-import { Vec4 } from './Vec4.js';
+import type { Mat3 } from './Mat3.js';
+import { mat4ToMat3, quatToMat3 } from './Mat3.js';
+import type { Mat4 } from './Mat4.js';
+import type { Vec4 } from './Vec4.js';
 
 export type Vec3JSON = [number, number, number];
 

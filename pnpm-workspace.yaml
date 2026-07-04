@@ -2,3 +2,8 @@ packages:
   - packages/*
   - packages/nodes/*
 linkWorkspacePackages: true
+# vsce's native helpers need their postinstall scripts (binary download)
+# so VSIX packaging/publishing works locally and in CI.
+onlyBuiltDependencies:
+  - '@vscode/vsce-sign'
+  - keytar

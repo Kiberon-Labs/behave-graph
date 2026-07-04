@@ -18,9 +18,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** Render a LayoutController inside a story's self-contained system. */
-function storyFor(
-  Provider: React.FC<{ children: React.ReactElement }>
-): Story {
+function storyFor(Provider: React.FC<{ children: React.ReactElement }>): Story {
   return {
     render: () => (
       <Provider>

@@ -35,11 +35,3 @@
   min-width: 3rem;
   justify-content: center;
 }
-
-.contextMenu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 0.25rem;
-  z-index: 1000;
-}

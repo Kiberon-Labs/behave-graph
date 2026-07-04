@@ -33,7 +33,9 @@ describe('scene package manifest', () => {
     ]);
     expect(byName.vec3).toEqual([0, 0, 0]);
     // identity matrix
-    expect(byName.mat4).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+    expect(byName.mat4).toEqual([
+      1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1
+    ]);
     // No functions leak into the manifest.
     manifest.values.forEach((v) =>
       Object.values(v).forEach((field) =>

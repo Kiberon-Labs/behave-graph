@@ -17,6 +17,74 @@ interface ControlPoint {
   y: number;
 }
 
+/** The reactflow path builder that backs a given edge type when there are no
+ * control points. Unknown types fall back to the better-bezier builder. */
+function edgeFnForType(edgeType: string) {
+  switch (edgeType) {
+    case EDGE_TYPE.simpleBezier:
+      return getSimpleBezierPath;
+    case EDGE_TYPE.smoothStep:
+      return getSmoothStepPath;
+    case EDGE_TYPE.straight:
+      return getStraightPath;
+    case EDGE_TYPE.bezier:
+    default:
+      return getBetterBezierPath;
+  }
+}
+
+/** Straight polyline through every point. */
+function straightPathThrough(points: ControlPoint[]): string {
+  return points
+    .map((p, i) => (i === 0 ? `M ${p.x},${p.y}` : `L ${p.x},${p.y}`))
+    .join(' ');
+}
+
+/** Orthogonal "smooth step" path that jogs at the midpoint of each segment. */
+function smoothStepPathThrough(points: ControlPoint[]): string {
+  let path = `M ${points[0]?.x},${points[0]?.y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const current = points[i];
+    const next = points[i + 1];
+    if (!current || !next) continue;
+    const midX = (current.x + next.x) / 2;
+    path += ` L ${midX},${current.y} L ${midX},${next.y}`;
+  }
+  path += ` L ${points[points.length - 1]?.x},${points[points.length - 1]?.y}`;
+  return path;
+}
+
+/** Curved path through every point, degrading to line/quadratic for 2/3 points. */
+function bezierPathThrough(points: ControlPoint[]): string {
+  if (points.length === 2) {
+    return `M ${points[0]?.x},${points[0]?.y} L ${points[1]?.x},${points[1]?.y}`;
+  }
+  if (points.length === 3) {
+    return `M ${points[0]?.x},${points[0]?.y} Q ${points[1]?.x},${points[1]?.y} ${points[2]?.x},${points[2]?.y}`;
+  }
+
+  // For multiple control points, chain quadratic segments and finish with a line.
+  let path = `M ${points[0]?.x},${points[0]?.y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = points[i + 1];
+    if (!p1) continue;
+
+    if (i === points.length - 2) {
+      path += ` L ${p1.x},${p1.y}`;
+      continue;
+    }
+
+    path += ` Q ${p1.x},${p1.y}`;
+    const p2 = points[i + 2];
+    if (p2) {
+      const midX = (p1.x + p2.x) / 2;
+      const midY = (p1.y + p2.y) / 2;
+      path += ` ${midX},${midY}`;
+    }
+  }
+  return path;
+}
+
 // Generate path for different edge types with control points
 function generatePathWithControlPoints(
   sourceX: number,
@@ -29,26 +97,8 @@ function generatePathWithControlPoints(
   _targetPosition?: Position
 ): string {
   if (controlPoints.length === 0) {
-    // No control points, use default edge type
-    let edgeFn;
-    switch (edgeType) {
-      case EDGE_TYPE.bezier:
-        edgeFn = getBetterBezierPath;
-        break;
-      case EDGE_TYPE.simpleBezier:
-        edgeFn = getSimpleBezierPath;
-        break;
-      case EDGE_TYPE.smoothStep:
-        edgeFn = getSmoothStepPath;
-        break;
-      case EDGE_TYPE.straight:
-        edgeFn = getStraightPath;
-        break;
-      default:
-        edgeFn = getBetterBezierPath;
-    }
-
-    const [path] = edgeFn({
+    // No control points, use the default builder for the edge type.
+    const [path] = edgeFnForType(edgeType)({
       sourceX,
       sourceY,
       sourcePosition: _sourcePosition,
@@ -67,56 +117,12 @@ function generatePathWithControlPoints(
   ];
 
   if (edgeType === EDGE_TYPE.straight) {
-    // Straight lines through all points
-    const pathParts = allPoints.map((p, i) =>
-      i === 0 ? `M ${p.x},${p.y}` : `L ${p.x},${p.y}`
-    );
-    return pathParts.join(' ');
-  } else if (edgeType === EDGE_TYPE.smoothStep) {
-    // Smooth step style through control points
-    let path = `M ${allPoints[0]?.x},${allPoints[0]?.y}`;
-    for (let i = 0; i < allPoints.length - 1; i++) {
-      const current = allPoints[i];
-      const next = allPoints[i + 1];
-      if (!current || !next) continue;
-      const midX = (current.x + next.x) / 2;
-      // Create smooth step
-      path += ` L ${midX},${current.y} L ${midX},${next.y}`;
-    }
-    path += ` L ${allPoints[allPoints.length - 1]?.x},${allPoints[allPoints.length - 1]?.y}`;
-    return path;
-  } else {
-    // Bezier curve through all points
-    if (allPoints.length === 2) {
-      return `M ${allPoints[0]?.x},${allPoints[0]?.y} L ${allPoints[1]?.x},${allPoints[1]?.y}`;
-    } else if (allPoints.length === 3) {
-      return `M ${allPoints[0]?.x},${allPoints[0]?.y} Q ${allPoints[1]?.x},${allPoints[1]?.y} ${allPoints[2]?.x},${allPoints[2]?.y}`;
-    } else {
-      // For multiple control points, use cubic bezier segments
-      let path = `M ${allPoints[0]?.x},${allPoints[0]?.y}`;
-      for (let i = 0; i < allPoints.length - 1; i++) {
-        const p1 = allPoints[i + 1];
-        if (!p1) continue;
-
-        if (i === allPoints.length - 2) {
-          // Last segment
-          path += ` L ${p1.x},${p1.y}`;
-        } else {
-          // Smooth curve using quadratic bezier
-          path += ` Q ${p1.x},${p1.y}`;
-          if (i < allPoints.length - 2) {
-            const p2 = allPoints[i + 2];
-            if (p2) {
-              const midX = (p1.x + p2.x) / 2;
-              const midY = (p1.y + p2.y) / 2;
-              path += ` ${midX},${midY}`;
-            }
-          }
-        }
-      }
-      return path;
-    }
+    return straightPathThrough(allPoints);
   }
+  if (edgeType === EDGE_TYPE.smoothStep) {
+    return smoothStepPathThrough(allPoints);
+  }
+  return bezierPathThrough(allPoints);
 }
 
 type CustomEdgeProps = EdgeProps & {

@@ -4,47 +4,87 @@
  * the panel needs no object-URL lifecycle bookkeeping. Browser/Node-neutral.
  */
 
+/**
+ * A magic-number signature: each entry is a byte offset and its expected value.
+ * A file matches the signature when every entry matches (and the file is long
+ * enough to cover the highest offset).
+ */
+interface MimeSignature {
+  mime: string;
+  bytes: Array<{ offset: number; value: number }>;
+}
+
+/**
+ * Magic-byte signatures, checked in order. The first match wins, so keep more
+ * specific signatures (e.g. WEBP, which also starts with the RIFF marker) ahead
+ * of any that would otherwise shadow them.
+ */
+const MIME_SIGNATURES: MimeSignature[] = [
+  {
+    mime: 'image/png',
+    bytes: [
+      { offset: 0, value: 0x89 },
+      { offset: 1, value: 0x50 },
+      { offset: 2, value: 0x4e },
+      { offset: 3, value: 0x47 }
+    ]
+  },
+  {
+    mime: 'image/jpeg',
+    bytes: [
+      { offset: 0, value: 0xff },
+      { offset: 1, value: 0xd8 },
+      { offset: 2, value: 0xff }
+    ]
+  },
+  {
+    mime: 'image/gif',
+    bytes: [
+      { offset: 0, value: 0x47 },
+      { offset: 1, value: 0x49 },
+      { offset: 2, value: 0x46 }
+    ]
+  },
+  {
+    mime: 'image/webp',
+    bytes: [
+      { offset: 0, value: 0x52 },
+      { offset: 1, value: 0x49 },
+      { offset: 2, value: 0x46 },
+      { offset: 3, value: 0x46 },
+      { offset: 8, value: 0x57 },
+      { offset: 9, value: 0x45 },
+      { offset: 10, value: 0x42 },
+      { offset: 11, value: 0x50 }
+    ]
+  }
+];
+
+/** Does every byte of the signature match the buffer at its offset? */
+function matchesSignature(
+  bytes: Uint8Array,
+  signature: MimeSignature
+): boolean {
+  return signature.bytes.every(({ offset, value }) => bytes[offset] === value);
+}
+
+/** Default MIME used when no signature matches (also PNG for unknown bytes). */
+const FALLBACK_MIME = 'image/png';
+
 function sniffImageMime(bytes: Uint8Array): string {
-  if (
-    bytes.length >= 8 &&
-    bytes[0] === 0x89 &&
-    bytes[1] === 0x50 &&
-    bytes[2] === 0x4e &&
-    bytes[3] === 0x47
-  ) {
-    return 'image/png';
-  }
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
-    return 'image/jpeg';
-  }
-  if (
-    bytes.length >= 6 &&
-    bytes[0] === 0x47 &&
-    bytes[1] === 0x49 &&
-    bytes[2] === 0x46
-  ) {
-    return 'image/gif';
-  }
-  if (
-    bytes.length >= 12 &&
-    bytes[0] === 0x52 &&
-    bytes[1] === 0x49 &&
-    bytes[2] === 0x46 &&
-    bytes[3] === 0x46 &&
-    bytes[8] === 0x57 &&
-    bytes[9] === 0x45 &&
-    bytes[10] === 0x42 &&
-    bytes[11] === 0x50
-  ) {
-    return 'image/webp';
-  }
-  return 'image/png';
+  const match = MIME_SIGNATURES.find((signature) =>
+    matchesSignature(bytes, signature)
+  );
+  return match?.mime ?? FALLBACK_MIME;
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
   // Node (and tests) have Buffer; the browser doesn't, so fall back to btoa.
-  const maybeBuffer = (globalThis as { Buffer?: { from(b: Uint8Array): { toString(enc: string): string } } })
-    .Buffer;
+  const maybeBuffer = (
+    globalThis as {
+      Buffer?: { from(b: Uint8Array): { toString(enc: string): string } };
+    }
+  ).Buffer;
   if (maybeBuffer) {
     return maybeBuffer.from(bytes).toString('base64');
   }

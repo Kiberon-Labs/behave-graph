@@ -13,11 +13,11 @@ import * as os from 'os';
  */
 
 /** Accepted file names, in priority order at each directory. */
-export const SETTINGS_FILENAMES = ['.kbgraphrc.json', '.kbgraphrc'];
+const SETTINGS_FILENAMES = ['.kbgraphrc.json', '.kbgraphrc'];
 
 export type EditorSettingsFile = {
   settings?: Record<string, unknown>;
-  conversions?: Array<{ from: string; to: string;[k: string]: unknown }>;
+  conversions?: Array<{ from: string; to: string; [k: string]: unknown }>;
 };
 
 const readJsonIfExists = async (
@@ -33,7 +33,7 @@ const readJsonIfExists = async (
 };
 
 /** Merge `over` on top of `base`: settings shallow-merge, conversions by from→to. */
-export const mergeEditorSettings = (
+const mergeEditorSettings = (
   base: EditorSettingsFile,
   over: EditorSettingsFile
 ): EditorSettingsFile => {

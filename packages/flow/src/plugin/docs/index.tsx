@@ -1,6 +1,6 @@
 import { type System } from '@/system/system';
 import type { NodeDocumentation } from '@/store/documentation';
-import { BounceRight, Flash, PauseWindow } from 'iconoir-react';
+import { BounceRight, Flash, GitFork, PauseWindow } from 'iconoir-react';
 import { DocumentationBrowserPanel } from './panel';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MenuItemElement } from '../../components/menubar/menuItem';
@@ -84,9 +84,7 @@ Documentation: The description field serves as inline documentation of assumptio
     },
 
     {
-      icon: (
-        <img src="https://imgs.search.brave.com/I24-hRYZL3tBnj1vmcr525tMOtlP-GFWPoS1qr7tMdo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/aWNvbnM4LmNvbS9l/eHRlcm5hbC1mbGF0/aWNvbnMtbGluZWFs/LWNvbG9yLWZsYXQt/aWNvbnMvMTIwMC9l/eHRlcm5hbC1kZWJ1/Zy1tb2JpbGUtYXBw/LWRldmVsb3BtZW50/LWZsYXRpY29ucy1s/aW5lYWwtY29sb3It/ZmxhdC1pY29ucy5q/cGc" />
-      ),
+      icon: <GitFork />,
       type: 'flow/branch',
       shortDescription: 'Execute different flows based on a boolean condition',
       tags: ['flow', 'conditional', 'control'],

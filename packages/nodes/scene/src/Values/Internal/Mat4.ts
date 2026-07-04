@@ -5,8 +5,9 @@ import {
   toSafeString
 } from '@kiberon-labs/behave-graph';
 
-import { eulerToMat3, Mat3, quatToMat3 } from './Mat3.js';
-import { Vec2 } from './Vec2.js';
+import type { Mat3 } from './Mat3.js';
+import { eulerToMat3, quatToMat3 } from './Mat3.js';
+import type { Vec2 } from './Vec2.js';
 import {
   Vec3,
   vec3Cross,
@@ -15,7 +16,7 @@ import {
   vec3Normalize,
   vec3Subtract
 } from './Vec3.js';
-import { Vec4 } from './Vec4.js';
+import type { Vec4 } from './Vec4.js';
 
 // uses OpenGL matrix layout where each column is specified subsequently in order from left to right.
 // ( x, y, z, 1 ) x [ 0  4   8  12] = ( x', y', z', 1 )

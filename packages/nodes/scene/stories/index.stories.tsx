@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
-  docsPlugin,
+  kitchenSinkPlugin,
   GraphProvider,
   LayoutController,
   localGraphRunnerPlugin,
@@ -16,7 +16,7 @@ import { registerSceneProfile } from '@/registerSceneProfile';
 import { DemoScene } from './components/DemoScene';
 import { sceneViewerPlugin } from './plugin/sceneViewerPlugin';
 import { Vec3Control } from '@/ui/controls/vec3';
-import clickDemoGraph from './data/clickDemo.json';
+import rotate from './data/rotate.json';
 
 const meta: Meta<typeof LayoutController> = {
   component: LayoutController,
@@ -60,7 +60,10 @@ defaultSys.controlStore.getState().registerControl('color', Vec3Control);
 defaultSys.controlStore.getState().registerControl('vec3', Vec3Control);
 defaultSys.controlStore.getState().registerControl('euler', Vec3Control);
 
-defaultSys.registerPlugin(docsPlugin);
+defaultSession.graph.deseralize(rotate);
+defaultSession.flowStore.getState().setGraph(rotate.flow, { skipLayout: true });
+
+defaultSys.registerPlugin(kitchenSinkPlugin);
 defaultSys.registerPlugin(localGraphRunnerPlugin, {
   registry: coreRegistry,
   // Use RAF-based tick strategy for smooth animation frame sync
@@ -78,62 +81,6 @@ export const Default: Story = {
     return (
       <SystemProvider value={defaultSys}>
         <GraphProvider value={defaultSession}>
-          <LayoutController />
-        </GraphProvider>
-      </SystemProvider>
-    );
-  },
-  args: {}
-};
-
-// --- Click Demo story: preloads a graph with OnAnyMeshClicked → DebugLog ---
-
-const clickDemoScene = new DemoScene();
-
-const clickRegistry = registerSceneProfile(
-  registerCoreProfile({
-    nodes: {},
-    values: {},
-    dependencies: {
-      IScene: clickDemoScene,
-      ILifecycleEventEmitter: new ManualLifecycleEventEmitter(),
-      ILogger: new DefaultLogger()
-    }
-  })
-);
-
-const clickNodeRegistry = {
-  values: clickRegistry.values,
-  specs: []
-};
-
-const clickSys = new System(clickNodeRegistry);
-const clickSession = clickSys.createSession('graph');
-
-clickSys.controlStore.getState().registerControl('color', Vec3Control);
-clickSys.controlStore.getState().registerControl('vec3', Vec3Control);
-clickSys.controlStore.getState().registerControl('euler', Vec3Control);
-
-clickSys.registerPlugin(docsPlugin);
-clickSys.registerPlugin(localGraphRunnerPlugin, {
-  registry: clickRegistry,
-  tickStrategy: async () => {
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-  }
-});
-clickSys.registerPlugin(sceneViewerPlugin, {
-  scene: clickDemoScene,
-  addMenuItem: true
-});
-
-// Preload the click demo graph so the OnAnyMeshClicked event node is present
-clickSession.flowStore.getState().setGraph(clickDemoGraph);
-
-export const ClickDemo: Story = {
-  render: () => {
-    return (
-      <SystemProvider value={clickSys}>
-        <GraphProvider value={clickSession}>
           <LayoutController />
         </GraphProvider>
       </SystemProvider>

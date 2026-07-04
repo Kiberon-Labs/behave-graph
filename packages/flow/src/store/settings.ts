@@ -9,15 +9,6 @@ export const EDGE_TYPE = {
 
 export type EdgeType = (typeof EDGE_TYPE)[keyof typeof EDGE_TYPE];
 
-export const LAYOUT_TYPE = {
-  dagre: 'Dagre',
-  elkForce: 'Elk - Force',
-  elkRect: 'Elk - Rect',
-  elkLayered: 'Elk - Layered'
-} as const;
-
-export type LayoutType = (typeof LAYOUT_TYPE)[keyof typeof LAYOUT_TYPE];
-
 export type GeneratorLocation = 'inline' | 'panel';
 
 /**
@@ -29,7 +20,6 @@ export type GeneratorLocation = 'inline' | 'panel';
  */
 const SETTINGS = {
   edgeType: { default: EDGE_TYPE.bezier as EdgeType },
-  layoutType: { default: LAYOUT_TYPE.dagre as LayoutType },
   debugMode: { default: false as boolean },
   showMenu: { default: true as boolean },
   showTimings: { default: false as boolean },

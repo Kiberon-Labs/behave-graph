@@ -2,8 +2,6 @@ import { createStore, type StoreApi } from 'zustand';
 import type { EdgeChange, XYPosition } from 'reactflow';
 import type { System } from '@/system/system';
 import type { GraphSession } from '@/system/graphSession';
-import { applyDagreLayout } from '@/layout/dagre';
-import { applyElkLayout } from '@/layout/elk';
 
 /**
  * Context handed to a command when it runs. Carries the editor + the graph it
@@ -218,26 +216,10 @@ export const registerDefaultCommands = (
     title: 'Find',
     run: (ctx) => ctx.editor.tabStore.getState().openTab('find')
   });
-  register({
-    id: 'editor.autoLayout',
-    title: 'Auto Layout',
-    run: (ctx) => {
-      switch (ctx.editor.systemSettings.getState().layoutType) {
-        case 'Dagre':
-          applyDagreLayout(ctx.editor);
-          break;
-        case 'Elk - Layered':
-          void applyElkLayout(ctx.editor, 'org.eclipse.elk.layered');
-          break;
-        case 'Elk - Force':
-          void applyElkLayout(ctx.editor, 'org.eclipse.elk.force');
-          break;
-        case 'Elk - Rect':
-          void applyElkLayout(ctx.editor, 'org.eclipse.elk.rectpacking');
-          break;
-      }
-    }
-  });
+  // `editor.autoLayout` is contributed by the optional layout plugin
+  // (`@/plugin/layout`), which owns the heavy elkjs/dagre dependencies. When
+  // that plugin is not registered the command is simply unavailable and the
+  // bound hotkey no-ops.
 
   // View
   register({

@@ -13,3 +13,5 @@ node-spec.csv
 .opencode
 *.fallow
 .agents
+.claude
+*.vsix

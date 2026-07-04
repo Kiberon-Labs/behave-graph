@@ -15,8 +15,13 @@ export type IBehaveNode = Omit<Node, 'data' | 'type'> & {
   };
 };
 
-export type ICommentNode = Omit<Node, 'data' | 'type'> & {
-  type: 'commentNode';
+/**
+ * Presentational markdown note, contributed by the notes plugin
+ * (`@/plugin/notes`). `commentNode` is the legacy type string notes carried
+ * when they lived in the core editor.
+ */
+export type INoteNode = Omit<Node, 'data' | 'type'> & {
+  type: 'noteNode' | 'commentNode';
   data: {
     annotations?: Record<string, any>;
     text: string;
@@ -41,5 +46,5 @@ export type IAINode = Omit<Node, 'data' | 'type'> & {
   };
 };
 
-export type AnyNode = IBehaveNode | ICommentNode | IAINode | IGroupNode;
+export type AnyNode = IBehaveNode | INoteNode | IAINode | IGroupNode;
 export type AnyNodeType = AnyNode['type'];

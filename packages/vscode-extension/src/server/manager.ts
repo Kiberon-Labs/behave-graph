@@ -73,6 +73,8 @@ export class ServerManager {
       //@ts-ignore
       this.ipcTransport = null;
     }
-    this.server.close();
+    // `server` is unset if initialization failed (e.g. a registry that could
+    // not be transpiled/imported), so guard against closing an absent server.
+    this.server?.close();
   }
 }

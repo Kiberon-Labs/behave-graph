@@ -15,7 +15,7 @@ export const Branch = makeFlowNodeDefinition({
     true: 'flow',
     false: 'flow'
   },
-  triggered: async ({ read, commit }) => {
+  triggered: ({ read, commit }) => {
     commit(read('condition') === true ? 'true' : 'false');
   },
   initialState: undefined

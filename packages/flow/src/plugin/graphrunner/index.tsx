@@ -97,7 +97,10 @@ export async function graphRunnerClientPluginLoader(
   // controller down when a graph's tab is closed.
   system.registerSessionExtension((session: GraphSession) => {
     if (!session.runController) {
-      session.decorate('runController', new GraphRunController(session, runner));
+      session.decorate(
+        'runController',
+        new GraphRunController(session, runner)
+      );
     }
     return () => {
       session.runController?.dispose();

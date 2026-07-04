@@ -1,5 +1,6 @@
 import { createStore, type StoreApi } from 'zustand';
 import { hidden, pinned } from '@/annotations';
+import { isBehaveNode } from '@/util/isBehaveNode';
 import type { CommandContext } from './commands';
 
 /** Which canvas target a context-menu item applies to. */
@@ -65,6 +66,13 @@ const nodeFlag = (ctx: CommandContext, key: string): boolean => {
     : false;
 };
 
+// The default node items only make sense on behave nodes; presentational node
+// types (notes, groups, ...) register their own `when`-scoped items instead.
+const isBehaveTarget = (ctx: CommandContext): boolean => {
+  const node = nodeAt(ctx);
+  return node !== undefined && isBehaveNode(node);
+};
+
 /**
  * Register the built-in context-menu items, dispatching the default commands.
  * Hosts can add/remove/replace items by id without forking the menu components.
@@ -82,6 +90,7 @@ export const registerDefaultContextMenu = (
     keybinding: 'Ctrl+Shift+F',
     order: 10,
     group: 'focus',
+    when: isBehaveTarget,
     commandId: 'node.focus'
   });
   register({
@@ -91,6 +100,7 @@ export const registerDefaultContextMenu = (
     keybinding: 'Ctrl+Shift+R',
     order: 20,
     group: 'trace',
+    when: isBehaveTarget,
     commandId: 'node.traceUpstream'
   });
   register({
@@ -100,6 +110,7 @@ export const registerDefaultContextMenu = (
     keybinding: 'Ctrl+Shift+T',
     order: 21,
     group: 'trace',
+    when: isBehaveTarget,
     commandId: 'node.traceDownstream'
   });
   register({
@@ -109,6 +120,7 @@ export const registerDefaultContextMenu = (
     keybinding: 'Ctrl+Shift+G',
     order: 30,
     group: 'reset',
+    when: isBehaveTarget,
     commandId: 'trace.reset'
   });
   register({
@@ -117,6 +129,7 @@ export const registerDefaultContextMenu = (
     label: (ctx) => (nodeFlag(ctx, pinned) ? 'Unpin' : 'Pin'),
     order: 40,
     group: 'visibility',
+    when: isBehaveTarget,
     commandId: 'node.togglePinned'
   });
   register({
@@ -125,6 +138,7 @@ export const registerDefaultContextMenu = (
     label: (ctx) => (nodeFlag(ctx, hidden) ? 'Show' : 'Hide'),
     order: 41,
     group: 'visibility',
+    when: isBehaveTarget,
     commandId: 'node.toggleHidden'
   });
 

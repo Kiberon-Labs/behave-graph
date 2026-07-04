@@ -22,6 +22,16 @@ import type { McpToolsChangedMessage } from './mcp/types.js';
 const PREFIX = path.join('build');
 
 /**
+ * A toast to surface in the webview editor. Mirrors the flow `Notifications`
+ * API so the webview can pass it straight to `system.notifications.notify`.
+ */
+type WebviewNotification = {
+  type: 'info' | 'success' | 'error' | 'loading';
+  message: string;
+  options?: { id?: string; duration?: number };
+};
+
+/**
  * Provider for Graph editors.
  *
  * Graph editors are used for `.kbgraph` files, which are just `.json` files with a different file extension.
@@ -173,6 +183,25 @@ export class GraphProvider
         ? (vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd())
         : path.dirname(document.uri.fsPath);
 
+    // Collect load-time problems (failed plugin/registry transpile, missing
+    // workspace transpiler, registry import errors) and surface them in the
+    // editor as toasts. Errors raised before the webview is listening are
+    // queued and flushed once it posts 'ready'; later ones are sent live.
+    let webviewReady = false;
+    const pendingNotifications: WebviewNotification[] = [];
+    const notifyWebview = (notification: WebviewNotification) => {
+      if (webviewReady) {
+        webviewPanel.webview.postMessage({
+          type: 'notification',
+          body: notification
+        });
+      } else {
+        pendingNotifications.push(notification);
+      }
+    };
+    const errorMessage = (err: unknown) =>
+      err instanceof Error ? err.message : String(err);
+
     // Load an adjacent editor plugin (plugin.js/.mjs/.ts/.tsx). TypeScript is
     // transpiled on demand, and the result is inlined into the webview so no
     // build step or extra resource roots are needed.
@@ -185,15 +214,78 @@ export class GraphProvider
       }
     } catch (err) {
       console.error('Failed to load editor plugin:', err);
-      vscode.window.showWarningMessage(
-        `Behave Graph: failed to load editor plugin , ${err instanceof Error ? err.message : String(err)}`
-      );
+      notifyWebview({
+        type: 'error',
+        message: `Failed to load editor plugin: ${errorMessage(err)}`,
+        options: { duration: 10000 }
+      });
     }
 
     webviewPanel.webview.html = this.getHtmlForWebview(
       webviewPanel.webview,
       pluginScript
     );
+
+    // Push the graph data + settings to the webview the instant it signals
+    // 'ready'. This is deliberately wired *before* the run server is created and
+    // initialised below: rendering the nodes needs only the serialized graph
+    // (already in `document.documentData`), not the run server or the runner
+    // connection. Registering this listener up front means the graph paints as
+    // soon as the bundle loads, in parallel with the server spinning up.
+    let initialStateSent = false;
+    const sendInitialState = () => {
+      if (initialStateSent) return;
+      initialStateSent = true;
+
+      // The webview's handlers are now live: flush any load errors queued
+      // before it was ready, and route future ones straight through.
+      webviewReady = true;
+      for (const notification of pendingNotifications) {
+        webviewPanel.webview.postMessage({
+          type: 'notification',
+          body: notification
+        });
+      }
+      pendingNotifications.length = 0;
+
+      // Resolve the cascading editor settings (local → global) and push them.
+      void resolveEditorSettings(documentDir)
+        .then((merged) =>
+          webviewPanel.webview.postMessage({ type: 'settings', body: merged })
+        )
+        .catch((err) =>
+          console.error('Failed to resolve editor settings', err)
+        );
+
+      if (document.uri.scheme === 'untitled') {
+        webviewPanel.webview.postMessage({
+          type: 'init',
+          body: { untitled: true, editable: true }
+        });
+        return;
+      }
+
+      const editable = vscode.workspace.fs.isWritableFileSystem(
+        document.uri.scheme
+      );
+      const data = JSON.parse(
+        new TextDecoder().decode(document.documentData)
+      ) as UIGraphJSON;
+      webviewPanel.webview.postMessage({
+        type: 'init',
+        body: {
+          value: {
+            ...data,
+            name: vscode.workspace.asRelativePath(document.uri)
+          } as UIGraphJSON,
+          editable
+        }
+      });
+    };
+
+    webviewPanel.webview.onDidReceiveMessage((e) => {
+      if (e.type === 'ready') sendInitialState();
+    });
 
     // Create a dedicated server for this document in IPC mode
     const serverManager = new ServerManager(
@@ -207,12 +299,25 @@ export class GraphProvider
       documentDir
     );
 
-    // Wait for server initialization
-    await serverManager.waitForInit();
-
-    console.log(
-      `GraphRunner server started for ${document.uri.toString()} in IPC mode`
-    );
+    // Wait for server initialization. A failure here is almost always a custom
+    // registry that could not be transpiled/imported (bad TypeScript, a missing
+    // workspace transpiler, a throwing module). Surface it as a toast and keep
+    // the editor open: the graph still renders (its data came from the early
+    // 'ready' path), only execution against the custom registry is unavailable.
+    try {
+      await serverManager.waitForInit();
+      console.log(
+        `GraphRunner server started for ${document.uri.toString()} in IPC mode`
+      );
+    } catch (err) {
+      console.error('Failed to initialise graph runner server:', err);
+      notifyWebview({
+        type: 'error',
+        message: `Failed to load graph registry: ${errorMessage(err)}`,
+        // Persist until dismissed: execution is broken until the user fixes it.
+        options: { id: 'registry-load-error', duration: Infinity }
+      });
+    }
 
     const messageHandler = new MessageHandler(
       webviewPanel,
@@ -266,41 +371,9 @@ export class GraphProvider
       serverManager.dispose();
     });
 
-    webviewPanel.webview.onDidReceiveMessage((e) => {
-      switch (e.type) {
-        case 'ready':
-          // Resolve the cascading editor settings (local → global) and push
-          // them to the webview to apply.
-          void resolveEditorSettings(documentDir)
-            .then((merged) => messageHandler.postMessage('settings', merged))
-            .catch((err) =>
-              console.error('Failed to resolve editor settings', err)
-            );
-
-          if (document.uri.scheme === 'untitled') {
-            messageHandler.postMessage('init', {
-              untitled: true,
-              editable: true
-            });
-          } else {
-            const editable = vscode.workspace.fs.isWritableFileSystem(
-              document.uri.scheme
-            );
-
-            const data = JSON.parse(
-              new TextDecoder().decode(document.documentData)
-            ) as UIGraphJSON;
-            messageHandler.postMessage('init', {
-              value: {
-                ...data,
-                name: vscode.workspace.asRelativePath(document.uri)
-              } as UIGraphJSON,
-              editable
-            });
-          }
-          break;
-      }
-    });
+    // The graph data + settings are pushed by the early 'ready' listener wired
+    // right after the HTML above, so nothing to send here: the webview always
+    // drives the handshake by posting 'ready' once its handlers are registered.
   }
 
   private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<
@@ -386,7 +459,12 @@ export class GraphProvider
     // it would keep serving the old, now-deleted file names.
     const manifest = JSON.parse(
       fs.readFileSync(
-        path.join(this._context.extensionPath, PREFIX, '.vite', 'manifest.json'),
+        path.join(
+          this._context.extensionPath,
+          PREFIX,
+          '.vite',
+          'manifest.json'
+        ),
         'utf8'
       )
     );
@@ -399,6 +477,29 @@ export class GraphProvider
         );
 
         return `<link rel="stylesheet" type="text/css" href="${styleUri}">`;
+      })
+      .join('\n');
+
+    // The entry statically imports the split vendor chunks (react-dom,
+    // reactflow, vscode-elements). Without a hint the browser only discovers
+    // them after parsing the entry, fetching them serially. Emit
+    // `modulepreload` links so they download in parallel with the entry.
+    const collectImports = (key: string, acc: Set<string>): Set<string> => {
+      for (const dep of manifest[key]?.imports ?? []) {
+        if (acc.has(dep)) continue;
+        acc.add(dep);
+        collectImports(dep, acc);
+      }
+      return acc;
+    };
+    const preloads = Array.from(collectImports('index.html', new Set<string>()))
+      .map((key) => manifest[key]?.file as string | undefined)
+      .filter((file): file is string => Boolean(file))
+      .map((file) => {
+        const uri = webview.asWebviewUri(
+          vscode.Uri.file(path.join(this._context.extensionPath, PREFIX, file))
+        );
+        return `<link rel="modulepreload" href="${uri}">`;
       })
       .join('\n');
 
@@ -425,18 +526,83 @@ export class GraphProvider
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
                 ${styles}
+                ${preloads}
 				<title>Graph</title>
                  <base href="${webview.asWebviewUri(vscode.Uri.file(path.join(this._context.extensionPath, PREFIX)))}">
+					<style nonce="${nonce}">
+						/* Instant paint: a lightweight loading state shown until the
+						   editor bundle parses and React mounts into #root, which
+						   replaces this content. Keeps the webview from reading as a
+						   blank panel while the (large) app chunk loads.
+
+						   Both animations below are driven purely by transform, so they
+						   run on the compositor thread and keep moving even while the
+						   main thread is busy parsing/executing the app bundle. */
+						.bg-boot {
+							position: fixed;
+							inset: 0;
+							display: flex;
+							flex-direction: column;
+							align-items: center;
+							justify-content: center;
+							gap: 16px;
+							color: var(--vscode-descriptionForeground, #8a8a8a);
+							font-family: var(--vscode-font-family, sans-serif);
+						}
+						.bg-boot__spinner {
+							width: 30px;
+							height: 30px;
+							border: 3px solid var(--vscode-editorWidget-border, #3c3c3c);
+							border-top-color: var(--vscode-progressBar-background, #0e70c0);
+							border-radius: 50%;
+							animation: bg-boot-spin 0.8s linear infinite;
+						}
+						.bg-boot__label {
+							font-size: 13px;
+							letter-spacing: 0.02em;
+						}
+						/* Indeterminate progress bar: a segment slides across a track. */
+						.bg-boot__track {
+							position: relative;
+							width: 180px;
+							height: 2px;
+							overflow: hidden;
+							border-radius: 2px;
+							background: var(--vscode-editorWidget-border, #3c3c3c);
+						}
+						.bg-boot__track::before {
+							content: '';
+							position: absolute;
+							inset: 0;
+							width: 40%;
+							border-radius: 2px;
+							background: var(--vscode-progressBar-background, #0e70c0);
+							animation: bg-boot-slide 1.3s ease-in-out infinite;
+						}
+						@keyframes bg-boot-spin {
+							to { transform: rotate(360deg); }
+						}
+						@keyframes bg-boot-slide {
+							from { transform: translateX(-110%); }
+							to { transform: translateX(360%); }
+						}
+					</style>
 			</head>
 			<body>
 	            <noscript>You need to enable JavaScript to run this app.</noscript>
-				<div id="root"></div>${
+				<div id="root">
+					<div class="bg-boot">
+						<div class="bg-boot__spinner"></div>
+						<div class="bg-boot__label">Loading graph editor...</div>
+						<div class="bg-boot__track"></div>
+					</div>
+				</div>${
           pluginScript
             ? `
 				<script nonce="${nonce}">${pluginScript.replace(
-            /<\/script/gi,
-            '<\\/script'
-          )}</script>`
+          /<\/script/gi,
+          '<\\/script'
+        )}</script>`
             : ''
         }
 				<script  type="module" nonce="${nonce}" src="${scriptUri}"></script>

@@ -1,6 +1,6 @@
 {
   "name": "@kiberon-labs/behave-graph-flow",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "type": "module",
   "exports": {
     ".": {
@@ -32,8 +32,6 @@
     "typecheck": "tsc --noEmit -p tsconfig.prod.json"
   },
   "devDependencies": {
-    "@bosh-code/tsdown-plugin-inject-css": "^2.0.0",
-    "@bosh-code/tsdown-plugin-tailwindcss": "^1.0.1",
     "@kiberon-labs/behave-graph": "workspace:*",
     "@storybook/addon-a11y": "^10.0.8",
     "@storybook/addon-docs": "^10.0.8",
@@ -56,7 +54,6 @@
     "react-dom": "19.2.3",
     "reactflow": "^11.11.4",
     "storybook": "^10.0.8",
-    "tailwindcss": "^4.1.17",
     "tsdown": "^0.16.5",
     "unplugin-lightningcss": "^0.4.3",
     "vite": "^7.2.4",
@@ -74,6 +71,7 @@
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.15",
     "@reactflow/node-resizer": "^2.2.14",
+    "@tiptap/extension-youtube": "^3.27.1",
     "@tiptap/react": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
     "@vscode-elements/react-elements": "^2.4.0",
@@ -81,9 +79,7 @@
     "clsx": "^2.1.1",
     "copy-to-clipboard": "^3.3.3",
     "dagre": "^0.8.5",
-    "dockview": "^4.11.0",
     "elkjs": "^0.11.0",
-    "fastify": "^5.7.4",
     "fuse.js": "^7.1.0",
     "graphlib": "^2.1.8",
     "iconoir-react": "^7.11.0",
@@ -96,7 +92,6 @@
     "react-hotkeys": "^2.0.0",
     "tiptap-markdown": "^0.9.0",
     "uuid": "^8.3.2",
-    "zod": "^4.1.13",
     "zustand": "^5.0.8"
   },
   "peerDependencies": {

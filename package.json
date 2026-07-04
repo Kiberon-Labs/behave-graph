@@ -27,7 +27,6 @@
     "build": "turbo build",
     "clean": "turbo clean",
     "dev": "turbo dev",
-    
     "test": "turbo test",
     "test:ci": "turbo run test --filter=\"[origin/$BASE_REF...HEAD]\"",
     "lint": "turbo run lint",

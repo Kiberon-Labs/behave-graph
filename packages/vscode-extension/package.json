@@ -1,8 +1,8 @@
 {
-  "name": "kiberon-labs-behave-engine-vscode",
-  "displayName": "kiberon-labs Graph extension",
+  "name": "behave-graph",
+  "displayName": "Behave Graph",
   "description": "Run behave graphs locally in VS Code",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "license": "MPL-2.0",
   "publisher": "kiberon-labs",
@@ -136,7 +136,10 @@
   "scripts": {
     "vite": "vite",
     "build:app": "vite build",
-    "vscode:prepublish": "yarn run build",
+    "vscode:prepublish": "npm run build",
+    "package": "vsce package --no-dependencies -o behave-graph.vsix",
+    "publish:vs-marketplace": "vsce publish --no-dependencies --packagePath behave-graph.vsix --skip-duplicate",
+    "publish:open-vsx": "ovsx publish behave-graph.vsix --skip-duplicate",
     "build": "npm run check-types  && npm run build:app && npm run build:ext",
     "build:ext": "node esbuild.js",
     "dev": "npm-run-all -p dev:*",
@@ -152,7 +155,6 @@
     "@kiberon-labs/behave-graph": "workspace:*",
     "@kiberon-labs/behave-graph-flow": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.26.0",
-    "rc-dock": "4.0.0-alpha.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "zod": "^4.3.6"
@@ -162,8 +164,10 @@
     "@types/node": "20.x",
     "@types/vscode": "^1.99.0",
     "@vscode/test-cli": "^0.0.9",
+    "@vscode/vsce": "^3.6.0",
     "esbuild": "^0.27.0",
     "npm-run-all": "^4.1.5",
+    "ovsx": "^0.10.5",
     "vite": "^7.2.4",
     "oxfmt": "^0.14.0",
     "oxlint": "^1.29.0"

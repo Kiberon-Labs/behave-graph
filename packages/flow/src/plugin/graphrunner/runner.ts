@@ -184,5 +184,4 @@ export class GraphRunner {
       setError(error instanceof Error ? error.message : String(error));
     }
   }
-
 }

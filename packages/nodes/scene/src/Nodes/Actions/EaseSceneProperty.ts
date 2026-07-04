@@ -1,6 +1,5 @@
 import {
   AsyncNode,
-  type Easing,
   EasingFunctions,
   EasingModes,
   Engine,
@@ -11,6 +10,9 @@ import {
   Socket,
   toCamelCase
 } from '@kiberon-labs/behave-graph';
+
+/** An easing curve: maps a normalized time `t` in [0,1] to an eased value. */
+type Easing = (typeof EasingFunctions)[keyof typeof EasingFunctions];
 
 import type { IScene } from '../../Abstractions/IScene.js';
 

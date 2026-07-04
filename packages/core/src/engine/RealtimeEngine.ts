@@ -142,6 +142,25 @@ export class RealtimeEngine extends Engine {
     this.deletedNodeIds.clear();
   }
 
+  /** True when a fiber's next evaluation targets a node that has been deleted. */
+  private isFiberTargetingDeletedNode(fiber: Fiber): boolean {
+    return fiber.nextEval !== null && this.isNodeDeleted(fiber.nextEval.nodeId);
+  }
+
+  /**
+   * Drop any fibers at the head of the queue whose next evaluation targets a
+   * deleted node, so the main loop only ever processes a live fiber.
+   */
+  private skipDeletedFibersAtHead(fiberQueue: Fiber[]): void {
+    while (
+      fiberQueue.length > 0 &&
+      fiberQueue[0]?.nextEval &&
+      this.isNodeDeleted(fiberQueue[0].nextEval.nodeId)
+    ) {
+      fiberQueue.shift();
+    }
+  }
+
   /**
    * Override executeAllSync to skip fibers targeting deleted nodes
    */
@@ -160,14 +179,8 @@ export class RealtimeEngine extends Engine {
       elapsedSeconds < limitInSeconds &&
       fiberQueue.length > 0
     ) {
-      // Remove any fibers targeting deleted nodes before processing
-      while (
-        fiberQueue.length > 0 &&
-        fiberQueue[0]?.nextEval &&
-        this.isNodeDeleted(fiberQueue[0].nextEval.nodeId)
-      ) {
-        fiberQueue.shift();
-      }
+      // Remove any fibers targeting deleted nodes before processing.
+      this.skipDeletedFibersAtHead(fiberQueue);
 
       // If no valid fibers remain, exit
       if (fiberQueue.length === 0) {
@@ -180,11 +193,8 @@ export class RealtimeEngine extends Engine {
       try {
         await currentFiber.executeStep();
       } catch (error) {
-        // If error is due to deleted node, skip this fiber
-        if (
-          currentFiber.nextEval &&
-          this.isNodeDeleted(currentFiber.nextEval.nodeId)
-        ) {
+        // If error is due to deleted node, skip this fiber and move on.
+        if (this.isFiberTargetingDeletedNode(currentFiber)) {
           fiberQueue.shift();
           elapsedSteps += 1;
           continue;

@@ -7,142 +7,41 @@ import React from 'react';
 import { useStore } from 'zustand';
 
 import { ImageMagick, MagickFormat } from '@imagemagick/magick-wasm';
+import {
+  getPreviewUrl,
+  imageSignature,
+  setPreviewUrl
+} from './previewCache.js';
+import {
+  isBrowserRenderableMime,
+  looksLikeUrl,
+  sniffMime,
+  tryDeserializeUint8Array
+} from '../imageBytes.js';
 
-function isUint8Array(value: unknown): value is Uint8Array {
-  return (
-    typeof value === 'object' && value !== null && value instanceof Uint8Array
-  );
-}
+type ImageNodePreviewProps = SpecificRenderProps & {
+  /**
+   * When false, ignore the `image.showPreview` setting and always render the
+   * preview. Used by the dedicated `image/preview` node so it stays visible
+   * even when inline previews are toggled off globally.
+   */
+  respectSetting?: boolean;
+};
 
-function looksLikeUrl(value: string): boolean {
-  return (
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('http:') ||
-    value.startsWith('https:')
-  );
-}
-
-function tryDeserializeUint8Array(value: unknown): Uint8Array | undefined {
-  if (isUint8Array(value)) return value;
-
-  // Node.js Buffer structured-clone / JSON shape
-  if (
-    typeof value === 'object' &&
-    value !== null &&
-    (value as any).type === 'Buffer' &&
-    Array.isArray((value as any).data)
-  ) {
-    const data = (value as any).data;
-    if (data.every((n: any) => typeof n === 'number')) {
-      return new Uint8Array(data);
-    }
-  }
-
-  if (value instanceof ArrayBuffer) return new Uint8Array(value);
-  if (ArrayBuffer.isView(value)) {
-    const view = value as ArrayBufferView;
-    return new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
-  }
-
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (looksLikeUrl(trimmed)) return undefined;
-    if (!trimmed.startsWith('[')) return undefined;
-
-    try {
-      const parsed = JSON.parse(trimmed);
-      if (Array.isArray(parsed) && parsed.every((n) => typeof n === 'number')) {
-        return new Uint8Array(parsed);
-      }
-    } catch {
-      return undefined;
-    }
-  }
-
-  if (Array.isArray(value) && value.every((n) => typeof n === 'number')) {
-    return new Uint8Array(value);
-  }
-
-  return undefined;
-}
-
-function sniffMime(bytes: Uint8Array): string {
-  // PNG: 89 50 4E 47 0D 0A 1A 0A
-  if (
-    bytes.length >= 8 &&
-    bytes[0] === 0x89 &&
-    bytes[1] === 0x50 &&
-    bytes[2] === 0x4e &&
-    bytes[3] === 0x47 &&
-    bytes[4] === 0x0d &&
-    bytes[5] === 0x0a &&
-    bytes[6] === 0x1a &&
-    bytes[7] === 0x0a
-  ) {
-    return 'image/png';
-  }
-
-  // JPEG: FF D8 FF
-  if (
-    bytes.length >= 3 &&
-    bytes[0] === 0xff &&
-    bytes[1] === 0xd8 &&
-    bytes[2] === 0xff
-  ) {
-    return 'image/jpeg';
-  }
-
-  // GIF: GIF87a / GIF89a
-  if (
-    bytes.length >= 6 &&
-    bytes[0] === 0x47 &&
-    bytes[1] === 0x49 &&
-    bytes[2] === 0x46 &&
-    bytes[3] === 0x38 &&
-    (bytes[4] === 0x37 || bytes[4] === 0x39) &&
-    bytes[5] === 0x61
-  ) {
-    return 'image/gif';
-  }
-
-  // WebP: RIFF....WEBP
-  if (
-    bytes.length >= 12 &&
-    bytes[0] === 0x52 &&
-    bytes[1] === 0x49 &&
-    bytes[2] === 0x46 &&
-    bytes[3] === 0x46 &&
-    bytes[8] === 0x57 &&
-    bytes[9] === 0x45 &&
-    bytes[10] === 0x42 &&
-    bytes[11] === 0x50
-  ) {
-    return 'image/webp';
-  }
-
-  // Default to PNG for ImageMagick output in this plugin.
-  return 'image/png';
-}
-
-function isBrowserRenderableMime(mime: string): boolean {
-  return (
-    mime === 'image/png' ||
-    mime === 'image/jpeg' ||
-    mime === 'image/gif' ||
-    mime === 'image/webp'
-  );
-}
-
-export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
+const ImageNodePreviewBase: React.FC<ImageNodePreviewProps> = ({
+  node,
+  respectSetting = true
+}) => {
   const system = useSystem();
   const nodeId = node.id;
 
-  // Plugin setting (registered in ui.tsx). Defaults to on when unset.
-  const showPreview = useStore(
+  // Plugin setting (registered in ui.tsx). Defaults to on when unset. The
+  // dedicated preview node opts out of the setting entirely.
+  const settingOn = useStore(
     system.systemSettings,
     (s) => s['image.showPreview'] !== false
   );
+  const showPreview = respectSetting ? settingOn : true;
 
   const edges = useStore(system.edgeStore, (s) => s.edges);
   const imageSocketConnected = React.useMemo(() => {
@@ -165,7 +64,6 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
     : (portImageValue ?? liveImageValue);
 
   const [imageSrc, setImageSrc] = React.useState<string | undefined>(undefined);
-  const objectUrlRef = React.useRef<string | undefined>(undefined);
 
   React.useEffect(() => {
     if (!nodeId || !showPreview) return;
@@ -174,57 +72,41 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
   }, [nodeId, showPreview, system.realtimeRunner]);
 
   React.useEffect(() => {
-    return () => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-        objectUrlRef.current = undefined;
-      }
-    };
-  }, []);
-
-  React.useEffect(() => {
     let cancelled = false;
-
-    const setDirectUrl = (url: string | undefined) => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-        objectUrlRef.current = undefined;
-      }
-      setImageSrc(url);
+    const show = (url: string | undefined) => {
+      if (!cancelled) setImageSrc(url);
+    };
+    const done = () => () => {
+      cancelled = true;
     };
 
-    const setObjectUrl = (url: string) => {
-      if (cancelled) {
-        URL.revokeObjectURL(url);
-        return;
-      }
-      const prev = objectUrlRef.current;
-      objectUrlRef.current = url;
-      setImageSrc(url);
-      if (prev && prev !== url) URL.revokeObjectURL(prev);
-    };
-
-    // Previews disabled: clear any current image and skip the decode work.
+    // Previews disabled: clear the image and skip all decode work.
     if (!showPreview) {
-      setDirectUrl(undefined);
-      return () => {
-        cancelled = true;
-      };
+      show(undefined);
+      return done();
     }
 
+    // Externally-owned URLs (data:/blob:/http:) render directly, uncached.
     if (typeof imageValue === 'string' && looksLikeUrl(imageValue)) {
-      setDirectUrl(imageValue);
-      return () => {
-        cancelled = true;
-      };
+      show(imageValue);
+      return done();
     }
 
     const bytes = tryDeserializeUint8Array(imageValue);
     if (!bytes || bytes.byteLength === 0) {
-      setDirectUrl(undefined);
-      return () => {
-        cancelled = true;
-      };
+      show(undefined);
+      return done();
+    }
+
+    // Content-addressed cache. React Flow culls off-screen nodes, so a node that
+    // scrolls back into view remounts and reuses its cached blob URL here instead
+    // of re-decoding and re-creating one — the object URL's lifetime is owned by
+    // the cache, not by this component's mount/unmount.
+    const key = imageSignature(bytes);
+    const cached = getPreviewUrl(key);
+    if (cached !== undefined) {
+      show(cached);
+      return done();
     }
 
     const blobBytes = new Uint8Array(bytes.byteLength);
@@ -235,7 +117,8 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
       const url = URL.createObjectURL(
         new Blob([blobBytes], { type: detectedMime })
       );
-      setObjectUrl(url);
+      setPreviewUrl(key, url);
+      show(url);
     } else {
       ImageMagick.read(blobBytes, (image) => {
         const target = MagickFormat.Png;
@@ -247,7 +130,8 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
             const url = URL.createObjectURL(
               new Blob([safePngBytes], { type: 'image/png' })
             );
-            setObjectUrl(url);
+            setPreviewUrl(key, url);
+            show(url);
           } finally {
             image.dispose();
           }
@@ -255,16 +139,25 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
       });
     }
 
-    return () => {
-      cancelled = true;
-    };
+    return done();
   }, [imageValue, showPreview]);
 
   if (!showPreview || !imageSrc) return null;
 
   return (
-    <div className="px-2 pb-2">
-      <div className="rounded overflow-hidden border border-gray-700">
+    <div
+      style={{
+        padding:
+          '0 var(--component-spacing-sm, 8px) var(--component-spacing-sm, 8px)'
+      }}
+    >
+      <div
+        style={{
+          overflow: 'hidden',
+          borderRadius: 'var(--component-radii-sm, 4px)',
+          border: '1px solid var(--ds-panel-border, #2b2b2b)'
+        }}
+      >
         <img
           src={imageSrc}
           alt="preview"
@@ -275,7 +168,6 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
             display: 'block',
             objectFit: 'contain'
           }}
-          className="block w-full h-auto"
           draggable={false}
         />
       </div>
@@ -283,15 +175,39 @@ export const ImageNodePreview: React.FC<SpecificRenderProps> = ({ node }) => {
   );
 };
 
+/** Inline preview that respects the `image.showPreview` toggle. */
+const ImageNodePreview: React.FC<SpecificRenderProps> = (props) => (
+  <ImageNodePreviewBase {...props} respectSetting />
+);
+
+/** Inline preview that is always shown, regardless of the toggle. */
+const AlwaysImageNodePreview: React.FC<SpecificRenderProps> = (props) => (
+  <ImageNodePreviewBase {...props} respectSetting={false} />
+);
+
+const producesImageOutput = (spec: {
+  outputs?: { name: string; valueType: string }[];
+}) =>
+  spec.outputs?.some(
+    (socket) => socket.name === 'image' && socket.valueType === 'image'
+  ) ?? false;
+
 export const imagePreviewSpecific: Specific = {
   name: 'imagePreview',
   // Match any node that produces an `image` output , value-type coupling, not a
   // node-type prefix , so image-producing nodes from other packages (e.g. the
   // AI package's `ai/generateImage`) get the inline preview too. The renderer
   // watches the `image` output, so require a socket of that exact name + type.
-  check: (spec) =>
-    spec.outputs?.some(
-      (socket) => socket.name === 'image' && socket.valueType === 'image'
-    ) ?? false,
+  //
+  // The dedicated `image/preview` node is excluded here and handled by
+  // `imageAlwaysPreviewSpecific` below, so it never renders two previews.
+  check: (spec) => spec.type !== 'image/preview' && producesImageOutput(spec),
   render: ImageNodePreview
+};
+
+export const imageAlwaysPreviewSpecific: Specific = {
+  name: 'imageAlwaysPreview',
+  // Only the dedicated preview node, which always shows its preview.
+  check: (spec) => spec.type === 'image/preview',
+  render: AlwaysImageNodePreview
 };

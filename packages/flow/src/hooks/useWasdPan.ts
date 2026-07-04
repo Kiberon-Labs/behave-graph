@@ -9,11 +9,33 @@ export type UseWasdPanOptions = {
   enabled?: boolean;
 };
 
-const isEventFromEditable = (event: KeyboardEvent) => {
+const isEditableElement = (element: HTMLElement): boolean => {
+  const tag = element.tagName?.toLowerCase();
+  // Contenteditable surfaces (e.g. the notes plugin's prosemirror editor) are
+  // divs, so checking the tag alone is not enough — WASD must type, not pan.
+  return (
+    tag === 'input' ||
+    tag === 'textarea' ||
+    tag === 'select' ||
+    element.isContentEditable
+  );
+};
+
+export const isEventFromEditable = (event: KeyboardEvent) => {
+  // Events from inside a web component are retargeted: at the window listener
+  // `event.target` is the custom-element host (e.g. the conversation panel's
+  // <vscode-textfield>), not the <input> in its shadow DOM. composedPath()
+  // exposes the real target chain, so walk it and check every element.
+  const path =
+    typeof event.composedPath === 'function' ? event.composedPath() : [];
+  if (path.length > 0) {
+    return path.some(
+      (node) => node instanceof HTMLElement && isEditableElement(node)
+    );
+  }
   const target = event.target as HTMLElement | null;
-  const tag = target?.tagName?.toLowerCase();
-  //Just a patch to avoid pan when focus is in input/textarea or contenteditable element
-  return tag !== 'div';
+  if (!target) return false;
+  return isEditableElement(target);
 };
 
 export const useWasdPan = ({

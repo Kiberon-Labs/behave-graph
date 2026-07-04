@@ -21,7 +21,6 @@ import { eventsStoreFactory, type EventsStore } from '@/store/events';
 import { layerStoreFactory, type LayerStore } from '@/store/layers';
 import { logStoreFactory, type LogStore } from '@/store/logs';
 import { graphMetaStoreFactory, type GraphMetaStore } from '@/store/graphMeta';
-import { setupSessionActions } from '@/plugin/alignment';
 import type { UIGraphJSON } from '@/types/graph';
 
 /**
@@ -37,7 +36,7 @@ import type { UIGraphJSON } from '@/types/graph';
  *   }
  * }
  */
-export interface IGraphSession { }
+export interface IGraphSession {}
 
 /**
  * Merge the augmentable surface into the class instance type. Declaration
@@ -46,7 +45,7 @@ export interface IGraphSession { }
  * alone would NOT provide.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface GraphSession extends IGraphSession { }
+export interface GraphSession extends IGraphSession {}
 
 /**
  * A single open graph. Owns all per-graph state , nodes, edges, variables,
@@ -113,8 +112,9 @@ export class GraphSession {
     this.traceStore = traceStoreFactory(this);
     this.graph = new Graph(this);
 
-    // Per-session action subscribers (alignment, ...)
-    setupSessionActions(this);
+    // Per-session behaviours (alignment, ...) are contributed by opt-in plugins
+    // via system.registerSessionExtension(...), not wired here. See the
+    // alignment plugin (`@/plugin/alignment`).
   }
 
   /**
@@ -128,7 +128,10 @@ export class GraphSession {
    * Attach a plugin-contributed property to this session. The companion to the
    * {@link IGraphSession} augmentation; mirrors {@link System.decorate}.
    */
-  decorate<K extends keyof IGraphSession>(name: K, val: IGraphSession[K]): void {
+  decorate<K extends keyof IGraphSession>(
+    name: K,
+    val: IGraphSession[K]
+  ): void {
     (this as IGraphSession)[name] = val;
   }
 

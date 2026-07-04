@@ -21,7 +21,8 @@ describe('image package manifest', () => {
     const manifest = await runManifestSource(manifestSource);
     const types = manifest.nodes.map((n) => n.type);
     expect(types).toContain('image/blur');
-    expect(types).toHaveLength(39);
+    expect(types).toContain('image/preview');
+    expect(types).toHaveLength(71);
     const blur = manifest.nodes.find((n) => n.type === 'image/blur');
     expect(blur?.inputs.map((i) => i.name)).toEqual([
       'image',
@@ -39,6 +40,7 @@ describe('image package manifest', () => {
       [
         ContributionKind.Control,
         ContributionKind.Panel,
+        ContributionKind.Specific,
         ContributionKind.Specific,
         ContributionKind.ValueType
       ].sort()

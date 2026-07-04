@@ -18,7 +18,6 @@ import {
 import { create } from 'zustand';
 import { nonDeletable } from '@/annotations';
 import GroupNode from '@/components/nodes/group';
-import { CommentNode } from '@/components/nodes/comment/comment';
 import { BehaveNode } from '@/components/nodes/behave';
 
 export type FlowStore = {
@@ -38,28 +37,14 @@ export type FlowStore = {
   ) => void;
 };
 
-// const specJson = useStore(sys.specStore, (s) => s.specs);
-// const [customNodeTypes, setCustomNodeTypes] = useState<NodeTypes>();
-// useEffect(() => {
-//   if (!specJson) return;
-//   const customNodeTypes: Record<
-//     AnyNodeType,
-//     React.ComponentType<any>
-//   > = getCustomNodeTypes(specJson);
-
-//   customNodeTypes['commentNode'] = CommentNode;
-//   customNodeTypes['group'] = GroupNode;
-//   // customNodeTypes['behaveNode:ai'] = AINode;
-
-//   setCustomNodeTypes(customNodeTypes);
-// }, [specJson]);
-
 export const flowStoreFactory = (session: GraphSession) => {
   const flowStore = create<FlowStore>((set, get) => ({
     graphJson: null,
+    // `noteNode` (and its legacy `commentNode` alias) is contributed by the
+    // optional notes plugin (`@/plugin/notes`), which owns the heavy
+    // tiptap/prosemirror dependency.
     nodeTypes: {
       group: GroupNode,
-      commentNode: CommentNode,
       behaveNode: BehaveNode
     },
     invalidateCache: () => set({ graphJson: null }),

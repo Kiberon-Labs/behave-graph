@@ -10,7 +10,7 @@ import type { IAICredentials } from '../src/index.js';
 const apiKey = process.env.OPENROUTER_API_KEY;
 const live = apiKey ? describe : describe.skip;
 
-const FREE_MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
+const FREE_MODEL = 'openai/gpt-oss-120b';
 
 live('OpenRouter free model (live)', () => {
   const credentials: IAICredentials = { getApiKey: () => apiKey };

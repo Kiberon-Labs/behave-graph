@@ -11,8 +11,7 @@ import type { BackendServiceRequirement } from './ManifestJSON.js';
  * ## Why this exists
  *
  * Some node packages can't work from node definitions alone — they need a
- * long-lived side effect set up *outside* any single graph run. The motivating
- * case is Slack: the trigger nodes (`slack/onMention`, ...) react to events that
+ * long-lived side effect set up *outside* any single graph run. Example to react to events that
  * only arrive if something is holding a Socket Mode WebSocket open and routing
  * inbound events. That "something" is a backend service: it is created once, kept
  * alive across runs, and contributes the engine {@link Dependencies} the trigger

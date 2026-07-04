@@ -14,9 +14,7 @@ const LazyPanel = lazy(() =>
 
 export function DocumentationBrowserPanel() {
   return (
-    <Suspense
-      fallback={<div className={styles.container} />}
-    >
+    <Suspense fallback={<div className={styles.container} />}>
       <LazyPanel />
     </Suspense>
   );

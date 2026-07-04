@@ -491,7 +491,12 @@ export class RealtimeRunner {
     const nodes = this.system.nodeStore.getState().nodes;
     const edges = this.system.edgeStore.getState().edges;
 
-    const rawGraphJson = flowToBehave(this.system.session!, nodes, edges, specJson);
+    const rawGraphJson = flowToBehave(
+      this.system.session!,
+      nodes,
+      edges,
+      specJson
+    );
     const graphWithAnnotations = this.mergeNodeAnnotationsIntoMetadata(
       rawGraphJson,
       nodes

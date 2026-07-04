@@ -21,7 +21,8 @@ import type {
   RunStatus,
   ServerGraphRunnerMessage,
   ServerVariable,
-  ServerEvent
+  ServerEvent,
+  TraceBatchEvent
 } from '../graphrunner/types.js';
 import { sleep } from '@kiberon-labs/behave-graph';
 
@@ -41,6 +42,12 @@ export interface ActiveRun {
   isPaused: boolean;
   executionPhase: 'start' | 'tick' | 'end' | 'completed';
   currentTick: number;
+  /**
+   * Flushes any trace events still buffered by {@link setupTracing}. Set when
+   * tracing is enabled; call before emitting `completed`/`stopped` so the
+   * client receives the tail of the trace while the run id is still routable.
+   */
+  flushTracing?: () => void;
 }
 
 export interface MessageContext {
@@ -188,20 +195,59 @@ export function handleGetCapabilities(ctx: MessageContext): void {
   });
 }
 
+/** Flush buffered trace events roughly once per frame. */
+const TRACE_FLUSH_INTERVAL_MS = 16;
+/** Safety valve: flush early if a single window buffers this many events. */
+const TRACE_FLUSH_MAX_EVENTS = 2048;
+
 /**
- * Setup tracing for a run
+ * Setup tracing for a run.
+ *
+ * Node execution events are buffered and flushed as a single `traceBatch`
+ * message per flush window instead of one `trace` message per event. A graph
+ * ticking at display rate executes every node twice per frame (start + end);
+ * sending each event individually made the message pipeline (store updates,
+ * postMessage for the worker runner) the dominant per-frame cost.
  */
 export function setupTracing(
   run: ActiveRun,
   graphId: string,
   ctx: MessageContext
 ): void {
-  run.engine.onNodeExecutionStart.addListener((node) => {
-    run.performance.nodesExecuted++;
+  let buffer: TraceBatchEvent[] = [];
+  let flushTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const flush = () => {
+    if (flushTimer !== undefined) {
+      clearTimeout(flushTimer);
+      flushTimer = undefined;
+    }
+    if (buffer.length === 0) return;
+    const events = buffer;
+    buffer = [];
     ctx.sendMessage({
-      type: 'trace',
+      type: 'traceBatch',
       runId: run.runId,
       graphId,
+      events
+    });
+  };
+  run.flushTracing = flush;
+
+  const push = (event: TraceBatchEvent) => {
+    buffer.push(event);
+    if (buffer.length >= TRACE_FLUSH_MAX_EVENTS) {
+      flush();
+      return;
+    }
+    if (flushTimer === undefined) {
+      flushTimer = setTimeout(flush, TRACE_FLUSH_INTERVAL_MS);
+    }
+  };
+
+  run.engine.onNodeExecutionStart.addListener((node) => {
+    run.performance.nodesExecuted++;
+    push({
       nodeId: node.id,
       event: 'start',
       data: { typeName: node.description.typeName },
@@ -210,10 +256,7 @@ export function setupTracing(
   });
 
   run.engine.onNodeExecutionEnd.addListener((node) => {
-    ctx.sendMessage({
-      type: 'trace',
-      runId: run.runId,
-      graphId,
+    push({
       nodeId: node.id,
       event: 'end',
       data: { typeName: node.description.typeName },
@@ -274,8 +317,10 @@ export interface ExecuteGraphLifecycleOptions {
   /** Tick timing when no {@link tickStrategy} is given. Defaults to 50ms. */
   tickInterval?: number;
   /**
-   * When false, the run is left alive at the completed phase instead of being
-   * finalized (no `completed` message / dispose). Defaults to true.
+   * When true, the run finalizes (end phase, `completed` message, engine
+   * dispose) once its flows drain. Defaults to false: the run idles in the
+   * tick phase, keeping event-node subscriptions live and draining any fibers
+   * they commit, until it is explicitly stopped.
    */
   autoEnd?: boolean;
   /**
@@ -301,6 +346,155 @@ export interface ExecuteGraphLifecycleOptions {
   onError?: (error: Error) => void | Promise<void>;
 }
 
+/** True when a lifecycle event has at least one listener attached. */
+function hasListeners(event?: { listenerCount: number }): boolean {
+  return !!event && event.listenerCount > 0;
+}
+
+/**
+ * Run the `start` lifecycle phase: emit the start event (if anyone is
+ * listening) and drain the fibers it commits, then advance to the tick phase.
+ */
+async function runStartPhase(
+  run: ActiveRun,
+  eventEmitter: ILifecycleEventEmitter | undefined,
+  executeStep: () => Promise<unknown>
+): Promise<void> {
+  if (run.executionPhase !== 'start') return;
+  if (hasListeners(eventEmitter?.startEvent)) {
+    eventEmitter!.startEvent.emit();
+    await executeStep();
+  }
+  run.executionPhase = 'tick';
+}
+
+/**
+ * Run the `tick` phase until the run is paused or stopped. Returns `true` when
+ * the loop yielded control mid-tick (paused/stopped) so the caller should bail
+ * out without finalizing.
+ *
+ * A run stays alive here even with no tick listeners: completing it would
+ * dispose the engine and tear down event-node subscriptions (ai/onToolCall,
+ * ai/onMessage, custom triggers) that fire out-of-band, after the start flow has
+ * drained. The loop keeps draining fibers those events commit. Pass
+ * `autoEnd: true` to restore the finalize-when-drained behaviour for
+ * fire-and-forget runs.
+ */
+async function runTickPhase(
+  run: ActiveRun,
+  eventEmitter: ILifecycleEventEmitter | undefined,
+  executeStep: () => Promise<unknown>,
+  tickStrategy: () => Promise<unknown>,
+  options?: ExecuteGraphLifecycleOptions
+): Promise<boolean> {
+  if (run.executionPhase !== 'tick') return false;
+
+  const hasTickListeners = hasListeners(eventEmitter?.tickEvent);
+  const autoEnd = options?.autoEnd ?? false;
+  if (!hasTickListeners && autoEnd) {
+    run.executionPhase = 'end';
+    return false;
+  }
+
+  while (!run.isPaused && run.status === 'running') {
+    if (hasTickListeners) {
+      eventEmitter!.tickEvent.emit();
+      run.currentTick++;
+    }
+    await executeStep();
+
+    if (options?.onStepComplete) {
+      await options.onStepComplete();
+    }
+
+    if (run.isPaused || run.status !== 'running') {
+      return true;
+    }
+
+    await tickStrategy();
+  }
+  return false;
+}
+
+/**
+ * Run the `end` lifecycle phase: emit the end event (if listened) and drain,
+ * then mark the run as reaching the `completed` phase.
+ */
+async function runEndPhase(
+  run: ActiveRun,
+  eventEmitter: ILifecycleEventEmitter | undefined,
+  executeStep: () => Promise<unknown>
+): Promise<void> {
+  if (run.executionPhase !== 'end' || run.isPaused) return;
+  if (hasListeners(eventEmitter?.endEvent)) {
+    eventEmitter!.endEvent.emit();
+    await executeStep();
+  }
+  run.executionPhase = 'completed';
+}
+
+/**
+ * Finalize a run that ran out of fibers and isn't paused. Only autoEnd runs
+ * advance this far; by default a run idles in the tick phase until stopped.
+ */
+async function finalizeCompletedRun(
+  run: ActiveRun,
+  graphId: string,
+  ctx: MessageContext,
+  options?: ExecuteGraphLifecycleOptions
+): Promise<void> {
+  if (
+    run.executionPhase !== 'completed' ||
+    run.isPaused ||
+    !(options?.autoEnd ?? false)
+  ) {
+    return;
+  }
+
+  run.status = 'completed';
+  const elapsedMs = Date.now() - run.startedAt;
+
+  // Deliver any buffered trace events before `completed` , the client
+  // unregisters the run id on completion and would drop a late batch.
+  run.flushTracing?.();
+
+  ctx.sendMessage({
+    type: 'completed',
+    runId: run.runId,
+    graphId,
+    completedAt: Date.now(),
+    elapsedMs,
+    result: null,
+    performance: run.performance
+  });
+
+  run.engine.dispose();
+  await options?.onComplete?.();
+}
+
+/** Mark the run errored, notify, dispose the engine, and rethrow. */
+async function handleLifecycleError(
+  run: ActiveRun,
+  graphId: string,
+  ctx: MessageContext,
+  error: unknown,
+  options?: ExecuteGraphLifecycleOptions
+): Promise<never> {
+  run.status = 'error';
+  run.flushTracing?.();
+  const err = error instanceof Error ? error : new Error(String(error));
+  if (options?.onError) {
+    await options.onError(err);
+  } else {
+    ctx.sendError('NODE_EXECUTION_ERROR', err.message, {
+      runId: run.runId,
+      graphId
+    });
+  }
+  run.engine.dispose();
+  throw error;
+}
+
 export async function executeGraphLifecycle(
   run: ActiveRun,
   graphId: string,
@@ -310,94 +504,29 @@ export async function executeGraphLifecycle(
   const executeStep =
     options?.executeStep ?? (() => run.engine.executeAllAsync());
   const tickStrategy =
-    options?.tickStrategy ?? (() => sleep((options?.tickInterval ?? 50) / 1000));
+    options?.tickStrategy ??
+    (() => sleep((options?.tickInterval ?? 50) / 1000));
 
   try {
     const eventEmitter = run.registry.dependencies?.ILifecycleEventEmitter as
       | ILifecycleEventEmitter
       | undefined;
 
-    // Start phase
-    if (run.executionPhase === 'start') {
-      if (
-        eventEmitter?.startEvent &&
-        eventEmitter.startEvent.listenerCount > 0
-      ) {
-        eventEmitter.startEvent.emit();
-        await executeStep();
-      }
-      run.executionPhase = 'tick';
-    }
+    await runStartPhase(run, eventEmitter, executeStep);
 
-    // Tick phase — for graphs with tick listeners this runs until paused/stopped.
-    if (run.executionPhase === 'tick') {
-      if (eventEmitter?.tickEvent && eventEmitter.tickEvent.listenerCount > 0) {
-        while (!run.isPaused && run.status === 'running') {
-          eventEmitter.tickEvent.emit();
-          await executeStep();
-          run.currentTick++;
+    const yielded = await runTickPhase(
+      run,
+      eventEmitter,
+      executeStep,
+      tickStrategy,
+      options
+    );
+    if (yielded) return;
 
-          if (options?.onStepComplete) {
-            await options.onStepComplete();
-          }
-
-          if (run.isPaused || run.status !== 'running') {
-            return;
-          }
-
-          await tickStrategy();
-        }
-      } else {
-        run.executionPhase = 'end';
-      }
-    }
-
-    // End phase
-    if (run.executionPhase === 'end' && !run.isPaused) {
-      if (eventEmitter?.endEvent && eventEmitter.endEvent.listenerCount > 0) {
-        eventEmitter.endEvent.emit();
-        await executeStep();
-      }
-      run.executionPhase = 'completed';
-    }
-
-    // Finalize once the run has actually reached the completed phase (i.e. it ran
-    // out of fibers to execute) and isn't paused. autoEnd defaults to true, so a
-    // normal run completes; pass autoEnd=false to keep it alive for manual control.
-    if (
-      run.executionPhase === 'completed' &&
-      !run.isPaused &&
-      (options?.autoEnd ?? true)
-    ) {
-      run.status = 'completed';
-      const elapsedMs = Date.now() - run.startedAt;
-
-      ctx.sendMessage({
-        type: 'completed',
-        runId: run.runId,
-        graphId,
-        completedAt: Date.now(),
-        elapsedMs,
-        result: null,
-        performance: run.performance
-      });
-
-      run.engine.dispose();
-      await options?.onComplete?.();
-    }
+    await runEndPhase(run, eventEmitter, executeStep);
+    await finalizeCompletedRun(run, graphId, ctx, options);
   } catch (error) {
-    run.status = 'error';
-    const err = error instanceof Error ? error : new Error(String(error));
-    if (options?.onError) {
-      await options.onError(err);
-    } else {
-      ctx.sendError('NODE_EXECUTION_ERROR', err.message, {
-        runId: run.runId,
-        graphId
-      });
-    }
-    run.engine.dispose();
-    throw error;
+    await handleLifecycleError(run, graphId, ctx, error, options);
   }
 }
 

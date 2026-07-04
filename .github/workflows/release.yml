@@ -19,6 +19,9 @@ jobs:
     if: github.repository == 'kiberon-labs/behave-graph'
     name: Release
     runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
+      publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,4 +56,15 @@ jobs:
           # Use OIDC for npm authentication instead of NPM_TOKEN
           # # https://github.com/changesets/changesets/issues/1152#issuecomment-3190884868
           NPM_TOKEN: ${{ SECRETS.NPM_TOKEN}}
+
+  # Dual-publish the VS Code extension (VS Code Marketplace + Open VSX)
+  # whenever changesets tagged a new version of it in this release. The
+  # extension is a private package (not on npm); changesets versions and
+  # tags it via the privatePackages setting in .changeset/config.json.
+  publish-extension:
+    name: Publish VS Code Extension
+    needs: release
+    if: needs.release.outputs.published == 'true' && contains(needs.release.outputs.publishedPackages, '"behave-graph"')
+    uses: ./.github/workflows/publish-extension.yml
+    secrets: inherit
 

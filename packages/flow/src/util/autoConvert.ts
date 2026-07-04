@@ -90,7 +90,7 @@ export const resolveConverter = (
 };
 
 /** Resolve a node socket's value type (spec sockets merged with dynamic ports). */
-export const getSocketValueType = (
+const getSocketValueType = (
   node: IBehaveNode,
   handleId: string | null | undefined,
   handleType: 'source' | 'target',
@@ -151,7 +151,12 @@ export const buildConverterInsertion = (
   if (sourceType === targetType) return null;
   if (sourceType === 'flow' || targetType === 'flow') return null;
 
-  const converter = resolveConverter(specs, sourceType, targetType, conversions);
+  const converter = resolveConverter(
+    specs,
+    sourceType,
+    targetType,
+    conversions
+  );
   if (!converter) return null;
 
   const { nodeType, inputName: inName, outputName: outName } = converter;

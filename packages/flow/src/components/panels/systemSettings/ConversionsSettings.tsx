@@ -29,10 +29,7 @@ export const ConversionsSettings: React.FC = () => {
     () => Object.keys(values).filter((t) => t !== 'flow'),
     [values]
   );
-  const nodeTypes = useMemo(
-    () => specs.map((s) => s.type).sort(),
-    [specs]
-  );
+  const nodeTypes = useMemo(() => specs.map((s) => s.type).sort(), [specs]);
 
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -114,7 +111,9 @@ export const ConversionsSettings: React.FC = () => {
             iconOnly
             title="Remove"
             onClick={() =>
-              sys.conversionStore.getState().removeConversion(rule.from, rule.to)
+              sys.conversionStore
+                .getState()
+                .removeConversion(rule.from, rule.to)
             }
           >
             <Trash />
@@ -172,7 +171,9 @@ export const ConversionsSettings: React.FC = () => {
             </VscodeSingleSelect>
             <VscodeSingleSelect
               value={outputKey}
-              onChange={(e: any) => setOutputKey(String(e?.target?.value ?? ''))}
+              onChange={(e: any) =>
+                setOutputKey(String(e?.target?.value ?? ''))
+              }
             >
               <VscodeOption value="">output port…</VscodeOption>
               {outputPorts.map((p) => (

@@ -42,7 +42,7 @@ export function LegendPanel() {
 
   return (
     <BasePanel>
-      <div className="flex flex-col gap-1">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         <VscodeTable zebra columns={['50', '50', 'auto']}>
           <VscodeTableHeader>
             <VscodeTableHeaderCell>Color</VscodeTableHeaderCell>

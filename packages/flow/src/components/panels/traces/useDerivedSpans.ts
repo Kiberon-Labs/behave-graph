@@ -80,21 +80,23 @@ export function useDerivedSpans(
  * layout math (lane assignment, min-span visibility, ticks, zoom clamping) can be
  * unit-tested without a React render.
  */
-export function computeDerivedSpans(
-  collector: SpanCollector,
-  windowMs: number,
-  view: ViewState
-): DerivedData {
-  const now = performance.now();
+type TraceSpan = import('@/store/traces').TraceSpan;
+
+interface SpanScan {
+  minStart: number;
+  maxEnd: number;
+  maxLane: number;
+  buckets: TraceSpan[][];
+}
+
+/** Walk the ring buffer newest-window-first, bucketing spans by lane and
+ * tracking the overall time/lane bounds. */
+function scanSpans(collector: SpanCollector, now: number): SpanScan {
   const { capacity, size, writeIndex, spans } = collector;
-
-  if (size <= 0) return { ...EMPTY, now };
-
   let minStart = Number.POSITIVE_INFINITY;
   let maxEnd = Number.NEGATIVE_INFINITY;
   let maxLane = -1;
-
-  const buckets: Array<import('@/store/traces').TraceSpan[]> = [];
+  const buckets: TraceSpan[][] = [];
 
   const startIndex = (writeIndex - size + capacity) % capacity;
   for (let i = 0; i < size; i++) {
@@ -110,6 +112,154 @@ export function computeDerivedSpans(
 
     (buckets[s.lane] ??= []).push(s);
   }
+
+  return { minStart, maxEnd, maxLane, buckets };
+}
+
+interface ViewWindow {
+  viewStart: number;
+  viewEnd: number;
+  viewRange: number;
+}
+
+/** Resolve the visible time window from the data bounds, the follow/zoom mode,
+ * and the requested window size. */
+function resolveViewWindow(
+  scan: SpanScan,
+  fullRange: number,
+  windowMs: number,
+  view: ViewState
+): ViewWindow {
+  const { minStart, maxEnd } = scan;
+  const desiredRange = windowMs <= 0 ? fullRange : Math.max(1, windowMs);
+  const desiredStart = Math.max(minStart, maxEnd - desiredRange);
+
+  // Following snaps to the data range; manual zoom may pull back past the data
+  // extent (up to MAX_ZOOM_OUT_FACTOR×) so short traces aren't un-zoom-out-able.
+  const viewRange = clamp(
+    view.follow ? desiredRange : view.range,
+    1,
+    view.follow ? fullRange : fullRange * MAX_ZOOM_OUT_FACTOR
+  );
+  const viewStart = clamp(
+    view.follow ? desiredStart : view.start,
+    minStart,
+    maxEnd - viewRange
+  );
+
+  return { viewStart, viewEnd: viewStart + viewRange, viewRange };
+}
+
+type PlacedSpan = {
+  span: TraceSpan;
+  leftPct: number;
+  widthPct: number;
+  rightPct: number;
+  durationMs: number;
+};
+
+/** Project a single span onto the view window, or null if it falls outside. */
+function placeSpan(
+  s: TraceSpan,
+  now: number,
+  win: ViewWindow
+): PlacedSpan | null {
+  const { viewStart, viewEnd, viewRange } = win;
+  const rawEnd = Number.isNaN(s.end) ? now : s.end;
+  const end = visualEnd(s.start, rawEnd);
+  if (end < viewStart || s.start > viewEnd) return null;
+
+  const visibleStart = Math.max(s.start, viewStart);
+  const visibleEnd = Math.min(end, viewEnd);
+  if (visibleEnd <= visibleStart) return null;
+
+  const rawLeft = ((visibleStart - viewStart) / viewRange) * 100;
+  const rawWidth = ((visibleEnd - visibleStart) / viewRange) * 100;
+  const leftPct = clamp(rawLeft, 0, 100);
+  const widthPct = clamp(Math.max(MIN_WIDTH_PCT, rawWidth), 0, 100 - leftPct);
+  const rightPct = leftPct + widthPct;
+  // Report the true duration (0ms for instant nodes), not the padded one.
+  const durationMs = Math.max(0, rawEnd - s.start);
+
+  return { span: s, leftPct, widthPct, rightPct, durationMs };
+}
+
+/** Pack a placed span into the lowest stack row that has cleared its left edge,
+ * returning the chosen stack index and updating `stackRight` in place. */
+function assignStack(placed: PlacedSpan, stackRight: number[]): number {
+  let stack = 0;
+  for (; stack < stackRight.length; stack++) {
+    if (placed.leftPct >= stackRight[stack]! + OVERLAP_EPSILON_PCT) break;
+  }
+  if (stack === stackRight.length) stackRight.push(placed.rightPct);
+  else stackRight[stack] = Math.max(stackRight[stack]!, placed.rightPct);
+  return stack;
+}
+
+/** Build the fill/border colours for a span at a given stack depth. */
+function spanColors(
+  span: TraceSpan,
+  stack: number
+): { bg: string; border: string } {
+  const hue = hashToHue(span.nodeId);
+  const isOpen = Number.isNaN(span.end);
+  const lightness = clamp(56 - stack * 7, 30, 60);
+  const bg = isOpen
+    ? `hsla(${hue}, 80%, ${clamp(lightness + 6, 30, 65)}%, 0.35)`
+    : `hsla(${hue}, 80%, ${lightness}%, 0.6)`;
+  const border = `hsla(${hue}, 90%, ${clamp(lightness + 22, 45, 80)}%, 0.95)`;
+  return { bg, border };
+}
+
+/** Lay out one lane's spans into stacked, coloured visual spans. */
+function buildLaneData(
+  laneSpans: TraceSpan[] | undefined,
+  now: number,
+  win: ViewWindow
+): LaneData {
+  if (!laneSpans || laneSpans.length === 0) {
+    return { stackCount: 1, visualSpans: [] };
+  }
+
+  const placed: PlacedSpan[] = [];
+  for (const s of laneSpans) {
+    const p = placeSpan(s, now, win);
+    if (p) placed.push(p);
+  }
+  placed.sort((a, b) => a.leftPct - b.leftPct);
+
+  const stackRight: number[] = [];
+  const visualSpans: VisualSpan[] = [];
+  for (const v of placed) {
+    const stack = assignStack(v, stackRight);
+    const { bg, border } = spanColors(v.span, stack);
+    visualSpans.push({
+      span: v.span,
+      leftPct: v.leftPct,
+      widthPct: v.widthPct,
+      rightPct: v.rightPct,
+      durationMs: v.durationMs,
+      stack,
+      bg,
+      border
+    });
+  }
+
+  return { stackCount: Math.max(1, stackRight.length), visualSpans };
+}
+
+export function computeDerivedSpans(
+  collector: SpanCollector,
+  windowMs: number,
+  view: ViewState
+): DerivedData {
+  const now = performance.now();
+
+  if (collector.size <= 0) return { ...EMPTY, now };
+
+  const scan = scanSpans(collector, now);
+  const { minStart, maxEnd, maxLane, buckets } = scan;
+  const { size } = collector;
 
   if (
     !Number.isFinite(minStart) ||
@@ -127,111 +277,18 @@ export function computeDerivedSpans(
   }
 
   const fullRange = Math.max(1, maxEnd - minStart);
+  const win = resolveViewWindow(scan, fullRange, windowMs, view);
 
-  const desiredRange = windowMs <= 0 ? fullRange : Math.max(1, windowMs);
-  const desiredStart = Math.max(minStart, maxEnd - desiredRange);
-
-  // Following snaps to the data range; manual zoom may pull back past the data
-  // extent (up to MAX_ZOOM_OUT_FACTOR×) so short traces aren't un-zoom-out-able.
-  const effectiveRange = clamp(
-    view.follow ? desiredRange : view.range,
-    1,
-    view.follow ? fullRange : fullRange * MAX_ZOOM_OUT_FACTOR
-  );
-  const effectiveStart = clamp(
-    view.follow ? desiredStart : view.start,
-    minStart,
-    maxEnd - effectiveRange
+  const laneData: LaneData[] = Array.from({ length: maxLane + 1 }, (_, lane) =>
+    buildLaneData(buckets[lane], now, win)
   );
 
-  const viewStart = effectiveStart;
-  const viewEnd = viewStart + effectiveRange;
-  const viewRange = effectiveRange;
-
-  const laneData: LaneData[] = Array.from({ length: maxLane + 1 }, () => ({
-    stackCount: 1,
-    visualSpans: [] as VisualSpan[]
-  }));
-
-  for (let lane = 0; lane <= maxLane; lane++) {
-    const laneSpans = buckets[lane];
-    if (!laneSpans || laneSpans.length === 0) {
-      laneData[lane] = { stackCount: 1, visualSpans: [] };
-      continue;
-    }
-
-    const tmp: Array<{
-      span: import('@/store/traces').TraceSpan;
-      leftPct: number;
-      widthPct: number;
-      rightPct: number;
-      durationMs: number;
-    }> = [];
-
-    for (const s of laneSpans) {
-      const rawEnd = Number.isNaN(s.end) ? now : s.end;
-      const end = visualEnd(s.start, rawEnd);
-      if (end < viewStart || s.start > viewEnd) continue;
-
-      const visibleStart = Math.max(s.start, viewStart);
-      const visibleEnd = Math.min(end, viewEnd);
-      if (visibleEnd <= visibleStart) continue;
-
-      const rawLeft = ((visibleStart - viewStart) / viewRange) * 100;
-      const rawWidth = ((visibleEnd - visibleStart) / viewRange) * 100;
-      const leftPct = clamp(rawLeft, 0, 100);
-      const widthPct = clamp(
-        Math.max(MIN_WIDTH_PCT, rawWidth),
-        0,
-        100 - leftPct
-      );
-      const rightPct = leftPct + widthPct;
-      // Report the true duration (0ms for instant nodes), not the padded one.
-      const durationMs = Math.max(0, rawEnd - s.start);
-
-      tmp.push({ span: s, leftPct, widthPct, rightPct, durationMs });
-    }
-
-    tmp.sort((a, b) => a.leftPct - b.leftPct);
-
-    const stackRight: number[] = [];
-    const visualSpans: VisualSpan[] = [];
-
-    for (const v of tmp) {
-      let stack = 0;
-      for (; stack < stackRight.length; stack++) {
-        if (v.leftPct >= stackRight[stack]! + OVERLAP_EPSILON_PCT) break;
-      }
-      if (stack === stackRight.length) stackRight.push(v.rightPct);
-      else stackRight[stack] = Math.max(stackRight[stack]!, v.rightPct);
-
-      const hue = hashToHue(v.span.nodeId);
-      const isOpen = Number.isNaN(v.span.end);
-      const lightness = clamp(56 - stack * 7, 30, 60);
-      const bg = isOpen
-        ? `hsla(${hue}, 80%, ${clamp(lightness + 6, 30, 65)}%, 0.35)`
-        : `hsla(${hue}, 80%, ${lightness}%, 0.6)`;
-      const border = `hsla(${hue}, 90%, ${clamp(lightness + 22, 45, 80)}%, 0.95)`;
-
-      visualSpans.push({
-        span: v.span,
-        leftPct: v.leftPct,
-        widthPct: v.widthPct,
-        rightPct: v.rightPct,
-        durationMs: v.durationMs,
-        stack,
-        bg,
-        border
-      });
-    }
-
-    laneData[lane] = {
-      stackCount: Math.max(1, stackRight.length),
-      visualSpans
-    };
-  }
-
-  const ticks = computeTicks(viewStart, viewEnd, viewRange, minStart);
+  const ticks = computeTicks(
+    win.viewStart,
+    win.viewEnd,
+    win.viewRange,
+    minStart
+  );
 
   return {
     now,
@@ -240,9 +297,9 @@ export function computeDerivedSpans(
     minStart,
     maxEnd,
     range: fullRange,
-    viewStart,
-    viewEnd,
-    viewRange,
+    viewStart: win.viewStart,
+    viewEnd: win.viewEnd,
+    viewRange: win.viewRange,
     buckets,
     laneData,
     ticks

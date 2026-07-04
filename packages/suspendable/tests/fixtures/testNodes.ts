@@ -26,7 +26,8 @@ export type SuspendedLoopState = {
  */
 export class SuspendableForLoop
   extends FlowNode
-  implements ISuspendable<SuspendedLoopState> {
+  implements ISuspendable<SuspendedLoopState>
+{
   public static Description = new NodeDescription(
     'flow/suspendableForLoop',
     'Flow',
@@ -109,7 +110,8 @@ export type SuspendedWaitState = {
  */
 export class WaitForSignal
   extends AsyncNode
-  implements IAsyncSuspendable<unknown, SuspendedWaitState> {
+  implements IAsyncSuspendable<unknown, SuspendedWaitState>
+{
   public static Description = new NodeDescription(
     'test/waitForSignal',
     'Flow',
@@ -161,7 +163,7 @@ export class WaitForSignal
     this.notifyParked?.();
     // park the fiber until the engine is suspended (the promise never
     // resolves; the suspension snapshot captures this node as the resume point)
-    return new Promise<void>(() => { });
+    return new Promise<void>(() => {});
   }
 
   suspend(): SuspendedWaitState {

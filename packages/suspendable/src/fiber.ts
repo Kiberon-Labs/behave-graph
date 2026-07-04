@@ -75,15 +75,6 @@ export class SuspendableFiber extends Fiber {
     };
   }
 
-  clear() {
-    this.fiberCompletedListenerStack.splice(
-      0,
-      this.fiberCompletedListenerStack.length
-    );
-    this.currentLink = undefined;
-    this.nextEval = null;
-  }
-
   /** Whether this fiber was suspended at an async node that must be resumed
    * via `continue()`. Fibers suspended between steps have no current link and
    * simply resume through normal engine execution. */

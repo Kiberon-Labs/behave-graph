@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, type ComponentType } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useSystem } from '@/system/provider';
@@ -8,6 +8,56 @@ import type { ExtendedNodeSpecJSON } from '@/components/contextMenus/NodePicker'
 import { useOnPressKey } from '@/hooks/useOnPressKey';
 import { removeTabFromLayout } from '@/components/layoutController/utils';
 import styles from './styles.module.css';
+
+/** One named socket (name + value type) rendered in a documentation section. */
+interface DocSocket {
+  name: string;
+  valueType: string;
+}
+
+interface SocketSectionProps {
+  title: string;
+  sockets: DocSocket[] | undefined;
+  getIconForType: (valueType: string) => ComponentType;
+  getColorForType: (valueType: string) => string;
+}
+
+/**
+ * A titled list of node sockets (Inputs / Outputs / Configuration). Renders
+ * nothing when the socket list is empty so callers can drop it in
+ * unconditionally.
+ */
+function SocketSection({
+  title,
+  sockets,
+  getIconForType,
+  getColorForType
+}: SocketSectionProps) {
+  if (!sockets || sockets.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <h3 className={styles.sectionTitle}>{title}</h3>
+      <div className={styles.socketList}>
+        {sockets.map((socket, index) => {
+          const IconComponent = getIconForType(socket.valueType);
+          const color = getColorForType(socket.valueType);
+          return (
+            <div key={index} className={styles.socketItem}>
+              <div className={styles.socketIcon} style={{ color }}>
+                <IconComponent />
+              </div>
+              <div className={styles.socketName}>{socket.name}</div>
+              <div className={styles.socketType} style={{ color }}>
+                {socket.valueType}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function DocumentationBrowserPanelImpl() {
   const sys = useSystem();
@@ -27,7 +77,7 @@ export function DocumentationBrowserPanelImpl() {
   }, [selectedNodeType, specs]);
 
   const getIconForType = useCallback(
-    (valueType: string) => {
+    (valueType: string): ComponentType => {
       const IconComponent = icons[valueType] || defaultIcon;
       return IconComponent;
     },
@@ -124,74 +174,24 @@ export function DocumentationBrowserPanelImpl() {
 
         {nodeSpec && (
           <>
-            {nodeSpec.inputs && nodeSpec.inputs.length > 0 && (
-              <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>Inputs</h3>
-                <div className={styles.socketList}>
-                  {nodeSpec.inputs.map((input, index) => {
-                    const IconComponent = getIconForType(input.valueType);
-                    const color = getColorForType(input.valueType);
-                    return (
-                      <div key={index} className={styles.socketItem}>
-                        <div className={styles.socketIcon} style={{ color }}>
-                          <IconComponent />
-                        </div>
-                        <div className={styles.socketName}>{input.name}</div>
-                        <div className={styles.socketType} style={{ color }}>
-                          {input.valueType}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {nodeSpec.outputs && nodeSpec.outputs.length > 0 && (
-              <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>Outputs</h3>
-                <div className={styles.socketList}>
-                  {nodeSpec.outputs.map((output, index) => {
-                    const IconComponent = getIconForType(output.valueType);
-                    const color = getColorForType(output.valueType);
-                    return (
-                      <div key={index} className={styles.socketItem}>
-                        <div className={styles.socketIcon} style={{ color }}>
-                          <IconComponent />
-                        </div>
-                        <div className={styles.socketName}>{output.name}</div>
-                        <div className={styles.socketType} style={{ color }}>
-                          {output.valueType}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {nodeSpec.configuration && nodeSpec.configuration.length > 0 && (
-              <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>Configuration</h3>
-                <div className={styles.socketList}>
-                  {nodeSpec.configuration.map((config, index) => {
-                    const IconComponent = getIconForType(config.valueType);
-                    const color = getColorForType(config.valueType);
-                    return (
-                      <div key={index} className={styles.socketItem}>
-                        <div className={styles.socketIcon} style={{ color }}>
-                          <IconComponent />
-                        </div>
-                        <div className={styles.socketName}>{config.name}</div>
-                        <div className={styles.socketType} style={{ color }}>
-                          {config.valueType}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <SocketSection
+              title="Inputs"
+              sockets={nodeSpec.inputs}
+              getIconForType={getIconForType}
+              getColorForType={getColorForType}
+            />
+            <SocketSection
+              title="Outputs"
+              sockets={nodeSpec.outputs}
+              getIconForType={getIconForType}
+              getColorForType={getColorForType}
+            />
+            <SocketSection
+              title="Configuration"
+              sockets={nodeSpec.configuration}
+              getIconForType={getIconForType}
+              getColorForType={getColorForType}
+            />
           </>
         )}
       </div>

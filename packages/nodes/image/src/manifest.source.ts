@@ -35,6 +35,11 @@ export default defineManifestSource({
       export: './ui.js#imagePreviewSpecific'
     },
     {
+      id: 'image-always-preview',
+      kind: ContributionKind.Specific,
+      export: './ui.js#imageAlwaysPreviewSpecific'
+    },
+    {
       id: 'imageOutput',
       kind: ContributionKind.Panel,
       export: './ui.js#imageOutputTab'

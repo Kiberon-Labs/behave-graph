@@ -20,7 +20,3 @@
 .socket svg {
   stroke: currentColor;
 }
-
-.disconnected {
-  background: var(--ds-widget-bg, #333) !important;
-}

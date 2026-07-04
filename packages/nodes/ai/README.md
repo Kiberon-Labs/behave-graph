@@ -160,7 +160,7 @@ into any value that gets serialized.
 ### Testing with OpenRouter (free models)
 
 The Storybook demo and example graphs are wired to a **free** OpenRouter model
-(`meta-llama/llama-3.3-70b-instruct:free`, `kind: "openrouter"`) so you can verify
+(`openai/gpt-oss-120b`, `kind: "openrouter"`) so you can verify
 the whole UI without spending anything. Provide your key (resolved by `kind`):
 
 - **Storybook**: set `VITE_OPENROUTER_API_KEY` in the env, run `pnpm storybook`,

@@ -463,6 +463,18 @@ export const buildScene = ({
     onSceneChanged.removeListener(listener);
   };
 
+  // This scene is backed by a loaded glTF model and exposes it through the
+  // json-path property API (getProperty/setProperty/...). The procedural
+  // mesh/light/material API (added to IScene for scene backends like the demo
+  // scene) is not supported here, so those operations fail loudly rather than
+  // silently doing the wrong thing. Name-enumeration getters return empty so
+  // generic choice UIs degrade gracefully instead of throwing.
+  const notSupported = (op: string): never => {
+    throw new Error(
+      `The glTF-backed scene does not support "${op}". Use a scene backend that implements the procedural mesh/light API (e.g. the demo scene) for that operation.`
+    );
+  };
+
   const scene: IScene = {
     getProperty,
     setProperty,
@@ -471,7 +483,30 @@ export const buildScene = ({
     addOnClickedListener,
     removeOnClickedListener,
     addOnSceneChangedListener,
-    removeOnSceneChangedListener
+    removeOnSceneChangedListener,
+
+    // --- procedural mesh/light/material API: unsupported on a glTF scene ---
+    createMesh: () => notSupported('createMesh'),
+    deleteMesh: () => notSupported('deleteMesh'),
+    getMeshNames: () => [],
+    addLight: () => notSupported('addLight'),
+    removeLight: () => notSupported('removeLight'),
+    setLightProperty: () => notSupported('setLightProperty'),
+    getLightProperty: () => notSupported('getLightProperty'),
+    getLightNames: () => [],
+    setMaterialProperty: () => notSupported('setMaterialProperty'),
+    getMaterialProperty: () => notSupported('getMaterialProperty'),
+    addOnAnyMeshClickedListener: () =>
+      notSupported('addOnAnyMeshClickedListener'),
+    removeOnAnyMeshClickedListener: () =>
+      notSupported('removeOnAnyMeshClickedListener'),
+    getMeshPosition: () => notSupported('getMeshPosition'),
+    setMeshPosition: () => notSupported('setMeshPosition'),
+    getDistanceBetween: () => notSupported('getDistanceBetween'),
+    lookAt: () => notSupported('lookAt'),
+    moveTowards: () => notSupported('moveTowards'),
+    cloneMesh: () => notSupported('cloneMesh'),
+    setMeshVisible: () => notSupported('setMeshVisible')
   };
 
   return scene;

@@ -80,6 +80,8 @@ import { createNode } from '@kiberon-labs/behave-graph';
 interface ActiveRun extends BaseActiveRun {
   sessionId: string;
   maxTicks: number;
+  /** Whether this run finalizes when its flows drain (default: stay alive). */
+  autoEnd: boolean;
 }
 
 /**
@@ -467,14 +469,14 @@ export class LocalTransport implements ITransport, IExecutionControl {
             const childGraph = resolveGraph(id);
             return childGraph
               ? runSubgraph({
-                graphJson: childGraph,
-                registry: registryToUse,
-                inputs,
-                resolveGraph,
-                graphId: id,
-                stack: [activeGraphId],
-                maxDepth: DEFAULT_SUBGRAPH_MAX_DEPTH
-              })
+                  graphJson: childGraph,
+                  registry: registryToUse,
+                  inputs,
+                  resolveGraph,
+                  graphId: id,
+                  stack: [activeGraphId],
+                  maxDepth: DEFAULT_SUBGRAPH_MAX_DEPTH
+                })
               : Promise.resolve({});
           }
         };
@@ -528,7 +530,11 @@ export class LocalTransport implements ITransport, IExecutionControl {
         isPaused: false,
         executionPhase: 'start',
         currentTick: 0,
-        maxTicks: Infinity // No limit - tick events run until stopped
+        maxTicks: Infinity, // No limit - tick events run until stopped
+        // Runs stay alive by default so event subscriptions (ai/onToolCall
+        // etc.) keep firing after the start flow drains; opting into autoEnd
+        // restores fire-and-forget completion.
+        autoEnd: executionOptions.autoEnd ?? false
       };
 
       this.activeRuns.set(runId, run);
@@ -571,8 +577,7 @@ export class LocalTransport implements ITransport, IExecutionControl {
       }
 
       // Execute graph asynchronously
-      const autoEnd = executionOptions.autoEnd ?? true;
-      this.executeGraph(run, message.graphId, autoEnd, session);
+      this.executeGraph(run, message.graphId, run.autoEnd, session);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -678,11 +683,26 @@ export class LocalTransport implements ITransport, IExecutionControl {
       this.store?.getState().executionSpeed ??
       1.0;
 
-    const stepLimit = this.getExecutionStepLimit();
     const delay =
       stepDelay + (executionSpeed < 1.0 ? (1.0 - executionSpeed) * 100 : 0);
 
-    // Loop while engine has pending work and not paused
+    // Full-speed path: no artificial delay requested, so drain in large chunks.
+    // The single-step limit below exists only to interleave the step delay; at
+    // full speed it forced an executeAllAsync call (time checks, promise churn)
+    // per node, which dominated the per-tick cost. Chunking keeps pause
+    // responsive (checked between chunks) while the engine's sync fast path
+    // runs unhindered within a chunk.
+    if (delay <= 0) {
+      const CHUNK_STEPS = 8192;
+      while (run.engine.hasPending() && !run.isPaused) {
+        await run.engine.executeAllAsync(5, CHUNK_STEPS);
+      }
+      return;
+    }
+
+    const stepLimit = this.getExecutionStepLimit();
+
+    // Slow-motion path: execute step by step, sleeping between steps.
     while (run.engine.hasPending() && !run.isPaused) {
       // Execute limited number of steps
       await run.engine.executeAllAsync(5, stepLimit);
@@ -724,7 +744,7 @@ export class LocalTransport implements ITransport, IExecutionControl {
 
     run.isPaused = false;
     // Continue execution from where we left off
-    await this.executeGraph(run, run.graphId, true, session);
+    await this.executeGraph(run, run.graphId, run.autoEnd, session);
   }
 
   /**
@@ -794,6 +814,7 @@ export class LocalTransport implements ITransport, IExecutionControl {
 
         // Run completed successfully
         run.status = 'completed';
+        run.flushTracing?.();
         const elapsedMs = Date.now() - run.startedAt;
         const result = null;
 
@@ -848,6 +869,7 @@ export class LocalTransport implements ITransport, IExecutionControl {
     }
 
     run.status = 'stopped';
+    run.flushTracing?.();
     this.updateStoreActiveRuns();
     this.updateStoreExecutionState(false, false);
     run.engine.dispose();

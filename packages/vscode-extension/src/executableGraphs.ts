@@ -34,8 +34,27 @@ export function graphHasIOContract(flow: any): boolean {
  *  JSON.parse of every graph during the workspace scan. The boundary node types
  *  appear verbatim as JSON string values, so this is reliable for the menu gate
  *  (the actual run does a full parse). */
-export function textHasIOContract(text: string): boolean {
+function textHasIOContract(text: string): boolean {
   return text.includes(`"${INPUT_NODE}"`) || text.includes(`"${OUTPUT_NODE}"`);
+}
+
+/** Turn one raw `graph/input` parameter into a `GraphInputDef`, or `undefined`
+ *  when it has no usable name. */
+function toInputDef(param: any): GraphInputDef | undefined {
+  const name = param?.name;
+  if (typeof name !== 'string') return undefined;
+  return {
+    name,
+    valueTypeName: param?.valueTypeName ?? param?.valueType ?? 'string',
+    defaultValue: param?.defaultValue
+  };
+}
+
+/** The parameter list declared on a single `graph/input` node, or `[]`. */
+function inputNodeParams(node: any): any[] {
+  if (node?.type !== INPUT_NODE) return [];
+  const params = node?.configuration?.parameters;
+  return Array.isArray(params) ? params : [];
 }
 
 /** Collect the declared inputs across all `graph/input` nodes (deduped by name). */
@@ -43,18 +62,11 @@ export function extractGraphInputs(flow: any): GraphInputDef[] {
   const out: GraphInputDef[] = [];
   const seen = new Set<string>();
   for (const node of flow?.nodes ?? []) {
-    if (node?.type !== INPUT_NODE) continue;
-    const params = node?.configuration?.parameters;
-    if (!Array.isArray(params)) continue;
-    for (const p of params) {
-      const name = p?.name;
-      if (typeof name !== 'string' || seen.has(name)) continue;
-      seen.add(name);
-      out.push({
-        name,
-        valueTypeName: p?.valueTypeName ?? p?.valueType ?? 'string',
-        defaultValue: p?.defaultValue
-      });
+    for (const param of inputNodeParams(node)) {
+      const def = toInputDef(param);
+      if (!def || seen.has(def.name)) continue;
+      seen.add(def.name);
+      out.push(def);
     }
   }
   return out;

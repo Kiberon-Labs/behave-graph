@@ -1,4 +1,5 @@
 import { plugin, type System } from '@kiberon-labs/behave-graph-flow';
+import type { StoreApi } from 'zustand';
 import {
   writeNodeSpecsToJSON,
   type Dependencies
@@ -8,15 +9,28 @@ import { values } from './values/index.js';
 import { ConversationRuntime } from './runtime/ConversationRuntime.js';
 import type { IAICredentials } from './abstractions/IAICredentials.js';
 import { ConversationTreePanel } from './components/panels/conversationTree.js';
+import { ConversationPanel } from './components/panels/conversation/index.js';
+import type { ChatStore } from './store/chat.js';
 
 export { ConversationTreePanel } from './components/panels/conversationTree.js';
+export { ConversationPanel } from './components/panels/conversation/index.js';
+export * from './store/chat.js';
 
 /**
- * Expose the conversation runtime on the editor system so panels can reach it.
+ * The conversation system lives in this package (moved out of the flow core).
+ * Augment the editor system with:
+ * - `conversation`: the {@link ConversationRuntime} panels reach for the tree;
+ * - `chatStore`: the chat state the {@link ConversationPanel} binds to;
+ * and the editor pubsub with `chat:userMessage`, published by the panel input
+ * and handled by the runtime.
  */
 declare module '@kiberon-labs/behave-graph-flow' {
   interface System {
     conversation: ConversationRuntime;
+    chatStore: StoreApi<ChatStore>;
+  }
+  interface EditorPubSys {
+    'chat:userMessage': { content: string };
   }
 }
 
@@ -39,9 +53,8 @@ export interface AIPluginOptions {
 
 /**
  * Editor plugin for the AI nodes package. Registers the node specs + value
- * types and wires the conversation runtime onto the system. The conversation
- * panel itself (the `conversation` tab, bound to `system.chatStore`) is provided
- * by the flow package , add it to your layout to see the chat.
+ * types, provides the chat store + conversation panel (both owned by this
+ * package), and wires the conversation runtime onto the system.
  */
 export const aiPlugin = plugin<AIPluginOptions | void>(
   async (sys: System, options) => {
@@ -51,6 +64,9 @@ export const aiPlugin = plugin<AIPluginOptions | void>(
       dependencies: {} as Dependencies
     });
 
+    // The runtime owns the chat store (moved out of flow core) and ensures
+    // `system.chatStore` exists on construction, so the ConversationPanel below
+    // and the runtime share one store.
     const runtime =
       (options && options.runtime) ||
       new ConversationRuntime(sys, options?.credentials);
@@ -60,6 +76,16 @@ export const aiPlugin = plugin<AIPluginOptions | void>(
       specs: nodeSpecs,
       values
     });
+
+    // The chat panel, bound to system.chatStore.
+    sys.tabLoader.register('conversation', () => ({
+      id: 'conversation',
+      title: 'Conversation',
+      closable: true,
+      cached: true,
+      group: 'default',
+      content: () => <ConversationPanel />
+    }));
 
     // Exploration tree , one row per conversation branch, click to focus.
     sys.tabLoader.register('conversations', () => ({

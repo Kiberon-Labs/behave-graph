@@ -32,7 +32,6 @@ import {
 } from '@/store/documentation';
 import { toolbarStoreFactory, type ToolbarStore } from '@/store/toolbar';
 import { Notifications, type NotificationData } from './notifications';
-import { chatStoreFactory, type ChatStore } from '@/store/chat';
 import {
   conversionStoreFactory,
   type ConversionStore,
@@ -50,6 +49,7 @@ import {
   type ContextMenuStore
 } from '@/store/contextMenu';
 import { GraphSession } from './graphSession';
+import { installPersistence, type PersistenceAdapter } from './persistence';
 import { v4 as uuidv4 } from 'uuid';
 import { tabIdForSession } from '@/components/layoutController/utils';
 import type { Renderable } from 'react-hot-toast';
@@ -69,8 +69,6 @@ import type { LayerStore } from '@/store/layers';
 import type { UndoManager } from './undoRedo';
 import type { Graph } from './graph';
 
-
-
 /**
  * Editor-level pubsub topics. These are global to the editor and shared across
  * every open graph. Augment this interface (not {@link GraphPubSys}) for events
@@ -84,12 +82,6 @@ export interface EditorPubSys {
   'layout:saved': LayoutBase;
   'graph:saved': UIGraphJSON;
   'graph:inner:saved': GraphJSON;
-  /**
-   * Published by the conversation panel when the user submits input. The AI
-   * subsystem (see the `@kiberon-labs/behave-graph-nodes-ai` package) subscribes
-   * to drive the agent and stream a reply back into the chat store.
-   */
-  'chat:userMessage': { content: string };
 }
 
 /**
@@ -115,12 +107,12 @@ export interface GraphPubSys {
  * Combined pubsub surface kept for backwards compatibility. Prefer the split
  * {@link EditorPubSys} / {@link GraphPubSys} interfaces.
  */
-export interface PubSys extends EditorPubSys, GraphPubSys { }
+export interface PubSys extends EditorPubSys, GraphPubSys {}
 
 /**
  * Use this to extend the System interface when adding plugins
  */
-export interface ISystem { }
+export interface ISystem {}
 
 /** Minimal storage adapter for persisting editor settings. */
 export type SettingsStorage = {
@@ -214,7 +206,6 @@ export class System implements ISystem {
   public readonly documentationStore: StoreApi<DocumentationStore>;
   public readonly toolbarStore: StoreApi<ToolbarStore>;
   public readonly controlStore: StoreApi<ControlsStore>;
-  public readonly chatStore: StoreApi<ChatStore>;
   /** User/plugin-defined automatic type conversions for auto-convert. */
   public readonly conversionStore: StoreApi<ConversionStore>;
   /** Named, dispatchable commands shared across hotkeys/menus/toolbar. */
@@ -228,6 +219,9 @@ export class System implements ISystem {
 
   /** Editor-level extensions applied to every graph session on creation. */
   private readonly sessionExtensions = new Set<SessionExtension>();
+
+  /** Disposer for the currently installed graph/layout save handlers. */
+  private persistenceDisposer: () => void = () => {};
 
   protected deps: Record<string, unknown> = {};
 
@@ -250,7 +244,6 @@ export class System implements ISystem {
     this.specificStore = specificStoreFactory();
     this.documentationStore = documentationStoreFactory();
     this.toolbarStore = toolbarStoreFactory();
-    this.chatStore = chatStoreFactory();
     this.conversionStore = conversionStoreFactory();
     this.commandStore = commandStoreFactory();
     this.contextMenuStore = contextMenuStoreFactory();
@@ -269,6 +262,12 @@ export class System implements ISystem {
 
     this.menubarStore = menubarStoreFactory();
     this.tabLoader = new TabLoader(this);
+
+    // Wire the default graph/layout save handlers (download-to-file) so a fresh
+    // editor has working Save actions out of the box. Hosts that persist
+    // elsewhere override via enablePersistence(...) or opt out with
+    // disablePersistence().
+    this.persistenceDisposer = installPersistence(this);
   }
 
   /**
@@ -484,8 +483,13 @@ export class System implements ISystem {
    * });
    */
   registerSetting(descriptor: SettingDescriptor): void {
-    if (descriptor.type !== 'custom' && !(descriptor.key in this.systemSettings.getState())) {
-      this.systemSettings.getState().setSetting(descriptor.key, descriptor.default);
+    if (
+      descriptor.type !== 'custom' &&
+      !(descriptor.key in this.systemSettings.getState())
+    ) {
+      this.systemSettings
+        .getState()
+        .setSetting(descriptor.key, descriptor.default);
     }
     this.settingsSchema.getState().registerSetting(descriptor);
   }
@@ -519,6 +523,39 @@ export class System implements ISystem {
   }
 
   /**
+   * Override where the editor's Save actions send their data. The editor
+   * publishes `graph:saved`, `graph:inner:saved` and `layout:saved`; by default
+   * each triggers a JSON file download. Pass an adapter to redirect any subset
+   * of those to your own sink (write to disk, POST to a backend, ...); topics
+   * you omit keep the file-download default. Replaces any previously installed
+   * handlers and returns a disposer.
+   *
+   * This governs graph/layout saving only; editor *settings* persistence is
+   * separate , see {@link enableSettingsPersistence}.
+   *
+   * @example
+   * // Persist graphs to a backend, keep the default layout download.
+   * system.enablePersistence({
+   *   saveGraph: (graph) => api.put('/graphs/current', graph)
+   * });
+   */
+  enablePersistence(adapter?: Partial<PersistenceAdapter>): () => void {
+    this.persistenceDisposer();
+    this.persistenceDisposer = installPersistence(this, adapter);
+    return this.persistenceDisposer;
+  }
+
+  /**
+   * Remove the default (or custom) graph/layout save handlers entirely. Use this
+   * when the host handles saving through a channel of its own and the built-in
+   * file download would be redundant (e.g. the VS Code extension).
+   */
+  disablePersistence(): void {
+    this.persistenceDisposer();
+    this.persistenceDisposer = () => {};
+  }
+
+  /**
    * Serialize the persistable editor settings , the UI toggles plus any custom
    * type conversions , to a plain JSON object.
    */
@@ -540,7 +577,8 @@ export class System implements ISystem {
   private persistedSettingKeys(): string[] {
     const keys = new Set<string>(PERSISTED_SETTING_KEYS as string[]);
     for (const descriptor of this.settingsSchema.getState().settings) {
-      if (descriptor.type === 'custom' || descriptor.persist === false) continue;
+      if (descriptor.type === 'custom' || descriptor.persist === false)
+        continue;
       keys.add(descriptor.key);
     }
     return [...keys];
@@ -558,7 +596,8 @@ export class System implements ISystem {
       const setter = state[settingSetterName(key)];
       if (typeof setter === 'function') setter(value);
       // Plugin-contributed keys have no typed setter: write generically.
-      else if (typeof state.setSetting === 'function') state.setSetting(key, value);
+      else if (typeof state.setSetting === 'function')
+        state.setSetting(key, value);
     }
     if (Array.isArray(json.conversions)) {
       this.conversionStore.getState().setConversions(json.conversions);
@@ -574,7 +613,7 @@ export class System implements ISystem {
   enableSettingsPersistence(
     storage: SettingsStorage | undefined = defaultSettingsStorage()
   ): () => void {
-    if (!storage) return () => { };
+    if (!storage) return () => {};
 
     try {
       const raw = storage.getItem(SETTINGS_STORAGE_KEY);

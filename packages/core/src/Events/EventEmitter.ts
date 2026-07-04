@@ -15,6 +15,12 @@ export class EventEmitter<T> {
 
   emit(event: T) {
     if (this.listeners.length === 0) return;
+    // single-listener fast path: no defensive copy needed since the loop
+    // below completes in one call anyway
+    if (this.listeners.length === 1) {
+      this.listeners[0]!(event);
+      return;
+    }
     // copy array before emitting event to ensure even if listener array is modified, everyone listening initially gets the event.
     // inspired by mrdoob's EventDispatcher
     this.listeners.slice(0).forEach((listener) => {

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
+import { transpileInWorkspace } from './capabilities/transpile.js';
 import {
   registerCoreProfile,
   ManualLifecycleEventEmitter
@@ -35,22 +36,31 @@ function makeStateService(): IStateService {
   };
 }
 
-async function importModule(filePath: string): Promise<Record<string, unknown>> {
+async function importModule(
+  filePath: string
+): Promise<Record<string, unknown>> {
   const toUrl = (p: string) => pathToFileURL(p).href;
   try {
     return await import(toUrl(filePath));
   } catch (err) {
     if (!filePath.endsWith('.ts')) throw err;
-    // Transpile the TS registry on demand and import the emitted ESM from a
-    // sibling temp file so bare-specifier resolution still works.
-    const esbuild = await import('esbuild');
-    const { code } = await esbuild.transform(fs.readFileSync(filePath, 'utf8'), {
-      loader: 'ts',
-      format: 'esm',
-      target: 'es2021',
-      sourcefile: filePath
-    });
-    const tmp = filePath.replace(/\.ts$/, `.__exec.${process.pid}.${Date.now()}.mjs`);
+    // Transpile the TS registry on demand (compiler resolved from the
+    // workspace) and import the emitted ESM from a sibling temp file so
+    // bare-specifier resolution still works.
+    const { code } = await transpileInWorkspace(
+      fs.readFileSync(filePath, 'utf8'),
+      {
+        loader: 'ts',
+        format: 'esm',
+        target: 'es2021',
+        sourcefile: filePath
+      },
+      path.dirname(filePath)
+    );
+    const tmp = filePath.replace(
+      /\.ts$/,
+      `.__exec.${process.pid}.${Date.now()}.mjs`
+    );
     fs.writeFileSync(tmp, code);
     try {
       return await import(toUrl(tmp));

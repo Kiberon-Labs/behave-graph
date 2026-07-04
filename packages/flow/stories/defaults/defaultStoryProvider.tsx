@@ -1,5 +1,3 @@
-import { docsPlugin } from '@/plugin/docs';
-
 import { SystemProvider, GraphProvider } from '@/system/provider';
 import { System } from '@/system/system';
 import {
@@ -7,10 +5,10 @@ import {
   type ValueType
 } from '@kiberon-labs/behave-graph';
 
-import { alignmentPlugin } from '@/plugin/alignment';
-import { downloadJson, localGraphRunnerPlugin } from '@/index';
+import { kitchenSinkPlugin } from '@/plugin/kitchen-sink';
+import { localGraphRunnerPlugin } from '@/index';
 
-export const ColorValue: ValueType = {
+const ColorValue: ValueType = {
   name: 'color',
   creator: () => '#000000',
   deserialize: (value: string) => value,
@@ -37,14 +35,14 @@ const nodeRegistry = {
 //Basic system generator for tests and stories
 export const systemGenerator = () => {
   const defaultSys = new System(nodeRegistry);
+  defaultSys.registerPlugin(kitchenSinkPlugin);
   return defaultSys;
 };
 
 const defaultSys = new System(nodeRegistry);
 const defaultSession = defaultSys.createSession('graph');
 
-defaultSys.registerPlugin(alignmentPlugin);
-defaultSys.registerPlugin(docsPlugin);
+defaultSys.registerPlugin(kitchenSinkPlugin);
 defaultSys.registerPlugin(localGraphRunnerPlugin, {
   registry: coreRegistry,
   events: [
@@ -74,9 +72,9 @@ defaultSys.registerPlugin(localGraphRunnerPlugin, {
   ]
 });
 
-defaultSys.pubsub.subscribe('graph:saved', (_, graph) => {
-  downloadJson('graph.json', graph);
-});
+// Saving is wired by default on the System (download-to-file); no per-story
+// subscription is needed. Override with defaultSys.enablePersistence(...) only
+// when a story needs to demonstrate a custom sink.
 
 defaultSession.flowStore.getState().setGraph({
   nodes: [

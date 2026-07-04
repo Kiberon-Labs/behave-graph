@@ -59,10 +59,7 @@ function makeFakeSystem() {
   };
   const subs = new Map<string, (topic: string, data: unknown) => void>();
   const pubsub = {
-    subscribe: (
-      _topic: string,
-      fn: (topic: string, data: unknown) => void
-    ) => {
+    subscribe: (_topic: string, fn: (topic: string, data: unknown) => void) => {
       const token = `t${String(subs.size)}`;
       subs.set(token, fn);
       return token;
@@ -100,7 +97,10 @@ describe('ConversationRuntime forking', () => {
     expect(contentsOf(messages)).toEqual(['seed']);
 
     // A message to the (now non-focused) default must not touch the panel...
-    await runtime.sendMessage({ role: 'system', content: 'only-default' }, 'default');
+    await runtime.sendMessage(
+      { role: 'system', content: 'only-default' },
+      'default'
+    );
     expect(contentsOf(messages)).not.toContain('only-default');
 
     // ...and must not leak into the fork's history.
@@ -117,7 +117,9 @@ describe('ConversationRuntime forking', () => {
     const runtime = new ConversationRuntime(system);
 
     // A 1x1 PNG (first bytes are the PNG signature, enough for the MIME sniff).
-    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+    const png = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3
+    ]);
 
     // No agent is set, so a user message renders + records but runCompletion
     // returns early , no model call, no network.
@@ -125,17 +127,17 @@ describe('ConversationRuntime forking', () => {
 
     const withImage = messages.find((m) => m.content === 'look');
     expect(withImage?.attachments?.[0]?.type).toBe('image');
-    expect(withImage?.attachments?.[0]?.url.startsWith('data:image/png;base64,')).toBe(
-      true
-    );
+    expect(
+      withImage?.attachments?.[0]?.url.startsWith('data:image/png;base64,')
+    ).toBe(true);
 
     // The image survives a fork + focus rebuild.
     const forkId = runtime.forkConversation('default');
     runtime.focusConversation(forkId);
     const rebuilt = messages.find((m) => m.content === 'look');
-    expect(rebuilt?.attachments?.[0]?.url.startsWith('data:image/png;base64,')).toBe(
-      true
-    );
+    expect(
+      rebuilt?.attachments?.[0]?.url.startsWith('data:image/png;base64,')
+    ).toBe(true);
   });
 });
 

@@ -138,8 +138,17 @@ export const EditEventPanel: React.FC<EditEventPanelProps> = ({
   if (!draftEvent) {
     return (
       <BasePanel>
-        <div className="h-full w-full flex items-center justify-center p-4">
-          <div className="text-gray-500 text-center">
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+        >
+          <div style={{ color: 'var(--ds-fg-muted)', textAlign: 'center' }}>
             Select an event to edit
           </div>
         </div>
