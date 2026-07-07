@@ -56,7 +56,7 @@
 
   - Subgraph runtime: `graph/input`, `graph/output`, `flow/callSubgraph` core nodes
     plus `runSubgraph()` and the `IGraphApi` / `ISubgraphRun` dependencies. A
-    subgraph behaves like a function — it returns once at the first output, and
+    subgraph behaves like a function  it returns once at the first output, and
     recursion/cycles are guarded by a call-stack + depth limit.
   - `Engine.dispose()` now also clears pending async nodes so execution winds down
     after disposal.
@@ -126,7 +126,7 @@
 
   - `css/vars.css` now defines a `--ds-*` "theme bridge" (canonical VS Code-dark
     defaults), and the semantic tokens (`--colors-*`, `--color-neutral-*`, …)
-    resolve through it. Components reference `--ds-*` only — the ~283 raw
+    resolve through it. Components reference `--ds-*` only  the ~283 raw
     `var(--vscode-*)` references across the component CSS were migrated, and the
     bundled `css/vscode.css` defaults file was removed.
   - VS Code coupling now lives in a single mapping the host owns: the extension
@@ -137,7 +137,7 @@
 
   Migration note for VS Code webview hosts: map the editor's `--ds-*` tokens from
   `--vscode-*` in a small `:root` rule so the chrome follows the active VS Code
-  theme. Standalone hosts (web, Storybook, tests) need no setup — they get the
+  theme. Standalone hosts (web, Storybook, tests) need no setup  they get the
   canonical dark defaults.
 
 - cf72d27: Editor extensibility (plugin registries + session extensions), runner
@@ -209,7 +209,7 @@
     Node Inputs cleanup, consistent Variables/Events headers, consolidated design
     tokens with the vscode theme backfilled, and Storybook defaulting to dark mode.
 
-- cf72d27: Add a Kiberon Labs theme — an opt-in alternate theme for the editor.
+- cf72d27: Add a Kiberon Labs theme  an opt-in alternate theme for the editor.
 
   - `css/themes/kiberon.css` re-declares the `--ds-*` bridge with the Kiberon Labs
     design tokens (dark, brand-canonical): crystal-purple accents, Geist type, and
@@ -230,7 +230,7 @@
 
   Previously the only way to learn what a package offered was to call its
   `registerProfile`, which imports and runs every node implementation (closures,
-  side effects, even WASM init) — a security and performance cost just to list
+  side effects, even WASM init)  a security and performance cost just to list
   nodes. A manifest is the persisted, on-disk form of the static projection the
   editor already renders from (`NodeSpecJSON` + value display metadata), so the
   executable half (node `exec`, value serializers, React components, a persistent
@@ -253,7 +253,7 @@
     `runManifestSource`, and a `behave-graph-manifest` CLI bin.
   - **Validation**: `parseManifest`, a dependency-free well-formedness gate a host
     runs on an untrusted manifest before consuming it.
-  - **Conventions**: `MANIFEST_FILE_NAME` (`behave-graph.manifest.json` — a plain
+  - **Conventions**: `MANIFEST_FILE_NAME` (`behave-graph.manifest.json`  a plain
     `.json` file, the canonical name; a directory `--out` writes it there) and
     `MANIFEST_PACKAGE_FIELD` (`behaveGraph`, the `package.json` field pointing at
     the manifest).
@@ -319,9 +319,9 @@
 - cf72d27: Fix the Local Graph Runner staying in a "Running" state after a graph finishes.
 
   The local runner's `executeGraph` defaulted `autoEnd` to `true` but gated run
-  completion on `!autoEnd`, so the completion path — which marks the run finished,
+  completion on `!autoEnd`, so the completion path  which marks the run finished,
   emits the `completed` message, disposes the engine, and clears the panel's
-  running / active-runs state — never executed. A graph that ran out of fibers
+  running / active-runs state  never executed. A graph that ran out of fibers
   reached the `completed` phase yet the run stayed `running` and the panel kept
   showing "Running". Completion now fires when the run actually reaches the
   completed phase (and isn't paused), and the manual step-through path syncs the
@@ -329,9 +329,9 @@
 
   The local transport kept its own copy of the run lifecycle that had drifted from
   the shared `executeGraphLifecycle` used by the web-worker runner (with inverted
-  `autoEnd` logic). Both runners now share that single lifecycle implementation —
+  `autoEnd` logic). Both runners now share that single lifecycle implementation 
   the runner-specific behaviour (pause-aware fiber stepping, tick timing, and the
-  on-complete / on-error side effects) is injected via hooks — so the completion
+  on-complete / on-error side effects) is injected via hooks  so the completion
   logic can't drift between them again.
 
 - cf72d27: Make `@vscode-elements` controls follow the active theme, and fix a few panel UI
@@ -352,7 +352,7 @@
     browser checkbox).
   - **Logs toolbar cleanup**: the toolbar action icons (auto-scroll / timestamps /
     export / clear) are sized to fit their buttons, and the active toggles use a
-    boxless accent (solid icon + accent color) instead of a filled outlined box —
+    boxless accent (solid icon + accent color) instead of a filled outlined box 
     ghost icon buttons throughout.
   - **Local Graph Runner panel** now follows the shared panel conventions
     (`BasePanel` + `SectionTitle` + `VscodeDivider` + the design-system spacing/type

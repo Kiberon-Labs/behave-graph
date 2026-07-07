@@ -334,7 +334,7 @@ export interface ExecuteGraphLifecycleOptions {
   /** Invoked after each tick iteration. */
   onStepComplete?: () => Promise<void>;
   /**
-   * Invoked after a natural completion — the run is marked completed, the
+   * Invoked after a natural completion  the run is marked completed, the
    * `completed` message has been sent, and the engine disposed. Lets a runner
    * run session hooks and sync its own state (e.g. the local panel's status).
    */

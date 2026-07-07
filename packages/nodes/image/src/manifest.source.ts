@@ -11,7 +11,7 @@ import pkg from '../package.json' with { type: 'json' };
 /**
  * Build-time manifest source for the image package.
  *
- * The registry here is only used to project node/value *specs* — spec
+ * The registry here is only used to project node/value *specs*  spec
  * generation instantiates nodes but never runs them, so no WASM init is needed.
  * The executable profile (with `ensureImageMagickInitialized`) lives behind the
  * `runtime` entry, loaded only by a runner. Contributions are plain pointers

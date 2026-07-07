@@ -16,11 +16,11 @@ import { autosavePlugin } from '@/plugin/autosave';
  * ```
  *
  * It currently pulls in:
- * - {@link docsPlugin} — the in-editor node documentation browser;
- * - {@link alignmentPlugin} — node alignment + distribution;
- * - {@link layoutPlugin} — Dagre/ELK auto-layout (heavy deps, opt-in);
- * - {@link notesPlugin} — markdown note nodes (tiptap/prosemirror, opt-in);
- * - {@link autosavePlugin} — client-side local backups of open graphs.
+ * - {@link docsPlugin}  the in-editor node documentation browser;
+ * - {@link alignmentPlugin}  node alignment + distribution;
+ * - {@link layoutPlugin}  Dagre/ELK auto-layout (heavy deps, opt-in);
+ * - {@link notesPlugin}  markdown note nodes (tiptap/prosemirror, opt-in);
+ * - {@link autosavePlugin}  client-side local backups of open graphs.
  *
  * It intentionally does **not** register a graph runner: runners
  * ({@link localGraphRunnerPlugin}, the remote client, ...) need host-specific

@@ -56,7 +56,7 @@
 
   - Subgraph runtime: `graph/input`, `graph/output`, `flow/callSubgraph` core nodes
     plus `runSubgraph()` and the `IGraphApi` / `ISubgraphRun` dependencies. A
-    subgraph behaves like a function — it returns once at the first output, and
+    subgraph behaves like a function  it returns once at the first output, and
     recursion/cycles are guarded by a call-stack + depth limit.
   - `Engine.dispose()` now also clears pending async nodes so execution winds down
     after disposal.
@@ -67,7 +67,7 @@
 
   Previously the only way to learn what a package offered was to call its
   `registerProfile`, which imports and runs every node implementation (closures,
-  side effects, even WASM init) — a security and performance cost just to list
+  side effects, even WASM init)  a security and performance cost just to list
   nodes. A manifest is the persisted, on-disk form of the static projection the
   editor already renders from (`NodeSpecJSON` + value display metadata), so the
   executable half (node `exec`, value serializers, React components, a persistent
@@ -90,7 +90,7 @@
     `runManifestSource`, and a `behave-graph-manifest` CLI bin.
   - **Validation**: `parseManifest`, a dependency-free well-formedness gate a host
     runs on an untrusted manifest before consuming it.
-  - **Conventions**: `MANIFEST_FILE_NAME` (`behave-graph.manifest.json` — a plain
+  - **Conventions**: `MANIFEST_FILE_NAME` (`behave-graph.manifest.json`  a plain
     `.json` file, the canonical name; a directory `--out` writes it there) and
     `MANIFEST_PACKAGE_FIELD` (`behaveGraph`, the `package.json` field pointing at
     the manifest).

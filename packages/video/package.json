@@ -1,0 +1,44 @@
+{
+  "name": "@kiberon-labs/behave-graph-video",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Marketing & demo video generation: Remotion compositions that drive the real Flow editor with an AI-generated voiceover. Never published.",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render DemoTour out/demo-tour.mp4",
+    "thumbnail": "remotion still Thumbnail out/thumbnail.png",
+    "voice": "tsx scripts/generate-voice.ts",
+    "image-demo": "tsx scripts/generate-image-demo.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "check": "oxfmt --check",
+    "format": "oxfmt"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.2.9",
+    "@fontsource-variable/geist-mono": "^5.2.8",
+    "@kiberon-labs/behave-graph": "workspace:*",
+    "@kiberon-labs/behave-graph-flow": "workspace:*",
+    "@kiberon-labs/behave-graph-nodes-ai": "workspace:*",
+    "@kiberon-labs/behave-graph-nodes-image": "workspace:*",
+    "@remotion/cli": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "reactflow": "^11.1.1",
+    "remotion": "^4.0.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@imagemagick/magick-wasm": "^0.0.37",
+    "@remotion/bundler": "^4.0.484",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "music-metadata": "^11.0.0",
+    "oxfmt": "^0.14.0",
+    "oxlint": "^1.29.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.7.0"
+  }
+}

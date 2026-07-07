@@ -11,7 +11,7 @@ import { applyContribution } from './contributionRegistry';
 /**
  * Resolves a contribution's declarative `export` (e.g. `"./ui.js#ImageControl"`)
  * to its actual value. The host owns this because a bundler must know the
- * concrete module — so loading code contributions is always host-mediated and
+ * concrete module  so loading code contributions is always host-mediated and
  * gated behind {@link LoadManifestOptions.trust}.
  */
 export type ContributionResolver = (
@@ -65,7 +65,7 @@ export async function loadManifest(
     }
   }
 
-  // 3. Code contributions — only when explicitly trusted and a resolver exists.
+  // 3. Code contributions  only when explicitly trusted and a resolver exists.
   if (!options.trust || !options.resolve) return;
   for (const contribution of manifest.contributions) {
     try {

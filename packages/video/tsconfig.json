@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // A Remotion app is bundled by webpack/esbuild, not compiled by tsc  so
+    // bundler resolution, JSX, and no emit (the base config targets library
+    // builds with NodeNext + declarations).
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "rootDir": "."
+  },
+  "include": [
+    "src",
+    "scripts",
+    "remotion.config.ts"
+  ]
+}

@@ -336,14 +336,14 @@ with the core node/value-type machinery and bundle them into a profile. See
 
 ## Loading packages from a manifest
 
-Everything above registers extensions *imperatively* — a plugin imports the
+Everything above registers extensions *imperatively*  a plugin imports the
 package's code and writes to the stores. A package can instead ship a static
 **manifest** that the editor loads **without importing the package's code**: the
 node palette and value types populate from JSON alone, while the UI contributions
 declared in the manifest map onto the same extension surfaces documented here and
 are registered only under an explicit trust gate.
 
-This is a separate subject with its own reference — see
+This is a separate subject with its own reference  see
 [Package Manifests](../../manifests/overview/) for the format, the build-time
 generator, the `loadManifest` / `manifestPlugin` API and the trust model.
 

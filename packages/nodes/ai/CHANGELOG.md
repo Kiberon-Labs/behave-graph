@@ -1,5 +1,16 @@
 # @kiberon-labs/behave-graph-nodes-ai
 
+## 1.1.0
+
+### Minor Changes
+
+- Ship the Conversation / Conversations panel styles. The package's CSS modules were compiled to empty objects (no CSS pipeline in the build), so every `styles.*` class was `undefined` and the panels rendered as unstyled text. The build now uses the same LightningCSS pipeline as the flow package and bundles per-entry, emitting a stable `dist/ui.css` exposed as the `./ui.css` subpath hosts embedding the panels should `import '@kiberon-labs/behave-graph-nodes-ai/ui.css'`. Note: the dist layout changed from per-source-file modules to bundled entries (`index`, `ui`); deep imports of internal files (anything other than the documented entries) will no longer resolve.
+
+### Patch Changes
+
+- Declare `react`/`react-dom` as peer dependencies (matching the image nodes package). Without them, tsdown's unbundled build inlined a private copy of React into `dist`, so any host rendering the `ui` entry's panels (Conversation, Conversations) crashed with a null-dispatcher hooks error ("Cannot read properties of null (reading 'useRef')") from the duplicated React instance.
+- Ship the UI panels' styles. The build was missing the LightningCSS pipeline the flow package uses, so every `*.module.css` import compiled to an empty object and the Conversation / Conversations panels rendered completely unstyled. The package now builds bundled (externals declared) with CSS modules compiled and aggregated to a stable `dist/ui.css`, exported as `@kiberon-labs/behave-graph-nodes-ai/ui.css` hosts that render the panels should import it alongside the flow `entry.css`.
+
 ## 1.0.0
 
 ### Minor Changes
@@ -11,7 +22,6 @@
 
   A node package for building AI agents in the graph, on the [Vercel AI SDK](https://ai-sdk.dev)
   (`ai` + `@ai-sdk/openai` + `@ai-sdk/anthropic`).
-
   - **Agents & providers**: `ai/provider` (OpenAI / OpenRouter / custom
     OpenAI-compatible / Anthropic), `ai/agent`, `ai/tool`. `createModel` maps a
     serializable config onto an SDK `LanguageModel`.
@@ -39,7 +49,6 @@
     in node params or saved graph JSON.
 
   ## @kiberon-labs/behave-graph-flow
-
   - **Realtime preview runner**: evaluate every _watched_ node output (pull the
     upstream function graph on demand), so live previews work for pure data graphs
     (e.g. image nodes) that no flow fiber drives. Previously only nodes carrying a
@@ -53,7 +62,6 @@
     host AI subsystem can drive a multimodal chat.
 
   ## @kiberon-labs/behave-graph-nodes-image
-
   - The image plugin now builds an execution registry for the realtime preview
     runner (accepting an optional `registry`), so inline node previews and the
     Image Output panel actually render. Previously the runner had no registry and

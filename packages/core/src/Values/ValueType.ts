@@ -1,7 +1,7 @@
 /**
  * The minimal contract every value type must satisfy: construct a default,
  * round-trip to/from JSON, compare, and clone. Interpolation is deliberately
- * *not* here — see {@link Interpolatable} — so that value domains which cannot
+ * *not* here  see {@link Interpolatable}  so that value domains which cannot
  * be meaningfully interpolated (audio buffers, network handles, tool specs)
  * are not forced to fake a `lerp`.
  */

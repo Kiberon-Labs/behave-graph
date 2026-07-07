@@ -24,12 +24,12 @@ const NOTE_MIN_HEIGHT = 80;
  *
  * Layout: the root div only positions the NodeResizer and floating toolbar (it
  * must not clip, or the toolbar disappears); the frame inside it clips. Only
- * the header drags the node (`dragHandle` set by `addNote`) — the body is
+ * the header drags the node (`dragHandle` set by `addNote`)  the body is
  * `nodrag nopan` so selecting text neither moves the node nor pans the canvas.
  * The editor is always editable: a single click gives a caret; the format
  * toolbar shows while the node is selected.
  *
- * Font size cascades from a React `style` on the root — never write to
+ * Font size cascades from a React `style` on the root  never write to
  * `editor.view.dom` in an effect; tiptap v3 throws if the view has not mounted.
  */
 export const NoteNodeImpl = ({

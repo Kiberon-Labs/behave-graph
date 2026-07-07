@@ -8,7 +8,7 @@ import type { Edge, Node } from 'reactflow';
 import { pinned } from '@/annotations';
 
 /**
- * elkjs is ~1.4 MB — by far the largest dependency the editor can pull in, yet
+ * elkjs is ~1.4 MB  by far the largest dependency the editor can pull in, yet
  * it is only used when the user explicitly runs an ELK layout. Load it lazily (a
  * dynamic import the bundler code-splits into a separate chunk) so it stays out
  * of the initial load even for consumers of this layout plugin. The instance is

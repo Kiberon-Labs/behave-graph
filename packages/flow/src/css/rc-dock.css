@@ -35,7 +35,7 @@
 
 /* Active tab matches the editor surface (content-colored, like VSCode): its
    lighter background against the darker tab bar marks it active. No top accent
-   line — repeated across panels it read as a stray-line artifact. */
+   line  repeated across panels it read as a stray-line artifact. */
 .dock-tab-active,
 .dock-tab-active:hover {
     color: var(--colors-fg);

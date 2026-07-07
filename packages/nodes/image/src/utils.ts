@@ -41,7 +41,16 @@ export const enumValue = <T extends Record<string, V>, V>(
 };
 
 /** Clamp `value` to an integer within [min, max]. */
-export const clampInt = (value: number, min: number, max: number): number => {
-  const truncated = Number.isFinite(value) ? Math.trunc(value) : min;
+export const clampInt = (
+  value: number | bigint,
+  min: number,
+  max: number
+): number => {
+  // 'integer' sockets deserialize graph-JSON values to BigInt, so a literal
+  // parameter (e.g. resize width 640) arrives here as 640n. Number.isFinite
+  // rejects BigInt, which used to silently collapse every integer param to
+  // `min`  coerce first.
+  const numeric = typeof value === 'bigint' ? Number(value) : value;
+  const truncated = Number.isFinite(numeric) ? Math.trunc(numeric) : min;
   return Math.min(max, Math.max(min, truncated));
 };

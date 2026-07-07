@@ -12,7 +12,7 @@ export type UseWasdPanOptions = {
 const isEditableElement = (element: HTMLElement): boolean => {
   const tag = element.tagName?.toLowerCase();
   // Contenteditable surfaces (e.g. the notes plugin's prosemirror editor) are
-  // divs, so checking the tag alone is not enough — WASD must type, not pan.
+  // divs, so checking the tag alone is not enough  WASD must type, not pan.
   return (
     tag === 'input' ||
     tag === 'textarea' ||

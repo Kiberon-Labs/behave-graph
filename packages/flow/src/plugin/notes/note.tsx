@@ -4,7 +4,7 @@ import type { INoteNode } from '@/types/nodes';
 
 /**
  * Note nodes embed a tiptap/prosemirror rich-text editor (~320 KB). Most
- * graphs have no note nodes, so load the implementation lazily — the editor
+ * graphs have no note nodes, so load the implementation lazily  the editor
  * weight only enters the bundle when a note node is actually rendered.
  */
 const LazyNoteNode = lazy(() =>

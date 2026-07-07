@@ -10,7 +10,7 @@ import type { BackendServiceRequirement } from './ManifestJSON.js';
  *
  * ## Why this exists
  *
- * Some node packages can't work from node definitions alone — they need a
+ * Some node packages can't work from node definitions alone  they need a
  * long-lived side effect set up *outside* any single graph run. Example to react to events that
  * only arrive if something is holding a Socket Mode WebSocket open and routing
  * inbound events. That "something" is a backend service: it is created once, kept
@@ -33,7 +33,7 @@ import type { BackendServiceRequirement } from './ManifestJSON.js';
 export interface StartRunRequest {
   /** Which graph to run. Host-defined opaque id (path, db id, ...). */
   graphId?: string;
-  /** What caused the start — typically the normalized inbound event. */
+  /** What caused the start  typically the normalized inbound event. */
   trigger?: unknown;
   /** Extra per-run dependencies to merge for this run only. */
   dependencies?: Partial<Dependencies>;
@@ -79,7 +79,7 @@ export interface BackendServiceContext {
  */
 export interface BackendServiceInstance {
   /**
-   * Engine dependencies this service contributes — e.g. Slack supplies
+   * Engine dependencies this service contributes  e.g. Slack supplies
    * `{ ISlackClient, ISlackEventSource }` backed by the live connection. The host
    * merges these into the `dependencies` of every execution registry built for a
    * run that uses this package.
@@ -130,7 +130,7 @@ export interface LoadBackendServiceOptions {
   /**
    * Host-mediated import of the entry module. The host owns this so the bundler
    * knows the concrete module and so importing the (code-bearing) entry is
-   * always behind the host's trust gate — exactly like contribution resolving.
+   * always behind the host's trust gate  exactly like contribution resolving.
    * Usually `(entry) => import(entry)`.
    */
   import: (entry: string) => Promise<unknown> | unknown;

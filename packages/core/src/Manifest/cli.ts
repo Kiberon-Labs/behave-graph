@@ -22,7 +22,7 @@ function resolveOutPath(out: string): string {
   try {
     if (statSync(abs).isDirectory()) return join(abs, MANIFEST_FILE_NAME);
   } catch {
-    // Path does not exist yet — treat it as a file path as given.
+    // Path does not exist yet  treat it as a file path as given.
   }
   return abs;
 }

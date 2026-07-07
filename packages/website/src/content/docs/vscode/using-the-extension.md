@@ -121,10 +121,10 @@ The TypeScript registry is transpiled on demand, so a `registry.ts` runs without
 a separate build step. Besides `registry`, a registry module may export two
 optional seams the execution server honors:
 
-- **`executionHandlers`** — a map of custom node *kind* → handler, installed via
+- **`executionHandlers`**  a map of custom node *kind* → handler, installed via
   `registerNodeExecutionHandler`. Use it to add brand-new node *kinds* (not just
   node types), e.g. a custom-rate render node.
-- **`createEngine`** — a factory `(graph, registry) => Engine` to run the graph
+- **`createEngine`**  a factory `(graph, registry) => Engine` to run the graph
   on a different engine, such as `RealtimeEngine`.
 
 ### Example graphs
@@ -132,24 +132,24 @@ optional seams the execution server honors:
 The extension ships runnable examples (a headless workflow, a Web-Audio-style
 chain with a custom value type and node kind, a `RealtimeEngine` game loop, and a
 custom `Vector3` value type). Each is a `.kbgraph` with an adjacent `registry.ts`
-— open one and press **Run**. They live in the extension's `examples/` folder.
+ open one and press **Run**. They live in the extension's `examples/` folder.
 
 ### Custom editor plugins
 
 The **plugins** file extends the *editor experience* (commands, panels, controls,
 per-graph state, the runner, and so on) and is loaded into the webview when a
-graph opens. Write it in **TypeScript** (`plugin.ts` / `.tsx`) or plain JS — the
+graph opens. Write it in **TypeScript** (`plugin.ts` / `.tsx`) or plain JS  the
 extension transpiles it on the fly, so there's no build step. It runs as an
 inline classic script (no ESM `import`/`export`); the editor exposes the
 libraries on `window.behaveGraph` (core), `window.behaveGraphFlow` (flow) and
 `window.React` (for `.tsx` controls), and drains a `window.behaveGraphPlugins`
-queue **after** its own plugins are registered — so a plugin can register
+queue **after** its own plugins are registered  so a plugin can register
 controls or even override editor defaults such as the graph runner. Because the
 queue is drained after the editor boots, do the work inside the pushed function
 (by then the libraries are available).
 
 ```ts
-// plugin.ts — push a function that receives the editor System
+// plugin.ts  push a function that receives the editor System
 (window.behaveGraphPlugins = window.behaveGraphPlugins || []).push(
   async (system) => {
     const { localGraphRunnerPlugin } = window.behaveGraphFlow;

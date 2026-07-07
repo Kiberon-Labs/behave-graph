@@ -1,5 +1,5 @@
 /**
- * Game example — registry.
+ * Game example  registry.
  *
  * A fixed-timestep game loop. The `game/integrate` event node advances one
  * entity's position every tick. It runs on `RealtimeEngine` (an `Engine`
@@ -10,7 +10,7 @@
  *  - swapping the engine itself (`RealtimeEngine`) without changing the run
  *    server, through the `createEngine` (EngineFactory) export
  *  - an event node that subscribes to the host tick on `init` and unsubscribes
- *    on `dispose` — the same lifecycle that makes nodes safe to add/remove at
+ *    on `dispose`  the same lifecycle that makes nodes safe to add/remove at
  *    runtime via `RealtimeEngine.addNode` / `removeNode` (a host-API feature not
  *    expressible in a static graph; see README)
  *  - a typed host capability (the game `World`) read back by capability key

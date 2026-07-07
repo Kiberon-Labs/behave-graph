@@ -1,6 +1,6 @@
 {
   "name": "@kiberon-labs/behave-graph-nodes-ai",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "source": "./src/index.ts",
   "exports": {
@@ -8,6 +8,7 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./ui.css": "./dist/ui.css",
     "./*": {
       "types": "./dist/*.d.ts",
       "import": "./dist/*.js"
@@ -52,20 +53,28 @@
     "react-dom": "19.2.4",
     "storybook": "^10.0.8",
     "tsdown": "^0.16.5",
+    "unplugin-lightningcss": "^0.4.3",
     "vite": "^7.2.4",
     "vitest": "^4.0.10"
   },
   "dependencies": {
-    "ai": "^6.0.0",
-    "@ai-sdk/openai": "^3.0.0",
     "@ai-sdk/anthropic": "^3.0.0",
+    "@ai-sdk/openai": "^3.0.0",
     "@vscode-elements/react-elements": "^2.4.0",
+    "ai": "^6.0.0",
     "iconoir-react": "^7.11.0",
     "zustand": "^5.0.8"
   },
   "license": "ISC",
   "peerDependencies": {
     "@kiberon-labs/behave-graph": "workspace:*",
-    "@kiberon-labs/behave-graph-flow": "workspace:*"
+    "@kiberon-labs/behave-graph-flow": "workspace:*",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "@kiberon-labs/behave-graph-flow": {
+      "optional": true
+    }
   }
 }

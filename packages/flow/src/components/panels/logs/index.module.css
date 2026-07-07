@@ -43,7 +43,7 @@
 }
 
 /* Active toggle: conveyed by the solid icon variant + an accent color, with no
-   box — the buttons stay ghost/invisible like the rest of the toolbar. */
+   box  the buttons stay ghost/invisible like the rest of the toolbar. */
 .actionActive {
     color: var(--ds-focus-border, #3794ff);
 }

@@ -13,7 +13,7 @@ import pkg from '../package.json' with { type: 'json' };
  * Build-time manifest source for the scene package.
  *
  * The registry projects scene's own nodes + value types into static specs
- * (instantiation only — nodes are never run, no IScene driver needed). The
+ * (instantiation only  nodes are never run, no IScene driver needed). The
  * executable profile (`registerSceneProfile`) lives behind the `runtime` entry,
  * loaded only by a runner. Contributions point into the built `dist`: the vec3
  * input control, plus each scene value type so a trusted host can swap the

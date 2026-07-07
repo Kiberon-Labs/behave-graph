@@ -100,7 +100,7 @@ const ImageNodePreviewBase: React.FC<ImageNodePreviewProps> = ({
 
     // Content-addressed cache. React Flow culls off-screen nodes, so a node that
     // scrolls back into view remounts and reuses its cached blob URL here instead
-    // of re-decoding and re-creating one — the object URL's lifetime is owned by
+    // of re-decoding and re-creating one  the object URL's lifetime is owned by
     // the cache, not by this component's mount/unmount.
     const key = imageSignature(bytes);
     const cached = getPreviewUrl(key);

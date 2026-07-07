@@ -23,7 +23,7 @@ The command:
 3. **Writes** the result to the shown output path and opens it. The path
    defaults to `<DATE>-<RUNID>.json` in the graph's folder (e.g.
    `2026-06-19-1f3c… .json`), or to a directory configured in the nearest
-   [`.kbworkspace`](#preferred-output-path) — you only change it if you need to:
+   [`.kbworkspace`](#preferred-output-path)  you only change it if you need to:
 
 ```json
 {
@@ -42,7 +42,7 @@ The command:
   out in the context menu.
 - **Typed input elicitation.** Inputs are prompted with type-aware parsing
   (numbers validated, booleans picked, etc.) via the registry's value types.
-- **Headless run via `runSubgraph`** — inputs are seeded onto the boundary, the
+- **Headless run via `runSubgraph`**  inputs are seeded onto the boundary, the
   graph runs to its output, and the result is captured to a file.
 
 Graphs with custom nodes can be executed too: an adjacent `registry.ts` is loaded

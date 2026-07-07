@@ -1,5 +1,5 @@
 /**
- * Typed capability access — an additive alternative to the stringly-typed
+ * Typed capability access  an additive alternative to the stringly-typed
  * `graph.getDependency('SomeKey')` service-locator.
  *
  * A host declares a {@link CapabilityKey} once (carrying the service's type),
@@ -16,7 +16,7 @@
 /** An opaque, typed handle for a host-provided capability. */
 export interface CapabilityKey<T> {
   readonly id: string;
-  /** Phantom type — never present at runtime. */
+  /** Phantom type  never present at runtime. */
   readonly __capability?: T;
 }
 

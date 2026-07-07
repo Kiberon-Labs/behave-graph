@@ -7,7 +7,7 @@
  * pointing each token at the live `--vscode-*` variable VS Code injects on
  * <html>, so the editor follows the user's active theme (dark / light /
  * high-contrast). Every semantic token (`--colors-*`, `--color-neutral-*`, …)
- * resolves through `--ds-*`, so overriding this layer is enough — there is no
+ * resolves through `--ds-*`, so overriding this layer is enough  there is no
  * need to restate the higher-level tokens here.
  *
  * The hex/rgba fallbacks only apply when the app runs outside a VS Code webview

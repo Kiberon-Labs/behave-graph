@@ -3,13 +3,13 @@
  *
  * The editor uses @vscode-elements/react-elements (VscodeButton, VscodeTextfield,
  * VscodeCheckbox, VscodeBadge, VscodeSingleSelect, …). Those web components style
- * themselves from `--vscode-*` custom properties — they don't know about our
+ * themselves from `--vscode-*` custom properties  they don't know about our
  * `--ds-*` tokens. This file feeds them: it expresses our design tokens in the
  * `--vscode-*` vocabulary the components understand, so they follow the active
  * theme (default or an alternate like Kiberon) instead of falling back to their
  * built-in VS Code blue.
  *
- * IMPORTANT — why the selector lists every theme scope:
+ * IMPORTANT  why the selector lists every theme scope:
  * A custom property whose value is `var(--ds-x)` is substituted at the element
  * it's declared on, then that *resolved* value inherits. Declaring the bridge
  * only at `:root` would bake in the default `--ds-*` values and ignore a scoped
@@ -18,7 +18,7 @@
  * add a new theme under css/themes/, add its scope selector here too.
  *
  * In the real VS Code extension this is inert: VS Code injects `--vscode-*` as
- * inline styles on <html>, which win over these :root rules — so vscode-elements
+ * inline styles on <html>, which win over these :root rules  so vscode-elements
  * track the user's actual VS Code theme there, as intended.
  */
 :root,
@@ -90,7 +90,7 @@
     --vscode-toolbar-hoverBackground: var(--ds-toolbar-hover-bg);
     --vscode-toolbar-activeBackground: var(--ds-toolbar-active-bg);
 
-    /* Surfaces — collapsible headers, tables, dividers, panels */
+    /* Surfaces  collapsible headers, tables, dividers, panels */
     --vscode-editorWidget-background: var(--ds-widget-bg);
     --vscode-editorWidget-foreground: var(--ds-widget-fg);
     --vscode-editorWidget-border: var(--ds-border-subtle);
@@ -104,7 +104,7 @@
 
 /*
  * Native form controls (checkbox / range / radio) tint from `accent-color`,
- * which is a normal property — it re-resolves `var(--ds-*)` per element, so it
+ * which is a normal property  it re-resolves `var(--ds-*)` per element, so it
  * follows a scoped theme without extra selectors.
  */
 input[type="checkbox"],

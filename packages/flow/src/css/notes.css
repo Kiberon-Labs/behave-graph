@@ -1,7 +1,7 @@
 /*
  * Markdown note nodes (notes plugin). Global classes rather than a CSS module:
  * the note component is lazy-loaded, and the bundler emits a lazy chunk's CSS
- * module into a separate dist asset that hosts never load — only the entry CSS
+ * module into a separate dist asset that hosts never load  only the entry CSS
  * (dist/index.css) ships. Rich-text content styling comes from the shared
  * .ProseMirror rules in prosemirror.css.
  */

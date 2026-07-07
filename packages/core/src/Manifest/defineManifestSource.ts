@@ -5,7 +5,7 @@ import type { ContributionSpec, PackageRequirement } from './ManifestJSON.js';
  * The author-maintained, side-effect-light descriptor a node package exports
  * (e.g. from `src/manifest.source.ts`) for the manifest generator to consume.
  *
- * `contributions` is plain data — it must NOT import React/UI code — so the
+ * `contributions` is plain data  it must NOT import React/UI code  so the
  * generator can read it without pulling the package's UI bundle. The generator
  * calls {@link ManifestSource.registry} (the package's trusted `registerProfile`)
  * once, at build time, to produce node + value specs.

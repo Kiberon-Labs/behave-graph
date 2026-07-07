@@ -1,5 +1,5 @@
 /**
- * Workflow example — registry.
+ * Workflow example  registry.
  *
  * An n8n-style automation: a trigger fans into an HTTP request, branches on the
  * response status, and stores the result. It runs headlessly on the engine, the
@@ -67,7 +67,7 @@ const httpRequestNode = makeAsyncNodeDefinition({
     body: 'string'
   },
   initialState: {},
-  triggered: async ({ read, write, commit, finished = () => {}, graph }) => {
+  triggered: async ({ read, write, commit, finished = () => { }, graph }) => {
     const http = readCapability(graph, HttpClientKey);
     if (!http) {
       throw new Error('workflow/httpRequest requires an HttpClient capability');

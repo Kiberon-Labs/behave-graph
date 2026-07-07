@@ -60,7 +60,7 @@ const addNote = (ctx: CommandContext): void => {
  * they persist with the UI graph JSON like any other canvas node.
  *
  * The note editor embeds tiptap/prosemirror, a heavy dependency most hosts do
- * not need, so notes live here rather than in the core editor — register this
+ * not need, so notes live here rather than in the core editor  register this
  * plugin (directly or via the kitchen-sink plugin) to opt in.
  *
  * The plugin:

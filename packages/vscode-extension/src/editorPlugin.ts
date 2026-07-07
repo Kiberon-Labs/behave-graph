@@ -30,7 +30,7 @@ const transpileCache = new Map<string, { mtimeMs: number; code: string }>();
  * A `.ts` / `.tsx` plugin is transpiled on demand with esbuild (type stripping +
  * JSX), so authors don't need a build step. The result is injected into the
  * webview as an inline classic script, so the plugin must not use ESM
- * `import` / `export` (push to `window.behaveGraphPlugins` instead — see the
+ * `import` / `export` (push to `window.behaveGraphPlugins` instead  see the
  * audio example). Returns `undefined` when no plugin file is present.
  */
 export async function loadEditorPlugin(

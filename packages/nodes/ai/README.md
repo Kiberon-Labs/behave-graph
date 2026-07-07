@@ -11,40 +11,40 @@ exposes it as nodes.
 
 ## Pieces
 
-- **Providers** (`src/providers`) — `createModel(config, modelId)` maps a
+- **Providers** (`src/providers`)  `createModel(config, modelId)` maps a
   serializable `ProviderConfig` onto a Vercel AI SDK `LanguageModel`
   (`createOpenAI` for openai/openrouter/custom OpenAI-compatible endpoints,
   `createAnthropic` for Anthropic).
-- **Values** (`src/values`) — `aiProvider`, `aiAgent`, `aiTool`, `aiConversation`
+- **Values** (`src/values`)  `aiProvider`, `aiAgent`, `aiTool`, `aiConversation`
   socket value types.
 - **Nodes** (`src/nodes`):
-  - `ai/provider` — build a provider config (kind + `credentialRef` + baseURL +
+  - `ai/provider`  build a provider config (kind + `credentialRef` + baseURL +
     model). **No API key** , `credentialRef` is a non-secret name resolved by the
     host (see Credentials).
-  - `ai/agent` — define an agent (provider + model + system prompt + tools).
-  - `ai/tool` — define a tool (name + description + JSON-schema parameters).
-  - `ai/generateImage` — prompt → an `image` value (visualize it in the graph).
-  - `ai/conversation` — produce a conversation handle to start from (empty `id` =
+  - `ai/agent`  define an agent (provider + model + system prompt + tools).
+  - `ai/tool`  define a tool (name + description + JSON-schema parameters).
+  - `ai/generateImage`  prompt → an `image` value (visualize it in the graph).
+  - `ai/conversation`  produce a conversation handle to start from (empty `id` =
     the default/panel conversation).
-  - `ai/forkConversation` — **action**: clone a conversation into a new branch
+  - `ai/forkConversation`  **action**: clone a conversation into a new branch
     and focus it (for explorations).
-  - `ai/setupConversation` — connect an agent to a conversation (optional
+  - `ai/setupConversation`  connect an agent to a conversation (optional
     `conversation` input targets a branch; each branch has its own agent).
-  - `ai/sendMessage` — **action**: push a message into a conversation (optional
+  - `ai/sendMessage`  **action**: push a message into a conversation (optional
     `conversation` input targets a branch; optional `image` input attaches a
     picture for vision; for a `user` message, get the `reply`).
-  - `ai/onMessage` — **event**: fires when a message is added (optional
+  - `ai/onMessage`  **event**: fires when a message is added (optional
     `conversation` input scopes it to one branch).
-  - `ai/onToolCall` — **event**: fires when the model requests a tool, with
+  - `ai/onToolCall`  **event**: fires when the model requests a tool, with
     `callId`, `toolName` and `arguments` (JSON string).
-  - `ai/toolResult` — **action**: answer a tool call (`callId` + `result`),
+  - `ai/toolResult`  **action**: answer a tool call (`callId` + `result`),
     resuming the agentic loop.
-- **Runtime** (`src/runtime/ConversationRuntime.ts`) — the editor-side brain. It
+- **Runtime** (`src/runtime/ConversationRuntime.ts`)  the editor-side brain. It
   mirrors the conversation into `system.chatStore` (rendered by the flow
   `ConversationPanel`, the `conversation` tab), listens for user input on the
   `chat:userMessage` pubsub topic, and calls the AI SDK's `streamText` to produce
   replies.
-- **Plugin** (`src/ui.tsx`) — `aiPlugin` registers the specs and wires the runtime
+- **Plugin** (`src/ui.tsx`)  `aiPlugin` registers the specs and wires the runtime
   onto `system.conversation`.
 
 ## How it fits together
@@ -117,11 +117,11 @@ Add the `conversation` tab to your dock layout to see the chat.
 Runnable example graphs live in [`stories/data`](stories/data/) and appear as
 Storybook stories (`pnpm storybook` → the **AI** group):
 
-- **`basicChat`** — `lifecycle/onStart → ai/setupConversation`, fed by
+- **`basicChat`**  `lifecycle/onStart → ai/setupConversation`, fed by
   `ai/provider → ai/agent`. Run it and the chat panel goes live.
-- **`toolUse`** — an agent with a `get_current_time` tool; `ai/onToolCall →
+- **`toolUse`**  an agent with a `get_current_time` tool; `ai/onToolCall →
   ai/toolResult` answers the model's tool calls inside the graph.
-- **`exploration`** — `ai/conversation → ai/forkConversation → ai/sendMessage`
+- **`exploration`**  `ai/conversation → ai/forkConversation → ai/sendMessage`
   branches the conversation and asks the fork a question; the **Conversations**
   panel shows the new branch.
 
@@ -258,7 +258,7 @@ conversation/fork/setup/send/generateImage/onMessage/onToolCall/toolResult nodes
 
 Not yet implemented (intentional next steps):
 
-- **Multiple images per message** — `ai/sendMessage` takes a single `image`
+- **Multiple images per message**  `ai/sendMessage` takes a single `image`
   today; a list socket would allow several.
-- **Multiple tools per agent** — a `tool[]` list socket or an `ai/toolset` combiner
+- **Multiple tools per agent**  a `tool[]` list socket or an `ai/toolset` combiner
   (the `ai/agent` node currently takes a single `tool`).

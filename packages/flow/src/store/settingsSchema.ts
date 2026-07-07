@@ -8,7 +8,7 @@ import { EDGE_TYPE } from './settings';
  * The Settings panel is auto-generated from a registry of {@link SettingDescriptor}s
  * rather than hand-coded JSX. Built-in settings are seeded as {@link DEFAULT_SETTINGS};
  * plugins contribute their own via `system.registerSetting(...)`, and the panel
- * renders them the same way — so a plugin can surface settings without forking
+ * renders them the same way  so a plugin can surface settings without forking
  * the panel.
  *
  * Descriptors are intentionally plain data (everything except `render`/`when` is
@@ -52,27 +52,27 @@ type SettingDescriptorBase = {
 export type SettingDescriptor =
   | (SettingDescriptorBase & { type: 'boolean'; default: boolean })
   | (SettingDescriptorBase & {
-      type: 'number';
-      default: number;
-      min?: number;
-      max?: number;
-      step?: number;
-    })
+    type: 'number';
+    default: number;
+    min?: number;
+    max?: number;
+    step?: number;
+  })
   | (SettingDescriptorBase & {
-      type: 'string';
-      default: string;
-      placeholder?: string;
-    })
+    type: 'string';
+    default: string;
+    placeholder?: string;
+  })
   | (SettingDescriptorBase & {
-      type: 'enum';
-      default: string;
-      options: SettingEnumOption[];
-    })
+    type: 'enum';
+    default: string;
+    options: SettingEnumOption[];
+  })
   | (SettingDescriptorBase & {
-      type: 'custom';
-      default?: unknown;
-      render: FC<SettingControlProps>;
-    });
+    type: 'custom';
+    default?: unknown;
+    render: FC<SettingControlProps>;
+  });
 
 export type SettingsSchemaStore = {
   /** Registered descriptors, in registration order. */

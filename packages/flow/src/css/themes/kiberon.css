@@ -1,8 +1,8 @@
 /*
- * Kiberon Labs theme — an alternate, opt-in theme for the flow editor.
+ * Kiberon Labs theme  an alternate, opt-in theme for the flow editor.
  *
  * Like the VS Code theme (the extension's theme-bridge.css), this re-declares
- * the design system's intermediary `--ds-*` bridge tokens — every semantic token
+ * the design system's intermediary `--ds-*` bridge tokens  every semantic token
  * (`--colors-*`, `--color-neutral-*`, …) cascades from that layer, so overriding
  * `--ds-*` re-themes the whole editor. Unlike the VS Code mapping, this does NOT
  * replace the default: it's scoped to a container, so it only applies where you
@@ -24,18 +24,18 @@
  */
 [data-flow-theme="kiberon"],
 .flow-theme-kiberon {
-    /* Fonts — typography.css --font-sans / --font-mono */
+    /* Fonts  typography.css --font-sans / --font-mono */
     --ds-font-ui: "Geist", "Inter", system-ui, -apple-system, sans-serif;
     --ds-font-mono: "Geist Mono", "SF Mono", "JetBrains Mono", ui-monospace, monospace;
 
-    /* Foreground — theme.css .dark foreground / muted-foreground */
+    /* Foreground  theme.css .dark foreground / muted-foreground */
     --ds-fg: #e3e3e3;
     --ds-fg-muted: #a8a8a8;
     --ds-icon-fg: #e3e3e3;
     --ds-editor-fg: #e3e3e3;
     --ds-widget-fg: #e3e3e3;
 
-    /* Surfaces — background (canvas) / sidebar / card / secondary */
+    /* Surfaces  background (canvas) / sidebar / card / secondary */
     --ds-editor-bg: #090909;          /* --background */
     --ds-widget-bg: #1f1f1f;          /* --secondary (raised widgets) */
     --ds-sidebar-bg: #0e0e0e;         /* --sidebar-background / --card */
@@ -45,7 +45,7 @@
     --ds-section-header-fg: #e3e3e3;  /* --foreground */
     --ds-section-header-border: #1f1f1f; /* --border */
 
-    /* Borders / focus / sashes — border / input / ring (--kl purple) */
+    /* Borders / focus / sashes  border / input / ring (--kl purple) */
     --ds-border: #1f1f1f;             /* --border */
     --ds-border-subtle: #2d2d2d;      /* --secondary-active (slightly lifted) */
     --ds-border-muted: rgba(227, 227, 227, 0.06);
@@ -54,7 +54,7 @@
     --ds-sash-hover-border: #876adb;  /* --ring */
     --ds-sash-border: #1f1f1f;        /* --border */
 
-    /* Buttons — primary (purple) + secondary neutral */
+    /* Buttons  primary (purple) + secondary neutral */
     --ds-button-bg: #7b5dcd;          /* --primary */
     --ds-button-fg: #e3e1ed;          /* --primary-foreground */
     --ds-button-hover-bg: #7052be;    /* --primary-hover */
@@ -69,7 +69,7 @@
     --ds-input-option-active-border: #7b5dcd;              /* --primary */
     --ds-input-option-active-fg: #e3e1ed;                  /* --primary-foreground */
 
-    /* Lists — purple selection wash, neutral hover */
+    /* Lists  purple selection wash, neutral hover */
     --ds-list-active-bg: rgba(123, 93, 205, 0.3);  /* --primary wash */
     --ds-list-active-fg: #e3e3e3;                   /* --foreground */
     --ds-list-hover-bg: #252525;                    /* --accent-hover */
@@ -80,7 +80,7 @@
     --ds-badge-bg: #2d2d2d;           /* --accent-active (neutral chip) */
     --ds-badge-fg: #e3e3e3;           /* --foreground */
 
-    /* Text variants — code / preformat / blockquote */
+    /* Text variants  code / preformat / blockquote */
     --ds-preformat-fg: #e3e3e3;       /* --foreground */
     --ds-blockquote-bg: #141414;      /* --muted */
     --ds-blockquote-border: #2d2d2d;
@@ -104,14 +104,14 @@
     --ds-git-modified: #fecc5c;       /* --kl-gold */
     --ds-terminal-cyan: #1e7eff;      /* --info (no cyan in palette) */
 
-    /* Menus — popover surface */
+    /* Menus  popover surface */
     --ds-menu-bg: #0e0e0e;            /* --popover */
     --ds-menu-fg: #e3e3e3;            /* --popover-foreground */
     --ds-menu-border: #1f1f1f;        /* --border */
     --ds-menu-selection-bg: #252525;  /* --accent-hover */
     --ds-menu-selection-fg: #e3e3e3;  /* --foreground */
 
-    /* Graph node accents — the crystal palette (brand.css --kl-*); rounder
+    /* Graph node accents  the crystal palette (brand.css --kl-*); rounder
        cards to match the Kiberon card radius (--radius 0.5rem). */
     --ds-node-red: #ee397a;           /* --kl-pink */
     --ds-node-green: #4beb8f;         /* --success */

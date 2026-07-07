@@ -5,5 +5,7 @@ linkWorkspacePackages: true
 # vsce's native helpers need their postinstall scripts (binary download)
 # so VSIX packaging/publishing works locally and in CI.
 onlyBuiltDependencies:
+  # esbuild: Remotion's bundler needs its platform binary postinstall.
+  - esbuild
   - '@vscode/vsce-sign'
   - keytar

@@ -99,7 +99,7 @@ export type PackageCategory =
 
 /**
  * Declares that the package needs a persistent, long-lived host process to
- * function fully — e.g. Slack trigger nodes that rely on a standing WebSocket
+ * function fully  e.g. Slack trigger nodes that rely on a standing WebSocket
  * connection and an out-of-band signal that can wake up and start a graph. The
  * `entry` module is loaded and kept alive by a host that supports backends; a
  * pure editor/runner may surface the requirement and run everything else.
@@ -142,14 +142,14 @@ export type KnownRequirement = BackendServiceRequirement | ConfigRequirement;
  */
 export type PackageRequirement =
   | KnownRequirement
-  | { kind: string; [key: string]: unknown };
+  | { kind: string;[key: string]: unknown };
 
 /** Current manifest schema version. Bump on breaking shape changes. */
 export const MANIFEST_VERSION = 1 as const;
 
 /**
  * Canonical manifest filename. A plain `.json` file so any JSON loader reads it
- * directly — `behave-graph.manifest` is only the descriptive base name, not a
+ * directly  `behave-graph.manifest` is only the descriptive base name, not a
  * custom file type. Hosts that scan for manifests should look for this name.
  */
 export const MANIFEST_FILE_NAME = 'behave-graph.manifest.json';

@@ -168,8 +168,8 @@ const SettingRow = ({ descriptor, value, setValue }: RowProps) => {
 
 /**
  * Schema-driven Settings panel. Rows are auto-generated from the descriptor
- * registry (`system.settingsSchema`) — built-in and plugin-contributed settings
- * render through the same path — grouped by section, filterable, with reset.
+ * registry (`system.settingsSchema`)  built-in and plugin-contributed settings
+ * render through the same path  grouped by section, filterable, with reset.
  */
 export const Settings = () => {
   const system = useSystem();

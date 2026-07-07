@@ -33,7 +33,7 @@ import {
 } from '@kiberon-labs/behave-graph-flow';
 
 /**
- * Factory a custom registry may export to vary the engine used per run — e.g.
+ * Factory a custom registry may export to vary the engine used per run  e.g.
  * `RealtimeEngine` instead of the default `Engine`. This is the extension's
  * surface for the engine's execution-strategy seam.
  */
@@ -41,7 +41,7 @@ type EngineFactory = (graph: GraphInstance, registry: IRegistry) => Engine;
 
 /**
  * What a custom registry module can contribute to the runner: the registry
- * itself plus two optional seams — an {@link EngineFactory} and a table of
+ * itself plus two optional seams  an {@link EngineFactory} and a table of
  * custom node-kind execution handlers (taught to the engine via
  * `registerNodeExecutionHandler`). The latter lets a registry add brand-new
  * node *kinds* (not just node types), e.g. an `'AudioRate'` render node.
@@ -92,10 +92,10 @@ export class GraphRunnerServer {
       setState: (key: string, value: unknown) => {
         stateMap.set(key, value);
       },
-      storeEvent: () => {}, // No-op for server
-      rehydrateState: async () => {}, // No-op for server
-      syncState: async () => {}, // No-op for server
-      syncAndClearState: async () => {}, // No-op for server
+      storeEvent: () => { }, // No-op for server
+      rehydrateState: async () => { }, // No-op for server
+      syncState: async () => { }, // No-op for server
+      syncAndClearState: async () => { }, // No-op for server
       resetState: async () => {
         stateMap.clear();
       }
@@ -194,7 +194,7 @@ export class GraphRunnerServer {
       if (!registryPath.endsWith('.ts')) {
         throw err;
       }
-      // Reuse the previous transpile+import if the file hasn't changed — every
+      // Reuse the previous transpile+import if the file hasn't changed  every
       // graph open otherwise re-transpiles and re-imports the registry.
       const mtimeMs = fs.statSync(registryPath).mtimeMs;
       const cached = GraphRunnerServer.registryModuleCache.get(registryPath);
@@ -278,10 +278,10 @@ export class GraphRunnerServer {
 
       console.log(
         `Loaded custom registry from: ${registryPath}` +
-          (createEngine ? ' (+ custom engine)' : '') +
-          (executionHandlers
-            ? ` (+ ${Object.keys(executionHandlers).length} execution handler(s))`
-            : '')
+        (createEngine ? ' (+ custom engine)' : '') +
+        (executionHandlers
+          ? ` (+ ${Object.keys(executionHandlers).length} execution handler(s))`
+          : '')
       );
       return { registry, createEngine, executionHandlers };
     } catch (error) {
@@ -968,7 +968,7 @@ export class GraphRunnerServer {
         }
       }
 
-      // Create engine — a custom registry may supply its own engine (e.g.
+      // Create engine  a custom registry may supply its own engine (e.g.
       // RealtimeEngine) via an EngineFactory; otherwise use the default Engine.
       const engine = this.engineFactory
         ? this.engineFactory(graphInstance, runRegistry)

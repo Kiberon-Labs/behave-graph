@@ -3,7 +3,7 @@
 /*
  * Re-point the editor's intermediary `--ds-*` design tokens at VS Code's
  * injected `--vscode-*` theme variables so the editor tracks the user's active
- * theme (dark / light / high-contrast). Only this bridge layer needs mapping —
+ * theme (dark / light / high-contrast). Only this bridge layer needs mapping 
  * every semantic token (`--colors-*`, `--color-neutral-*`, …) cascades from it.
  */
 @import "./theme-bridge.css";

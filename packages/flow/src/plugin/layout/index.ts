@@ -44,7 +44,7 @@ export const applyAutoLayout = (system: System): void => {
 /**
  * Adds graph auto-layout (Dagre + ELK) to the editor. elkjs and dagre are heavy
  * dependencies that not every host needs, so they live here rather than in the
- * core editor — register this plugin (directly or via the kitchen-sink plugin)
+ * core editor  register this plugin (directly or via the kitchen-sink plugin)
  * to opt in.
  *
  * The plugin:

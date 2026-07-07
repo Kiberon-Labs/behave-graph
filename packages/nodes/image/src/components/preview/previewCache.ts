@@ -4,7 +4,7 @@
  * React Flow (the node canvas) culls off-screen nodes, so zooming and panning
  * mount and unmount node previews constantly. Without a cache, every mount
  * re-decodes the image bytes and calls `URL.createObjectURL`, and every unmount
- * revokes it — that churn stalls the scroll/zoom experience.
+ * revokes it  that churn stalls the scroll/zoom experience.
  *
  * This cache decouples the blob URL's lifetime from the React mount lifetime:
  * URLs are keyed by image content and held in a small LRU, so a node that

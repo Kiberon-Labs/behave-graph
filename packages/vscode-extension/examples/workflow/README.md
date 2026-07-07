@@ -1,6 +1,6 @@
 # Workflow example
 
-An n8n-style automation that runs headlessly on the engine — the way a server or
+An n8n-style automation that runs headlessly on the engine  the way a server or
 cron host runs a saved workflow:
 
 ```
@@ -23,7 +23,7 @@ shows the stored result, e.g.:
   the core `flow/branch`.
 - **Typed host capabilities.** The HTTP client and the result sink are declared
   as `defineCapability` keys, provided in the registry's dependency bag, and
-  read back type-safely by key — not via stringly-typed `getDependency('http')`.
+  read back type-safely by key  not via stringly-typed `getDependency('http')`.
 
 ## Notes
 

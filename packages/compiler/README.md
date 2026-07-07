@@ -14,7 +14,7 @@ The Behave-Graph Compiler is a build-time tool that analyzes TypeScript function
 - **Type Safety**: Leverages TypeScript's type system for automatic input/output inference
 - **Developer Experience**: Write nodes as plain TypeScript functions with type annotations
 - **Performance**: Generated nodes are optimized for runtime without authoring overhead
-- **Maintainability**: Single source of truth for node logic—the TypeScript function itself
+- **Maintainability**: Single source of truth for node logic the TypeScript function itself
 
 ## Installation
 

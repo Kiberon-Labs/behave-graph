@@ -1,11 +1,11 @@
 ---
 title: Package Manifests
-description: Statically describe the nodes, value types, UI contributions and host requirements a package provides — so editors and tools can discover it without importing or executing its code.
+description: Statically describe the nodes, value types, UI contributions and host requirements a package provides  so editors and tools can discover it without importing or executing its code.
 ---
 
 A **package manifest** is a static JSON file that describes everything a node
-package provides — its nodes, value types, editor contributions, classification
-and any host requirements — **without importing or executing the package's
+package provides  its nodes, value types, editor contributions, classification
+and any host requirements  **without importing or executing the package's
 code**. Tools read the manifest to build a node palette, validate a graph, or
 decide whether a package is safe to load, while the package's executable code
 (node `exec` functions, value serializers, WASM init, React components) is loaded
@@ -14,7 +14,7 @@ only by a runner, or on explicit, user-consented demand.
 ## Why manifests exist
 
 Historically the only way to learn what a package provides was to call its
-`registerProfile`, which **imports and runs** every node's implementation —
+`registerProfile`, which **imports and runs** every node's implementation 
 closures, side effects, even WASM initialisation. That is both a security
 concern (enumerating a third-party package means executing it) and a performance
 cost (heavy initialisation just to list nodes).
@@ -69,7 +69,7 @@ A manifest is produced by the core helper `writeManifest` and validated by
     { "id": "image-output",  "kind": "panel",    "export": "./ui.js#ImageOutputPanel" }
   ],
 
-  // The module a runner imports to obtain the executable registry — never the editor.
+  // The module a runner imports to obtain the executable registry  never the editor.
   "runtime": "./index.js",
 
   // Open-ended classification and host requirements (see below).
@@ -81,7 +81,7 @@ A manifest is produced by the core helper `writeManifest` and validated by
 
 ### Value types and the pass-through model
 
-The editor calls value-type functions at author time — `creator()` to seed a new
+The editor calls value-type functions at author time  `creator()` to seed a new
 variable, `serialize`/`deserialize` to round-trip a graph's stored values. A
 manifest can only carry JSON, so value entries are **function-free** (`name`,
 `defaultJSON`, optional `label`/`color`).
@@ -95,9 +95,9 @@ real, function-bearing implementation.
 
 ### UI contributions
 
-Editor extensions — custom input controls, node renderers, panels, socket
+Editor extensions  custom input controls, node renderers, panels, socket
 generators, conversions, commands, context-menu entries, and real value-type
-behaviour — are code, so they cannot live in JSON. The manifest instead
+behaviour  are code, so they cannot live in JSON. The manifest instead
 *declares* them as `contributions`, each pointing at a module export:
 
 ```jsonc
@@ -116,14 +116,14 @@ Beyond nodes, a manifest declares **what the package is** and **what its host
 must provide**. These are authored, not derived from the registry, and are
 designed to stay flexible.
 
-- **`categories: string[]`** — open classification. The `PackageCategory`
+- **`categories: string[]`**  open classification. The `PackageCategory`
   constants (`pure`, `io`, `integration`, `effect`) are advisory; any string is
   valid, so new classifications never force a schema change.
 
-- **`requirements: PackageRequirement[]`** — capabilities the package needs from
+- **`requirements: PackageRequirement[]`**  capabilities the package needs from
   its host, discriminated by `kind`. Known kinds are typed, but an open escape
   hatch (`{ kind: string; … }`) means a host must tolerate kinds it does not yet
-  understand — so the manifest can describe new situations without a version
+  understand  so the manifest can describe new situations without a version
   bump.
 
 ### Backend services
@@ -169,7 +169,7 @@ Manifests are generated at **build time**, by running the package's own
 guarantees the node specs are identical to runtime.
 
 A package adds a side-effect-light **manifest source** (`src/manifest.source.ts`)
-that declares everything authored — the registry builder, contributions,
+that declares everything authored  the registry builder, contributions,
 categories and requirements. Contributions are plain data here (no React
 imports), so generation never pulls the UI bundle:
 
@@ -197,7 +197,7 @@ Then run the bundled CLI as part of the package build:
 behave-graph-manifest dist/manifest.source.js --out dist/behave-graph.manifest.json
 ```
 
-The output is a plain `.json` file — `behave-graph.manifest.json` is the
+The output is a plain `.json` file  `behave-graph.manifest.json` is the
 canonical name (exported as `MANIFEST_FILE_NAME`), so any JSON loader reads it
 directly. Passing a directory to `--out` writes that filename into it.
 
@@ -225,7 +225,7 @@ import { manifestPlugin } from '@kiberon-labs/behave-graph-flow';
 await system.registerPlugin(manifestPlugin, {
   manifests: [imageManifest],
 
-  // Without `trust`, only nodes + pass-through value types load — no package
+  // Without `trust`, only nodes + pass-through value types load  no package
   // code runs. The palette is fully populated from JSON alone.
   trust: isPackageTrusted('@acme/nodes-image'),
 
@@ -265,7 +265,7 @@ The model has a single, clear boundary:
   shape before anything consumes it.
 - **Executing package code is always gated.** Loading a contribution, a
   `valueType` implementation, the `runtime` registry, or a `backendService`
-  entry requires explicit trust — typically a per-package allowlist the host
+  entry requires explicit trust  typically a per-package allowlist the host
   persists and surfaces in its UI.
 
 This lets a host present a full, accurate editor for packages it has never run,
@@ -283,15 +283,15 @@ implementations (image: 13 nodes + 1 value type; scene: ~191 nodes + 8 value
 types with a control and per-type value contributions), and the
 VS Code extension can statically discover manifests by scanning `node_modules`
 for `package.json#behaveGraph.manifest` (reading JSON only, no imports). Wiring
-discovered manifests into the VS Code webview — merging their specs into the
-palette and resolving trusted code contributions — is the remaining integration
+discovered manifests into the VS Code webview  merging their specs into the
+palette and resolving trusted code contributions  is the remaining integration
 step.
 
 ## See also
 
-- [Registry](../../core-concepts/registry/) — the runtime structure a manifest is the
+- [Registry](../../core-concepts/registry/)  the runtime structure a manifest is the
   static projection of.
 - [Profiles](../../core-concepts/profiles/) and [Nodes](../../core-concepts/nodes/)
-  — how the executable nodes a manifest describes are defined.
-- [Flow → Plugin System](../../flow/plugins/) — the imperative extension surfaces a
+   how the executable nodes a manifest describes are defined.
+- [Flow → Plugin System](../../flow/plugins/)  the imperative extension surfaces a
   manifest's contributions map onto.

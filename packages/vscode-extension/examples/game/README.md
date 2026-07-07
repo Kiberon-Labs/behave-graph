@@ -19,9 +19,9 @@ entity and logs its position:
 - **Swapping the engine.** [`registry.ts`](registry.ts) exports a `createEngine`
   factory returning a `RealtimeEngine` (an `Engine` subclass that rides the
   engine's execution-strategy seam). The run server uses it instead of the
-  default `Engine` — no server changes required.
+  default `Engine`  no server changes required.
 - **A tick-subscribing event node.** `game/integrate` subscribes to the host
-  tick on `init` and unsubscribes on `dispose` — the same lifecycle that makes
+  tick on `init` and unsubscribes on `dispose`  the same lifecycle that makes
   nodes safe to add and remove at runtime.
 - **A typed host capability.** The game `World` is provided in the dependency
   bag and read back by capability key.

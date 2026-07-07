@@ -3,7 +3,7 @@
        Theme bridge (--ds-*)
 
        These are the design system's *intermediary* tokens. Every component and
-       semantic token resolves colors/fonts through this layer — nothing in the
+       semantic token resolves colors/fonts through this layer  nothing in the
        flow package references `--vscode-*` directly anymore. The values here are
        the canonical (VS Code dark) defaults, so the editor looks right when run
        standalone (Storybook, web, tests).

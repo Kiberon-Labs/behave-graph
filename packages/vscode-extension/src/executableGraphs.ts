@@ -83,7 +83,7 @@ export class ExecutableGraphTracker {
 
   constructor(context: vscode.ExtensionContext) {
     // Publish immediately so the `in` operator has a (empty) collection to test
-    // against before the scan finishes — otherwise the menu can't evaluate.
+    // against before the scan finishes  otherwise the menu can't evaluate.
     this.publish();
     const watcher = vscode.workspace.createFileSystemWatcher('**/*.kbgraph');
     watcher.onDidCreate((uri) => this.update(uri));

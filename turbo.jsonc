@@ -6,6 +6,29 @@
   ],
   "globalEnv": [],
   "tasks": {
+    // Video package (packages/video): Remotion studio/render/voice/thumbnail.
+    // "studio" (not "dev") so `turbo dev` doesn't sweep the studio up.
+    "studio": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "render": {
+      "dependsOn": ["^build"],
+      "outputs": ["out/**"],
+      "cache": false
+    },
+    "thumbnail": {
+      "dependsOn": ["^build"],
+      "outputs": ["out/thumbnail.png"],
+      "cache": false
+    },
+    "voice": {
+      "cache": false
+    },
+    "image-demo": {
+      "cache": false
+    },
     "build": {
       "dependsOn": [
         "^build"

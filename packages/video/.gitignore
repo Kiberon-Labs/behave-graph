@@ -1,0 +1,9 @@
+# Rendered videos and the remotion bundle
+out/
+build/
+# Generated voiceover audio + timing manifest (rebuild with `pnpm voice`)
+public/narration/
+# Generated image-pipeline demo output (rebuild with `pnpm image-demo`)
+public/image-demo/after.png
+# TTS provider API keys
+.env

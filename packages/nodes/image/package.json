@@ -1,6 +1,6 @@
 {
   "name": "@kiberon-labs/behave-graph-nodes-image",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "description": "ImageMagick-powered image manipulation nodes for behave-graph (resize, crop, color, filters, compositing and more).",
   "keywords": [

@@ -1,6 +1,6 @@
 ---
 title: Graph Runners & Execution Models
-description: The built-in graph runner plugins and their three execution models — local, web worker, and remote.
+description: The built-in graph runner plugins and their three execution models  local, web worker, and remote.
 ---
 
 The editor doesn't execute graphs itself; it talks to a **graph runner** plugin.
