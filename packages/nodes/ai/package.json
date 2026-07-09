@@ -37,8 +37,15 @@
     "url": "https://github.com/Kiberon-Labs/behave-graph",
     "directory": "packages/nodes/ai"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "bugs": "https://github.com/Kiberon-Labs/behave-graph/issues",
   "author": "kiberonlabsdev",
+  "behaveGraph": {
+    "manifest": "./dist/behave-graph.manifest.json"
+  },
   "devDependencies": {
     "@kiberon-labs/behave-graph": "workspace:*",
     "@storybook/addon-a11y": "^10.0.8",
