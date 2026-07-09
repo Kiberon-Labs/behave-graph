@@ -12,7 +12,7 @@ Another neat fact about behavior graphs is that they offer a sand boxed executio
 
 ## Documentation
 
-See the dedicated documentation site [here](https://behave-graph.kiberon-labs.co.za)
+See the dedicated documentation site [here](https://behave.kiberonlabs.com)
 
 ## Licence 
 

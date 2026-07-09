@@ -1,6 +1,6 @@
 {
   "name": "@kiberon-labs/behave-graph",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "files": [
     "bin",

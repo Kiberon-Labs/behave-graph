@@ -41,7 +41,7 @@
     "jsonValidation": [
       {
         "fileMatch": ".kbgraphrc",
-        "url": "https://schemas.kiberon-labs.co.za/v1/kbgraphrc.json"
+        "url": "https://schemas.kiberonlabs.com/v1/kbgraphrc.json"
       }
     ],
     "languages": [

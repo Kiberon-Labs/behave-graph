@@ -6,7 +6,7 @@ This is a set of 3D nodes for threejs when working with [behave graphs](https://
 
 ## Documentation
 
-See the dedicated documentation site [here](https://behave-graph.kiberon-labs.co.za)
+See the dedicated documentation site [here](https://behave.kiberonlabs.com)
 
 ## Licence 
 
