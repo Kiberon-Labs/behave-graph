@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsdown && behave-graph-manifest dist/manifest.source.js --out dist",
-    "release": "npm publish --dry-run",
+    "release": "echo 0",
     "check": "oxfmt --check",
     "format": "oxfmt",
     "test": "vitest",

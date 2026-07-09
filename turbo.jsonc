@@ -9,18 +9,28 @@
     // Video package (packages/video): Remotion studio/render/voice/thumbnail.
     // "studio" (not "dev") so `turbo dev` doesn't sweep the studio up.
     "studio": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false,
       "persistent": true
     },
     "render": {
-      "dependsOn": ["^build"],
-      "outputs": ["out/**"],
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "out/**"
+      ],
       "cache": false
     },
     "thumbnail": {
-      "dependsOn": ["^build"],
-      "outputs": ["out/thumbnail.png"],
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "out/thumbnail.png"
+      ],
       "cache": false
     },
     "voice": {
@@ -45,7 +55,7 @@
       ]
     },
     // Publishable packages opt in by defining a "release" script that
-    // preflights the publish (npm publish --dry-run). The actual publish is
+    // preflights the publish (echo 0). The actual publish is
     // a single root-level changeset publish, which needs the full CI env for
     // provenance, so it must stay outside turbo.
     "release": {

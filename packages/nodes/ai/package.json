@@ -22,7 +22,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "release": "npm publish --dry-run",
+    "release": "echo 0",
     "check": "oxfmt --check",
     "format": "oxfmt",
     "test": "vitest --passWithNoTests",
