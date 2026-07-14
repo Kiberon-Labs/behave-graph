@@ -45,6 +45,9 @@ jobs:
 
       - name: Build docs
         run: pnpm run build --filter @kiberon-labs/behave-graph-documentation
+        env:
+          PUBLIC_POSTHOG_TOKEN: ${{ vars.PUBLIC_POSTHOG_TOKEN }}
+          PUBLIC_POSTHOG_HOST: ${{ vars.PUBLIC_POSTHOG_HOST }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
