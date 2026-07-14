@@ -54,6 +54,8 @@
         ".env.local"
       ]
     },
+    // Website-specific build env is declared in packages/website/turbo.json so
+    // PostHog settings affect only the documentation site's cache key.
     // Publishable packages opt in by defining a "release" script that
     // preflights the publish (echo 0). The actual publish is
     // a single root-level changeset publish, which needs the full CI env for
