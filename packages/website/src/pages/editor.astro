@@ -1,5 +1,6 @@
 ---
 import EmbeddedEditor from '~/components/EmbeddedEditor.tsx';
+import PostHog from '~/components/PostHog.astro';
 
 // Respect Astro's configured `base` so the "back to docs" link works whether
 // the site is served from a subpath (e.g. /behave-graph/) or the domain root.
@@ -16,6 +17,7 @@ const docsHref = import.meta.env.BASE_URL;
       name="description"
       content="The full-screen Behave Graph editor, running entirely in your browser."
     />
+    <PostHog />
     <style>
       :root {
         color-scheme: dark;

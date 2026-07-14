@@ -1,0 +1,74 @@
+---
+const posthogKey = import.meta.env.PUBLIC_POSTHOG_KEY;
+const posthogEndpoint = import.meta.env.PUBLIC_POSTHOG_ENDPOINT;
+---
+
+<script is:inline define:vars={{ posthogKey, posthogEndpoint }}>
+  if (posthogKey && posthogEndpoint && !window.__posthog_initialized) {
+    window.__posthog_initialized = true;
+
+    !(function (document, posthog) {
+      let methodIndex;
+      let script;
+      let methods;
+      let instance;
+
+      if (posthog.__SV) return;
+
+      window.posthog = posthog;
+      posthog._i = [];
+      posthog.init = function (token, config, name) {
+        function stub(target, method) {
+          const parts = method.split('.');
+          if (parts.length === 2) {
+            target = target[parts[0]];
+            method = parts[1];
+          }
+          target[method] = function () {
+            target.push([method].concat(Array.prototype.slice.call(arguments)));
+          };
+        }
+
+        script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.crossOrigin = 'anonymous';
+        script.async = true;
+        script.src = `${config.api_host}/static/array.js`;
+        document
+          .getElementsByTagName('script')[0]
+          .parentNode.insertBefore(script, document.getElementsByTagName('script')[0]);
+
+        instance = posthog;
+        if (name !== undefined) instance = posthog[name] = [];
+        else name = 'posthog';
+
+        instance.people = instance.people || [];
+        instance.toString = function (details) {
+          let value = 'posthog';
+          if (name !== 'posthog') value += `.${name}`;
+          if (!details) value += ' (stub)';
+          return value;
+        };
+        instance.people.toString = function () {
+          return instance.toString(1) + '.people (stub)';
+        };
+
+        methods =
+          'capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagResult reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId'.split(
+            ' '
+          );
+        for (methodIndex = 0; methodIndex < methods.length; methodIndex++) {
+          stub(instance, methods[methodIndex]);
+        }
+        posthog._i.push([token, config, name]);
+      };
+      posthog.__SV = 1;
+    })(document, window.posthog || []);
+
+    window.posthog.init(posthogKey, {
+      api_host: posthogEndpoint,
+      defaults: '2026-05-30',
+      capture_pageview: 'history_change'
+    });
+  }
+</script>
