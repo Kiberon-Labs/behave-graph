@@ -1,5 +1,15 @@
 # @kiberon-labs/behave-graph-nodes-image
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [50a1075]
+- Updated dependencies [50a1075]
+- Updated dependencies [50a1075]
+  - @kiberon-labs/behave-graph@1.3.0
+  - @kiberon-labs/behave-graph-flow@4.0.0
+
 ## 2.0.1
 
 ### Patch Changes
@@ -17,6 +27,7 @@
 
   A node package for building AI agents in the graph, on the [Vercel AI SDK](https://ai-sdk.dev)
   (`ai` + `@ai-sdk/openai` + `@ai-sdk/anthropic`).
+
   - **Agents & providers**: `ai/provider` (OpenAI / OpenRouter / custom
     OpenAI-compatible / Anthropic), `ai/agent`, `ai/tool`. `createModel` maps a
     serializable config onto an SDK `LanguageModel`.
@@ -44,6 +55,7 @@
     in node params or saved graph JSON.
 
   ## @kiberon-labs/behave-graph-flow
+
   - **Realtime preview runner**: evaluate every _watched_ node output (pull the
     upstream function graph on demand), so live previews work for pure data graphs
     (e.g. image nodes) that no flow fiber drives. Previously only nodes carrying a
@@ -57,6 +69,7 @@
     host AI subsystem can drive a multimodal chat.
 
   ## @kiberon-labs/behave-graph-nodes-image
+
   - The image plugin now builds an execution registry for the realtime preview
     runner (accepting an optional `registry`), so inline node previews and the
     Image Output panel actually render. Previously the runner had no registry and
@@ -70,6 +83,7 @@
   ## New nodes (13 → 39)
 
   Added 26 nodes built on `@imagemagick/magick-wasm`, organized by category:
+
   - **Geometry / transform**: `image/resize`, `image/crop`, `image/rotate`,
     `image/thumbnail`, `image/trim`, `image/extent` (canvas resize with
     background fill), `image/border`.
@@ -87,6 +101,7 @@
     that mistakenly declared `typeName: 'image/negate'` and was never registered.)
 
   ## Bug fixes
+
   - **Freed WASM-heap output buffers**: `image.write((data) => data)` returns a
     `Uint8Array` that views WASM heap memory freed once the image is disposed, so
     node outputs became garbage as soon as a later operation reused that memory
@@ -102,6 +117,7 @@
     instead of `[0, 255]`, making non-blue solid colors impossible.
 
   ## Internal
+
   - Existing transform nodes (`blur`, `flip`, `grayscale`, `negate`, `sepia`,
     `solarize`, `vignette`, `canny`, `oilpaint`) were refactored through the shared
     `transformImage` helper; `compose` copies its composited output out of WASM
@@ -133,6 +149,7 @@
   ## `@kiberon-labs/behave-graph`
 
   New `Manifest/` module (exported from the package root), all additive:
+
   - **Schema** (`ManifestJSON`): function-free `ValueTypeSpecJSON`, `NodeManifestEntry`
     (the existing `NodeSpecJSON` plus optional authoring extras), `ContributionSpec`
     / `ContributionKind` (control, specific, panel, socketGenerator, conversion,
@@ -154,6 +171,7 @@
   ## `@kiberon-labs/behave-graph-flow`
 
   New `manifest/` module for consuming a manifest in the editor:
+
   - `loadManifest` / `manifestPlugin`: always register node specs + value types from
     JSON with **zero code execution** (the palette renders from JSON alone); surface
     declared host requirements via `onRequirement`; and load code contributions
@@ -170,6 +188,7 @@
 
   Both packages now generate a `behave-graph.manifest.json` at build time as
   reference implementations:
+
   - A side-effect-light `src/manifest.source.ts` (`defineManifestSource`) declares
     the registry builder, `runtime` entry, category and contributions; the package
     `build` runs `behave-graph-manifest`, and `package.json#behaveGraph.manifest`

@@ -1,6 +1,6 @@
 {
   "name": "@kiberon-labs/behave-graph-video",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
   "description": "Marketing & demo video generation: Remotion compositions that drive the real Flow editor with an AI-generated voiceover. Never published.",

@@ -1,5 +1,15 @@
 # @kiberon-labs/behave-graph-nodes-ai
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [50a1075]
+- Updated dependencies [50a1075]
+- Updated dependencies [50a1075]
+  - @kiberon-labs/behave-graph@1.3.0
+  - @kiberon-labs/behave-graph-flow@4.0.0
+
 ## 1.1.0
 
 ### Minor Changes
@@ -22,6 +32,7 @@
 
   A node package for building AI agents in the graph, on the [Vercel AI SDK](https://ai-sdk.dev)
   (`ai` + `@ai-sdk/openai` + `@ai-sdk/anthropic`).
+
   - **Agents & providers**: `ai/provider` (OpenAI / OpenRouter / custom
     OpenAI-compatible / Anthropic), `ai/agent`, `ai/tool`. `createModel` maps a
     serializable config onto an SDK `LanguageModel`.
@@ -49,6 +60,7 @@
     in node params or saved graph JSON.
 
   ## @kiberon-labs/behave-graph-flow
+
   - **Realtime preview runner**: evaluate every _watched_ node output (pull the
     upstream function graph on demand), so live previews work for pure data graphs
     (e.g. image nodes) that no flow fiber drives. Previously only nodes carrying a
@@ -62,6 +74,7 @@
     host AI subsystem can drive a multimodal chat.
 
   ## @kiberon-labs/behave-graph-nodes-image
+
   - The image plugin now builds an execution registry for the realtime preview
     runner (accepting an optional `registry`), so inline node previews and the
     Image Output panel actually render. Previously the runner had no registry and
