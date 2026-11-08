@@ -2,7 +2,7 @@
   "name": "behave-graph",
   "displayName": "Behave Graph",
   "description": "Run behave graphs locally in VS Code",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "license": "MPL-2.0",
   "publisher": "kiberon-labs",

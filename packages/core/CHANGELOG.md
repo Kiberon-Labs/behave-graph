@@ -1,5 +1,30 @@
 # @kiberon-labs/behave-graph
 
+## 1.3.0
+
+### Minor Changes
+
+- 50a1075: Add optional invocation-aware execution observations, socket capture policies,
+  manual diagnostic events and explicit execution outcomes. Await event
+  initialization and guard duplicate async completion while preserving legacy hooks.
+
+  Complete root execution lifecycle and nested graph correlation. Track overlapping
+  async operations independently, preserve completed step counts on failures, and
+  await all cleanup hooks. Realtime engines share the same observation lifecycle.
+  Child graph errors now propagate instead of being swallowed.
+
+### Patch Changes
+
+- 50a1075: Correct async invocation settlement for suppressed Delay/Throttle calls and
+  superseded, cancelled, and concurrent Debounce calls. Clear pending Delay timers
+  and settle their invocations on disposal without committing downstream flow.
+  Await async/event factory cleanup and allow resource-free base nodes to dispose
+  without throwing.
+
+  Declare asynchronous initialization, invocation, and disposal in the public node
+  types. Add regression coverage for lifecycle settlement, timer isolation, and
+  awaited cleanup so these contracts travel with the engine package.
+
 ## 1.2.0
 
 ### Minor Changes
@@ -56,7 +81,7 @@
 
   - Subgraph runtime: `graph/input`, `graph/output`, `flow/callSubgraph` core nodes
     plus `runSubgraph()` and the `IGraphApi` / `ISubgraphRun` dependencies. A
-    subgraph behaves like a function  it returns once at the first output, and
+    subgraph behaves like a function it returns once at the first output, and
     recursion/cycles are guarded by a call-stack + depth limit.
   - `Engine.dispose()` now also clears pending async nodes so execution winds down
     after disposal.
@@ -67,7 +92,7 @@
 
   Previously the only way to learn what a package offered was to call its
   `registerProfile`, which imports and runs every node implementation (closures,
-  side effects, even WASM init)  a security and performance cost just to list
+  side effects, even WASM init) a security and performance cost just to list
   nodes. A manifest is the persisted, on-disk form of the static projection the
   editor already renders from (`NodeSpecJSON` + value display metadata), so the
   executable half (node `exec`, value serializers, React components, a persistent
@@ -90,7 +115,7 @@
     `runManifestSource`, and a `behave-graph-manifest` CLI bin.
   - **Validation**: `parseManifest`, a dependency-free well-formedness gate a host
     runs on an untrusted manifest before consuming it.
-  - **Conventions**: `MANIFEST_FILE_NAME` (`behave-graph.manifest.json`  a plain
+  - **Conventions**: `MANIFEST_FILE_NAME` (`behave-graph.manifest.json` a plain
     `.json` file, the canonical name; a directory `--out` writes it there) and
     `MANIFEST_PACKAGE_FIELD` (`behaveGraph`, the `package.json` field pointing at
     the manifest).
