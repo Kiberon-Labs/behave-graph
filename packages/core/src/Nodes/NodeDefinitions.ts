@@ -1,3 +1,4 @@
+import type { InvocationContext } from '../engine/ExecutionObserver.js';
 import type { SocketsList, SocketsMap } from '~/types/socket.js';
 import type { Engine } from '../engine/Engine.js';
 import type { FiberListenerInner } from '../engine/Fiber.js';
@@ -5,7 +6,6 @@ import type { IGraph } from '../Graphs/Graph.js';
 import { AsyncNodeInstance } from './AsyncNode.js';
 import { EventNodeInstance } from './EventNode.js';
 import { FlowNodeInstance } from './FlowNode.js';
-import { FunctionNodeInstance } from './FunctionNode.js';
 import type { NodeConfiguration } from './Node.js';
 import { makeCommonProps } from './nodeFactory.js';
 import { type INode, NodeType } from './NodeInstance.js';
@@ -66,11 +66,12 @@ export type TriggeredFn<
   triggeringSocketName: keyof TInput;
   // state of the node.
   state: TState;
+  invocation?: InvocationContext;
   engine?: Engine;
   node?: INode;
   graph: IGraph;
   configuration: NodeConfiguration;
-  finished?: () => void;
+  finished?: (error?: unknown) => void;
 }) => void | Promise<void>;
 
 /** Flow Node Definition */
@@ -107,11 +108,14 @@ export interface IHasInit<
 > {
   init: (
     params: EventNodeSetupParams<TInput, TOutput, TState>
-  ) => StateReturn<TState>;
+  ) => StateReturn<TState> | Promise<StateReturn<TState>>;
 }
 
 export interface IHasDispose<TState> {
-  dispose: (params: { state: TState; graph: IGraph }) => StateReturn<TState>;
+  dispose: (params: {
+    state: TState;
+    graph: IGraph;
+  }) => StateReturn<TState> | Promise<StateReturn<TState>>;
 }
 
 export interface IFlowNodeDefinition<
@@ -147,6 +151,8 @@ export interface FunctionNodeExecParams<
   read<T>(inValueName: SocketNames<TInput>): T;
   // write and commit only allows keys from the output type
   write<T>(outValueName: SocketNames<TOutput>, value: T): void;
+
+  invocation?: InvocationContext;
 
   /** The concrete node instance being executed (if available). */
   node?: INode;

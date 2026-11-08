@@ -1,3 +1,4 @@
+import type { InvocationContext } from '../../../engine/ExecutionObserver.js';
 import { AsyncNode } from '../../../Nodes/AsyncNode.js';
 import type { Engine } from '../../../engine/Engine.js';
 import type { IGraph } from '../../../Graphs/Graph.js';
@@ -59,7 +60,8 @@ export class CallSubgraph extends AsyncNode {
   override triggered(
     engine: Engine,
     _triggeringSocketName: string,
-    finished: () => void
+    finished: (error?: unknown) => void,
+    invocation?: InvocationContext
   ) {
     const api = this.graph.getDependency('IGraphApi', true);
     const subgraphId = String(this.configuration.subgraphId ?? '');
@@ -72,7 +74,7 @@ export class CallSubgraph extends AsyncNode {
     }
 
     // Fire `started` immediately for fire-and-continue callers.
-    engine.commitToNewFiber(this, 'started');
+    engine.commitToNewFiber(this, 'started', undefined, invocation);
 
     const complete = (outputs: Record<string, any>) => {
       for (const param of readParams(this.configuration.outputs)) {
@@ -87,7 +89,7 @@ export class CallSubgraph extends AsyncNode {
           this.writeOutput(id, creator ? creator() : undefined);
         }
       }
-      engine.commitToNewFiber(this, 'completed');
+      engine.commitToNewFiber(this, 'completed', undefined, invocation);
       finished();
     };
 
@@ -97,6 +99,9 @@ export class CallSubgraph extends AsyncNode {
       return;
     }
 
-    api.runGraph(subgraphId, inputs).then(complete);
+    api
+      .runGraph(subgraphId, inputs, invocation)
+      .then(complete)
+      .catch((error) => finished(error));
   }
 }

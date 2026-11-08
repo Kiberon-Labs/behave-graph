@@ -3,7 +3,8 @@ import {
   readGraphFromJSON,
   registerCoreProfile,
   type GraphJSON,
-  type IRegistry
+  type IRegistry,
+  type ExecutionObserverOptions
 } from '@kiberon-labs/behave-graph';
 import { SuspendableEngine } from '../src/engine';
 
@@ -15,7 +16,8 @@ import { SuspendableEngine } from '../src/engine';
  */
 export const makeTestEngine = (
   graphJson: GraphJSON,
-  extraNodes: Record<string, unknown> = {}
+  extraNodes: Record<string, unknown> = {},
+  options: ExecutionObserverOptions = {}
 ) => {
   const lifecycle = new ManualLifecycleEventEmitter();
   const registry: IRegistry = registerCoreProfile({
@@ -28,7 +30,7 @@ export const makeTestEngine = (
   Object.assign(registry.nodes, extraNodes);
 
   const graph = readGraphFromJSON({ graphJson, registry });
-  const engine = new SuspendableEngine(graph, registry);
+  const engine = new SuspendableEngine(graph, registry, options);
 
   /** Emits the lifecycle start event, queueing the onStart fiber. */
   const start = () => lifecycle.startEvent.emit();

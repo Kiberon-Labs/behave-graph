@@ -6,7 +6,8 @@ import {
   type FiberListenerInner,
   type GraphInstance,
   type INode,
-  type IRegistry
+  type IRegistry,
+  type ExecutionObserverOptions
 } from '@kiberon-labs/behave-graph';
 import { SuspendableFiber } from './fiber';
 import { isSuspendable, type SerializedSuspension } from './types';
@@ -30,8 +31,12 @@ export class SuspendableEngine extends Engine {
   protected override fiberQueue: SuspendableFiber[] = [];
   public readonly onSuspension = new EventEmitter<SerializedSuspension>();
 
-  constructor(graph: GraphInstance, registry: IRegistry) {
-    super(graph, registry);
+  constructor(
+    graph: GraphInstance,
+    registry: IRegistry,
+    options: ExecutionObserverOptions = {}
+  ) {
+    super(graph, registry, options);
   }
 
   /**

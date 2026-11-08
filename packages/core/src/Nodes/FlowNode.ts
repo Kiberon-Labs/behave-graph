@@ -1,3 +1,4 @@
+import type { InvocationContext } from '../engine/ExecutionObserver.js';
 import { Assert } from '../Diagnostics/Assert.js';
 import { Fiber } from '../engine/Fiber.js';
 import type { IGraph } from '../Graphs/Graph.js';
@@ -38,7 +39,11 @@ export class FlowNode extends Node<'Flow'> implements IFlowNode {
   }
 
   // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
-  triggered(fiber: Fiber, triggeringSocketName: string) {
+  triggered(
+    _fiber: Fiber,
+    _triggeringSocketName: string,
+    _invocation?: InvocationContext
+  ) {
     throw new Error('not implemented');
   }
 }
@@ -85,11 +90,13 @@ export class FlowNodeInstance<TFlowNodeDefinition extends IFlowNodeDefinition>
   // the returned value only when it is actually a promise.
   public triggered = (
     fiber: Fiber,
-    triggeringSocketName: string
+    triggeringSocketName: string,
+    invocation?: InvocationContext
   ): void | Promise<void> => {
     const stateProxy = this.createStateProxy();
 
     return this.triggeredInner({
+      invocation,
       commit: (outFlowName, fiberCompletedListener) =>
         fiber.commit(this, outFlowName, fiberCompletedListener),
       read: this.readInput,

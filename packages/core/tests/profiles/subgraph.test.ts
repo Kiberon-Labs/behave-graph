@@ -322,3 +322,88 @@ describe('subgraph recursion safety', () => {
     expect(outputs.y).toBe(0);
   });
 });
+
+describe('subgraph observability', () => {
+  it('correlates nested engine lifecycles to the exact calling invocation', async () => {
+    const roots: import('~/engine/ExecutionObserver.js').ExecutionLifecycleObservation[] =
+      [];
+    const records: import('~/engine/ExecutionObserver.js').ExecutionObservation[] =
+      [];
+    const graphs = { top: callerGraph('child'), child: passthroughGraph() };
+    const result = await runSubgraph({
+      graphJson: graphs.top,
+      registry: makeRegistry(),
+      graphId: 'top',
+      inputs: { x: 9 },
+      resolveGraph: (id) => graphs[id as keyof typeof graphs],
+      observation: {
+        executionId: 'top-run',
+        observer: (record) => records.push(record),
+        onExecution: (record) => roots.push(record)
+      }
+    });
+    expect(result).toEqual({ y: 9 });
+    const parentCall = records.find(
+      (record) => record.kind === 'started' && record.context.nodeId === 'call'
+    );
+    const childRoot = roots.find(
+      (record) =>
+        record.kind === 'execution_started' && record.executionId !== 'top-run'
+    );
+    expect(childRoot?.parent).toEqual({
+      executionId: 'top-run',
+      invocationId: parentCall?.context.invocationId
+    });
+    expect(
+      roots.filter((record) => record.kind === 'execution_finished')
+    ).toHaveLength(2);
+    expect(
+      roots
+        .filter((record) => record.kind === 'execution_finished')
+        .every(
+          (record) =>
+            record.kind === 'execution_finished' &&
+            record.outcome === 'completed'
+        )
+    ).toBe(true);
+  });
+
+  it('propagates subgraph execution failures instead of returning empty outputs', async () => {
+    const registry = makeRegistry();
+    const graphJson: GraphJSON = {
+      nodes: [
+        {
+          id: 'in',
+          type: 'graph/input',
+          configuration: { parameters: [] },
+          flows: { flow: { nodeId: 'fail', socket: 'flow' } }
+        },
+        { id: 'fail', type: 'test/failChild' }
+      ]
+    };
+    const { makeFlowNodeDefinition } =
+      await import('~/Nodes/NodeDefinitions.js');
+    const fail = makeFlowNodeDefinition({
+      typeName: 'test/failChild',
+      in: { flow: 'flow' },
+      out: {},
+      initialState: {},
+      triggered: () => {
+        throw new Error('child failed');
+      }
+    });
+    registry.nodes[fail.typeName] = fail;
+    const roots: import('~/engine/ExecutionObserver.js').ExecutionLifecycleObservation[] =
+      [];
+    await expect(
+      runSubgraph({
+        graphJson,
+        registry,
+        observation: { onExecution: (record) => roots.push(record) }
+      })
+    ).rejects.toThrow('child failed');
+    expect(
+      roots.filter((record) => record.kind === 'execution_finished')
+    ).toMatchObject([{ outcome: 'failed' }]);
+  });
+});

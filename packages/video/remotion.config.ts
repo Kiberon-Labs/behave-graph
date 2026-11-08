@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { Config } from '@remotion/cli/config';
 import { webpack } from '@remotion/bundler';
 
-// The config is transpiled to CJS, where import.meta.url is unavailable 
+// The config is transpiled to CJS, where import.meta.url is unavailable
 // resolve relative to the package dir (the CLI always runs from here).
 const require = createRequire(join(process.cwd(), 'package.json'));
 

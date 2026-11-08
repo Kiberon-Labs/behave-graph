@@ -142,7 +142,7 @@ export type KnownRequirement = BackendServiceRequirement | ConfigRequirement;
  */
 export type PackageRequirement =
   | KnownRequirement
-  | { kind: string;[key: string]: unknown };
+  | { kind: string; [key: string]: unknown };
 
 /** Current manifest schema version. Bump on breaking shape changes. */
 export const MANIFEST_VERSION = 1 as const;

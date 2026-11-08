@@ -41,7 +41,7 @@ const transform = (
 
 const original = new Uint8Array(await readFile(join(demoDir, 'source.png')));
 
-const normalized = transform(original, () => { });
+const normalized = transform(original, () => {});
 await writeFile(join(demoDir, 'source.png'), normalized);
 
 const after = transform(normalized, (img) => {

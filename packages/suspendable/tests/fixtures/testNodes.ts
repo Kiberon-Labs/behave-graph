@@ -6,7 +6,8 @@ import {
   type Engine,
   type Fiber,
   type IGraph,
-  type NodeConfiguration
+  type NodeConfiguration,
+  type InvocationContext
 } from '@kiberon-labs/behave-graph';
 import type { SuspendableEngine } from '../../src/engine';
 import type { IAsyncSuspendable, ISuspendable } from '../../src/types';
@@ -149,12 +150,13 @@ export class WaitForSignal
   override triggered(
     engine: Engine,
     _triggeringSocketName: string,
-    finished: () => void
+    finished: () => void,
+    invocation?: InvocationContext
   ) {
     if (this.signalled) {
       // already received its signal in a previous (suspended) life
       this.writeOutput('value', BigInt(-1));
-      engine.commitToNewFiber(this, 'flow');
+      engine.commitToNewFiber(this, 'flow', undefined, invocation);
       finished();
       return;
     }
@@ -178,12 +180,13 @@ export class WaitForSignal
     data: unknown,
     engine: SuspendableEngine,
     _triggeringSocketName: string,
-    cb: () => void
+    cb: () => void,
+    invocation?: InvocationContext
   ): Promise<void> {
     this.waiting = false;
     this.signalled = true;
     this.writeOutput('value', BigInt(data as number));
-    engine.commitToNewFiber(this, 'flow');
+    engine.commitToNewFiber(this, 'flow', undefined, invocation);
     cb();
   }
 

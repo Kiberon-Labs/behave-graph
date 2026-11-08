@@ -269,15 +269,15 @@ function runAction(editor: Editor, action: SceneAction) {
         nodes.map((n) =>
           n.id === action.nodeId
             ? {
-              ...n,
-              data: {
-                ...n.data,
-                ports: {
-                  ...(n.data as { ports?: Record<string, unknown> }).ports,
-                  [action.port]: action.value
+                ...n,
+                data: {
+                  ...n.data,
+                  ports: {
+                    ...(n.data as { ports?: Record<string, unknown> }).ports,
+                    [action.port]: action.value
+                  }
                 }
               }
-            }
             : n
         )
       );
@@ -333,7 +333,7 @@ function ImagePayoff() {
         <figcaption
           style={{ marginTop: 10, fontSize: 22, color: theme.accentSoft }}
         >
-          after  resize · oil-paint · sepia
+          after resize · oil-paint · sepia
         </figcaption>
       </figure>
     </div>
@@ -422,7 +422,7 @@ function enforceSceneState(
   const cursorMismatch = nodes.some((n) => {
     const on =
       (n.data as { annotations?: Record<string, unknown> }).annotations?.[
-      'ui.executing'
+        'ui.executing'
       ] === true;
     return on !== (applied.cursor !== null && n.id === applied.cursor);
   });

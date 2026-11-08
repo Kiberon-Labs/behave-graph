@@ -1,3 +1,4 @@
+import type { InvocationContext } from '../engine/ExecutionObserver.js';
 import { generateUuid } from '@/utils/generateUuid.js';
 import { Assert } from '../Diagnostics/Assert.js';
 import { Engine } from '../engine/Engine.js';
@@ -49,13 +50,14 @@ export class AsyncNode extends Node<'Async'> {
     // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
     triggeringSocketName: string,
     // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
-    finished: () => void
+    finished: (error?: unknown) => void,
+    _invocation?: InvocationContext
   ) {
     throw new Error('not implemented');
   }
 
   dispose() {
-    throw new Error('not implemented');
+    // Resource-free subclasses have nothing to release.
   }
 }
 
@@ -102,13 +104,20 @@ export class AsyncNodeInstance<TAsyncNodeDef extends IAsyncNodeDefinition>
   triggered = async (
     engine: Pick<Engine, 'commitToNewFiber'>,
     triggeringSocketName: string,
-    finished: () => void
+    finished: (error?: unknown) => void,
+    invocation?: InvocationContext
   ) => {
     await this.triggeredInner({
+      invocation,
       read: this.readInput,
       write: this.writeOutput,
       commit: (outFlowname, fiberCompletedListener) =>
-        engine.commitToNewFiber(this, outFlowname, fiberCompletedListener),
+        engine.commitToNewFiber(
+          this,
+          outFlowname,
+          fiberCompletedListener,
+          invocation
+        ),
       configuration: this.configuration,
       graph: this.graph,
       state: this.stateProxy,
@@ -119,7 +128,7 @@ export class AsyncNodeInstance<TAsyncNodeDef extends IAsyncNodeDefinition>
     });
   };
   dispose = async () => {
-    this.disposeInner({
+    await this.disposeInner({
       state: this.stateProxy,
       graph: this.graph
     });

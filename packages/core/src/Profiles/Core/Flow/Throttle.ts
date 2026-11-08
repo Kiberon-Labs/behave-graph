@@ -1,4 +1,5 @@
 import { Assert } from '../../../Diagnostics/Assert.js';
+import type { InvocationContext } from '../../../engine/ExecutionObserver.js';
 import type { Engine } from '../../../engine/Engine.js';
 import type { IGraph } from '../../../Graphs/Graph.js';
 import { AsyncNode } from '../../../Nodes/AsyncNode.js';
@@ -38,11 +39,24 @@ export class Throttle extends AsyncNode {
 
   private triggerVersion = 0;
   private timeoutPending = false;
+  private pending:
+    | { timeout: ReturnType<typeof setTimeout>; finish: () => void }
+    | undefined;
+
+  private cancelPending() {
+    const pending = this.pending;
+    this.pending = undefined;
+    if (pending) {
+      clearTimeout(pending.timeout);
+      pending.finish();
+    }
+  }
 
   override triggered(
     engine: Engine,
     triggeringSocketName: string,
-    finished: () => void
+    finished: () => void,
+    invocation?: InvocationContext
   ) {
     // if cancelling, just increment triggerVersion and do not set a timer. :)
     if (triggeringSocketName === 'cancel') {
@@ -50,11 +64,16 @@ export class Throttle extends AsyncNode {
         this.triggerVersion++;
         this.timeoutPending = false;
       }
+      this.cancelPending();
+      finished();
       return;
     }
 
     // if there is a valid timeout running, leave it.
     if (this.timeoutPending) {
+      // Suppression does not transfer completion ownership to the first
+      // invocation: settle this one without scheduling another output.
+      finished();
       return;
     }
 
@@ -62,22 +81,32 @@ export class Throttle extends AsyncNode {
     this.triggerVersion++;
     const localTriggerCount = this.triggerVersion;
     this.timeoutPending = true;
-    setTimeout(
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      finished();
+    };
+    const timeout = setTimeout(
       () => {
         if (this.triggerVersion !== localTriggerCount) {
+          finish();
           return;
         }
         Assert.mustBeTrue(this.timeoutPending);
         this.timeoutPending = false;
-        engine.commitToNewFiber(this, 'flow');
-        finished();
+        this.pending = undefined;
+        engine.commitToNewFiber(this, 'flow', undefined, invocation);
+        finish();
       },
       this.readInput<number>('duration') * 1000
     );
+    this.pending = { timeout, finish };
   }
 
   override dispose() {
     this.triggerVersion++; // equivalent to 'cancel' trigger behavior.
     this.timeoutPending = false;
+    this.cancelPending();
   }
 }

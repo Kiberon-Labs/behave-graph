@@ -4,7 +4,8 @@ import {
   isAsyncNode,
   Link,
   type FiberListenerInner,
-  type IAsyncNode
+  type IAsyncNode,
+  type ExecutionParent
 } from '@kiberon-labs/behave-graph';
 import type { SuspendableEngine } from './engine';
 import { isSuspendable, type IAsyncSuspendable } from './types';
@@ -15,6 +16,7 @@ type SerializedLink = {
 };
 
 export type SerializedSuspendedFiber = {
+  parent?: ExecutionParent;
   curr?: SerializedLink;
   link?: SerializedLink;
   queue: string[];
@@ -40,6 +42,7 @@ export class SuspendableFiber extends Fiber {
       ? new Link(serialized.link.nodeId, serialized.link.socketName)
       : null;
     const fiber = new SuspendableFiber(engine, nextlink);
+    fiber.parentInvocation = serialized.parent;
     fiber.currentLink = serialized.curr
       ? new Link(serialized.curr.nodeId, serialized.curr.socketName)
       : undefined;
@@ -57,6 +60,12 @@ export class SuspendableFiber extends Fiber {
 
   serialize(): SerializedSuspendedFiber {
     return {
+      parent: this.invocation
+        ? {
+            executionId: this.invocation.executionId,
+            invocationId: this.invocation.invocationId
+          }
+        : this.parentInvocation,
       queue: this.fiberCompletedListenerStack
         .map((l) => l.nodeId!)
         .filter((id) => !!id),
@@ -123,31 +132,54 @@ export class SuspendableFiber extends Fiber {
       'Cannot continue fiber if no current socket name'
     );
 
+    const invocation = this.engine.beginInvocation(
+      node,
+      this.parentInvocation,
+      this.id,
+      socketName!,
+      'continuation'
+    );
+    this.invocation = invocation;
+    this.engine.observeInputs(invocation);
     this.engine.onNodeExecutionStart.emit(node!);
-    return node.unsuspend(continuanceData, this.engine, socketName!, () => {
-      //Only on successful unsuspend do we clear the current link
-      //This is to allow a node to immediately re-suspend if needed
-      this.currentLink = undefined;
-      this.engine.onNodeExecutionEnd.emit(node);
+    const settle = this.engine.trackAsyncInvocation(
+      node as unknown as IAsyncNode,
+      invocation
+    );
+    return node
+      .unsuspend(
+        continuanceData,
+        this.engine,
+        socketName!,
+        () => {
+          if (!settle()) return;
+          this.engine.finishInvocation(invocation);
+          //Only on successful unsuspend do we clear the current link
+          //This is to allow a node to immediately re-suspend if needed
+          this.currentLink = undefined;
+          this.engine.onNodeExecutionEnd.emit(node);
 
-      //remove from the list of pending async nodes (it will not be present
-      //on a freshly rehydrated engine, where the node was never triggered)
-      const index = this.engine.asyncNodes.indexOf(
-        node as unknown as IAsyncNode
-      );
-      if (index >= 0) {
-        this.engine.asyncNodes.splice(index, 1);
-      }
-      this.executionSteps++;
+          this.executionSteps++;
 
-      //There might be pending callbacks on the queue
-      while (this.fiberCompletedListenerStack.length > 0) {
-        const awaitingCallback = this.fiberCompletedListenerStack.pop();
-        if (awaitingCallback === undefined) {
-          throw new Error('awaitingCallback is empty');
-        }
-        awaitingCallback.cb();
-      }
-    });
+          //There might be pending callbacks on the queue
+          while (this.fiberCompletedListenerStack.length > 0) {
+            const awaitingCallback = this.fiberCompletedListenerStack.pop();
+            if (awaitingCallback === undefined) {
+              throw new Error('awaitingCallback is empty');
+            }
+            const result = awaitingCallback.cb();
+            if (result)
+              void result.catch((error) =>
+                this.engine.reportAsyncFailure(node, error)
+              );
+          }
+        },
+        invocation
+      )
+      .catch((error) => {
+        settle();
+        this.engine.finishInvocation(invocation, 'failed', error);
+        this.engine.reportAsyncFailure(node, error);
+      });
   }
 }

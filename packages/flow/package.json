@@ -30,7 +30,8 @@
     "lint": "oxlint",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "typecheck": "tsc --noEmit -p tsconfig.prod.json"
+    "typecheck": "tsc --noEmit -p tsconfig.prod.json",
+    "test:package": "node --test --test-isolation=none tests/packageStyles.test.mjs"
   },
   "devDependencies": {
     "@kiberon-labs/behave-graph": "workspace:*",

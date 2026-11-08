@@ -1,3 +1,4 @@
+import type { InvocationContext } from './ExecutionObserver.js';
 import {
   type INode,
   isAsyncNode,
@@ -9,6 +10,7 @@ import type { Engine } from './Engine.js';
 import type { Fiber } from './Fiber.js';
 
 export type NodeExecutionArgs = {
+  readonly invocation?: InvocationContext;
   /** The fiber that is currently driving execution. */
   readonly fiber: Fiber;
   /** The owning engine. */
@@ -28,7 +30,7 @@ export type NodeExecutionArgs = {
  * part in flow execution (Flow and Async) are themselves just handlers.
  *
  * A handler owns its own completion semantics: it is responsible for emitting
- * `engine.onNodeExecutionEnd` and incrementing `fiber.executionSteps` at the
+ * `engine.finishInvocation(args.invocation)`, `engine.onNodeExecutionEnd` and incrementing `fiber.executionSteps` at the
  * point its work is considered done. (`onNodeExecutionStart` is emitted by the
  * fiber *before* dispatch, so handlers do not need to emit it.)
  */
@@ -44,7 +46,8 @@ export const flowNodeExecutionHandler: NodeExecutionHandler = ({
   fiber,
   engine,
   node,
-  socketName
+  socketName,
+  invocation
 }) => {
   if (!isFlowNode(node)) {
     throw new TypeError(
@@ -53,13 +56,17 @@ export const flowNodeExecutionHandler: NodeExecutionHandler = ({
   }
   // stay synchronous unless the node's triggered function is actually async;
   // this keeps the per-step cost free of promise/microtask overhead.
-  const result = node.triggered(fiber, socketName);
+  const result = node.triggered(fiber, socketName, invocation);
   if (isThenable(result)) {
     return result.then(() => {
+      if (engine.isDisposed) return;
+      engine.finishInvocation(invocation);
       engine.onNodeExecutionEnd.emit(node);
       fiber.executionSteps++;
     });
   }
+  if (engine.isDisposed) return;
+  engine.finishInvocation(invocation);
   engine.onNodeExecutionEnd.emit(node);
   fiber.executionSteps++;
 };
@@ -73,21 +80,37 @@ export const asyncNodeExecutionHandler: NodeExecutionHandler = async ({
   fiber,
   engine,
   node,
-  socketName
+  socketName,
+  invocation
 }) => {
   if (!isAsyncNode(node)) {
     throw new TypeError(
       `async handler received non-async node ${node.description.typeName}`
     );
   }
-  engine.asyncNodes.push(node);
-  await node.triggered(engine, socketName, () => {
-    // remove from the list of pending async nodes
-    const index = engine.asyncNodes.indexOf(node);
-    engine.asyncNodes.splice(index, 1);
-    engine.onNodeExecutionEnd.emit(node);
-    fiber.executionSteps++;
-  });
+  const settle = engine.trackAsyncInvocation(node, invocation);
+  try {
+    await node.triggered(
+      engine,
+      socketName,
+      (error?: unknown) => {
+        if (!settle()) return;
+        if (error !== undefined) {
+          engine.finishInvocation(invocation, 'failed', error);
+          engine.reportAsyncFailure(node, error);
+          return;
+        }
+        engine.finishInvocation(invocation);
+        engine.onNodeExecutionEnd.emit(node);
+        fiber.executionSteps++;
+      },
+      invocation
+    );
+  } catch (error) {
+    settle();
+    engine.finishInvocation(invocation, 'failed', error);
+    throw error;
+  }
 };
 
 /**

@@ -1,3 +1,8 @@
+import type {
+  ExecutionParent,
+  InvocationContext
+} from './ExecutionObserver.js';
+import { generateUuid } from '../utils/generateUuid.js';
 import type { GraphNodes } from '../Graphs/Graph.js';
 import { Assert } from '../Diagnostics/Assert.js';
 import { Link } from '../Nodes/Link.js';
@@ -7,7 +12,10 @@ import type { Engine } from './Engine.js';
 import { resolveSocketValue } from './resolveSocketValue.js';
 
 export type FiberListenerInner =
-  | ((resolveSockets: () => Promise<void>) => Promise<void> | void)
+  | ((
+      resolveSockets: () => Promise<void>,
+      invocation?: InvocationContext
+    ) => Promise<void> | void)
   | undefined;
 
 type FiberListener = {
@@ -18,9 +26,23 @@ type FiberListener = {
 const noopResolveSockets = () => Promise.resolve();
 
 export class Fiber {
+  private fiberIdentity?: string;
+  get id(): string {
+    return (this.fiberIdentity ??= generateUuid());
+  }
+  parentInvocation?: ExecutionParent;
+  protected invocation?: InvocationContext;
   protected readonly fiberCompletedListenerStack: FiberListener[] = [];
   protected readonly nodes: GraphNodes;
-  public executionSteps = 0;
+  private completedSteps = 0;
+  get executionSteps(): number {
+    return this.completedSteps;
+  }
+  set executionSteps(value: number) {
+    const delta = value - this.completedSteps;
+    this.completedSteps = value;
+    if (delta > 0) this.engine.accountExecutionSteps(delta);
+  }
   public engine: Engine;
   public nextEval: Link | null;
 
@@ -49,7 +71,18 @@ export class Fiber {
     fiberCompletedListener: FiberListenerInner,
     node: INode | undefined = undefined
   ) {
+    const invocation = this.invocation;
     return (): void | Promise<void> => {
+      const continuation = node
+        ? this.engine.beginInvocation(
+            node,
+            invocation,
+            this.engine.observationOptions.observer ? this.id : undefined,
+            undefined,
+            'continuation'
+          )
+        : undefined;
+      this.invocation = continuation;
       if (fiberCompletedListener === undefined) {
         return;
       }
@@ -59,15 +92,23 @@ export class Fiber {
         : noopResolveSockets;
 
       try {
-        const result = fiberCompletedListener(resolveSockets);
+        const result = fiberCompletedListener(resolveSockets, continuation);
         if (isThenable(result)) {
-          return result.then(undefined, (error) => {
-            if (node) this.engine.onNodeExecutionError.emit({ node, error });
-            throw error;
-          });
+          return result.then(
+            () => {
+              this.engine.finishInvocation(continuation);
+            },
+            (error) => {
+              this.engine.finishInvocation(continuation, 'failed', error);
+              if (node) this.engine.onNodeExecutionError.emit({ node, error });
+              throw error;
+            }
+          );
         }
+        this.engine.finishInvocation(continuation);
         return result;
       } catch (error) {
+        this.engine.finishInvocation(continuation, 'failed', error);
         if (node) this.engine.onNodeExecutionError.emit({ node, error });
         throw error;
       }
@@ -114,6 +155,9 @@ export class Fiber {
         this.nextEval = link;
       }
 
+      this.engine.observeCommit(this.invocation, node, outputSocketName);
+      this.parentInvocation = this.invocation ?? this.parentInvocation;
+
       // avoid allocating the event payload when no one is listening
       if (this.engine.onNodeCommit.listenerCount > 0) {
         this.engine.onNodeCommit.emit({ node, socket: outputSocketName });
@@ -141,7 +185,11 @@ export class Fiber {
     for (let i = 0; i < inputs.length; i++) {
       const inputSocket = inputs[i]!;
       if (inputSocket.valueTypeName !== 'flow') {
-        const result = resolveSocketValue(this.engine, inputSocket);
+        const result = resolveSocketValue(
+          this.engine,
+          inputSocket,
+          this.invocation
+        );
         this.executionSteps +=
           typeof result === 'number' ? result : await result;
       }
@@ -153,6 +201,7 @@ export class Fiber {
   // performs asynchronous work, in which case a promise is returned that the
   // caller must await before taking the next step.
   executeStep(): void | Promise<void> {
+    if (this.engine.isDisposed) return;
     // pop the next node off the queue
     const link = this.nextEval;
     this.nextEval = null;
@@ -176,13 +225,24 @@ export class Fiber {
       throw Error('Could not find node');
     }
 
+    this.invocation = this.engine.beginInvocation(
+      node,
+      this.parentInvocation,
+      this.engine.observationOptions.observer ? this.id : undefined,
+      link.socketName
+    );
+    const invocation = this.invocation;
     try {
       // first resolve all input values
       const inputs = node.inputs;
       for (let i = 0; i < inputs.length; i++) {
         const inputSocket = inputs[i]!;
         if (inputSocket.valueTypeName !== 'flow') {
-          const result = resolveSocketValue(this.engine, inputSocket);
+          const result = resolveSocketValue(
+            this.engine,
+            inputSocket,
+            this.invocation
+          );
           if (typeof result === 'number') {
             this.executionSteps += result;
           } else {
@@ -194,12 +254,14 @@ export class Fiber {
       const result = this.dispatch(node, link);
       if (isThenable(result)) {
         return result.then(undefined, (error) => {
+          this.engine.finishInvocation(invocation, 'failed', error);
           this.engine.onNodeExecutionError.emit({ node, error });
           throw error;
         });
       }
       return;
     } catch (error: unknown) {
+      this.engine.finishInvocation(this.invocation, 'failed', error);
       this.engine.onNodeExecutionError.emit({ node, error });
       throw error;
     }
@@ -211,6 +273,7 @@ export class Fiber {
    * flowing in, while all others are set to false.
    */
   private dispatch(node: INode, link: Link): void | Promise<void> {
+    this.engine.observeInputs(this.invocation);
     this.engine.onNodeExecutionStart.emit(node);
 
     // Dispatch to the handler registered for this node's kind. The built-in
@@ -223,6 +286,7 @@ export class Fiber {
       );
     }
     return handler({
+      invocation: this.invocation,
       fiber: this,
       engine: this.engine,
       node,
@@ -239,6 +303,7 @@ export class Fiber {
   ): Promise<void> {
     try {
       this.executionSteps += await pending;
+      if (this.engine.isDisposed) return;
 
       const inputs = node.inputs;
       for (let i = pendingIndex + 1; i < inputs.length; i++) {
@@ -246,13 +311,15 @@ export class Fiber {
         if (inputSocket.valueTypeName !== 'flow') {
           this.executionSteps += await resolveSocketValue(
             this.engine,
-            inputSocket
+            inputSocket,
+            this.invocation
           );
         }
       }
 
       await this.dispatch(node, link);
     } catch (error: unknown) {
+      this.engine.finishInvocation(this.invocation, 'failed', error);
       this.engine.onNodeExecutionError.emit({ node, error });
       throw error;
     }

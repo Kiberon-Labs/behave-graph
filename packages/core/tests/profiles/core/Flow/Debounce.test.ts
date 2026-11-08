@@ -38,14 +38,56 @@ describe('Debounce', () => {
     expect(commitToNewFiber).not.toHaveBeenCalled();
   });
 
-  // KNOWN BUG: Debounce.triggered captures `newState` and inside the timeout
-  // checks `newState.triggerVersion >= localTriggerCount`. Because `newState`
-  // is a fresh object that is never mutated after `localTriggerCount` is read,
-  // that condition is always true, so the node early-returns and never commits.
-  // The version check should compare against the node's latest trigger version.
-  // Once fixed, replace this `todo` with a real assertion that the node commits
-  // exactly once after the wait duration elapses without an intervening trigger.
-  it.todo(
-    'commits to flow once after the wait duration elapses with no further triggers'
-  );
+  it('commits once and settles after the quiet period', async () => {
+    const node = makeDebounce();
+    node.inputs.find((socket) => socket.name === 'waitDuration')!.value = 0.01;
+    const { engine, commitToNewFiber } = makeEngineSpy();
+    const finished = vi.fn();
+    await node.triggered(engine, 'flow', finished);
+    await vi.advanceTimersByTimeAsync(10);
+    expect(commitToNewFiber).toHaveBeenCalledTimes(1);
+    expect(finished).toHaveBeenCalledTimes(1);
+  });
+
+  it('settles simultaneous invocations and only emits the latest', async () => {
+    const node = makeDebounce();
+    node.inputs.find((socket) => socket.name === 'waitDuration')!.value = 0.01;
+    const { engine, commitToNewFiber } = makeEngineSpy();
+    const first = vi.fn();
+    const second = vi.fn();
+    await Promise.all([
+      node.triggered(engine, 'flow', first),
+      node.triggered(engine, 'flow', second)
+    ]);
+    await vi.advanceTimersByTimeAsync(10);
+    expect(commitToNewFiber).toHaveBeenCalledTimes(1);
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  it('settles pending and cancel invocations without emitting', async () => {
+    const node = makeDebounce();
+    node.inputs.find((socket) => socket.name === 'waitDuration')!.value = 1;
+    const { engine, commitToNewFiber } = makeEngineSpy();
+    const finished = vi.fn();
+    await node.triggered(engine, 'flow', finished);
+    await node.triggered(engine, 'cancel', finished);
+    expect(finished).toHaveBeenCalledTimes(2);
+    expect(vi.getTimerCount()).toBe(0);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(commitToNewFiber).not.toHaveBeenCalled();
+  });
+
+  it('settles all pending invocations during disposal', async () => {
+    const node = makeDebounce();
+    node.inputs.find((socket) => socket.name === 'waitDuration')!.value = 1;
+    const { engine, commitToNewFiber } = makeEngineSpy();
+    const finished = vi.fn();
+    await node.triggered(engine, 'flow', finished);
+    await node.dispose();
+    expect(finished).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(commitToNewFiber).not.toHaveBeenCalled();
+  });
 });

@@ -67,7 +67,7 @@ const httpRequestNode = makeAsyncNodeDefinition({
     body: 'string'
   },
   initialState: {},
-  triggered: async ({ read, write, commit, finished = () => { }, graph }) => {
+  triggered: async ({ read, write, commit, finished = () => {}, graph }) => {
     const http = readCapability(graph, HttpClientKey);
     if (!http) {
       throw new Error('workflow/httpRequest requires an HttpClient capability');

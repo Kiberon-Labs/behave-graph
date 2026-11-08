@@ -1,3 +1,4 @@
+import type { InvocationContext } from '../engine/ExecutionObserver.js';
 import { Assert } from '../Diagnostics/Assert.js';
 import { Engine } from '../engine/Engine.js';
 import type { IGraph } from '../Graphs/Graph.js';
@@ -43,13 +44,13 @@ export class EventNode extends Node<'Event'> implements IEventNode {
   }
 
   // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
-  init(engine: Engine) {
+  init(engine: Engine, _invocation?: InvocationContext) {
     throw new Error('not implemented');
   }
 
   // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
   dispose(engine: Engine) {
-    throw new Error('not implemented');
+    // Resource-free subclasses have nothing to release.
   }
 }
 
@@ -92,9 +93,13 @@ export class EventNodeInstance<TEventNodeDef extends IEventNodeDefinition>
     this.outputSocketKeys = nodeProps.outputs.map((s) => s.name);
   }
 
-  init = async (engine: Engine): Promise<any> => {
+  init = async (
+    engine: Engine,
+    invocation?: InvocationContext
+  ): Promise<void> => {
     const stateProxy = this.createStateProxy();
     const state = await this.initInner({
+      invocation,
       node: this,
       engine: engine,
       read: this.readInput,
@@ -102,7 +107,12 @@ export class EventNodeInstance<TEventNodeDef extends IEventNodeDefinition>
       state: stateProxy,
       outputSocketKeys: this.outputSocketKeys,
       commit: (outFlowname, fiberCompletedListener) =>
-        engine.commitToNewFiber(this, outFlowname, fiberCompletedListener),
+        engine.commitToNewFiber(
+          this,
+          outFlowname,
+          fiberCompletedListener,
+          invocation
+        ),
       configuration: this.configuration,
       graph: this.graph
     });
@@ -115,7 +125,7 @@ export class EventNodeInstance<TEventNodeDef extends IEventNodeDefinition>
 
   async dispose(): Promise<void> {
     const currentState = this.createStateProxy();
-    this.disposeInner({
+    await this.disposeInner({
       state: currentState,
       graph: this.graph
     });

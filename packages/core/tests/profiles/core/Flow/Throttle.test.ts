@@ -42,7 +42,12 @@ describe('Throttle', () => {
     vi.advanceTimersByTime(1000);
 
     expect(commitToNewFiber).toHaveBeenCalledTimes(1);
-    expect(commitToNewFiber).toHaveBeenCalledWith(node, 'flow');
+    expect(commitToNewFiber).toHaveBeenCalledWith(
+      node,
+      'flow',
+      undefined,
+      undefined
+    );
     expect(finished).toHaveBeenCalledTimes(1);
   });
 
@@ -59,6 +64,7 @@ describe('Throttle', () => {
 
     // only the first trigger's timeout fires
     expect(commitToNewFiber).toHaveBeenCalledTimes(1);
+    expect(finished).toHaveBeenCalledTimes(3);
   });
 
   it('does not commit when cancelled before the duration elapses', () => {
@@ -68,11 +74,24 @@ describe('Throttle', () => {
 
     node.triggered(engine, 'flow', finished);
     node.triggered(engine, 'cancel', finished);
+    expect(finished).toHaveBeenCalledTimes(2);
 
     vi.advanceTimersByTime(1000);
 
     expect(commitToNewFiber).not.toHaveBeenCalled();
-    expect(finished).not.toHaveBeenCalled();
+  });
+
+  it('settles a pending invocation during disposal and clears its timer', () => {
+    const node = makeThrottle();
+    const { engine, commitToNewFiber } = makeEngineSpy();
+    const finished = vi.fn();
+    node.triggered(engine, 'flow', finished);
+    node.dispose();
+    expect(finished).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+    vi.advanceTimersByTime(1000);
+    expect(commitToNewFiber).not.toHaveBeenCalled();
+    expect(finished).toHaveBeenCalledTimes(1);
   });
 
   it('can throttle again after the previous timeout completed', () => {

@@ -1,4 +1,4 @@
-import type { INode } from '@kiberon-labs/behave-graph';
+import type { INode, InvocationContext } from '@kiberon-labs/behave-graph';
 import type { SuspendableEngine } from './engine';
 import type { SerializedSuspendedFiber } from './fiber';
 
@@ -11,7 +11,8 @@ export interface IAsyncSuspendable<T = any, State = any>
     data: T,
     engine: SuspendableEngine,
     triggeringSocketName: string,
-    cb: () => void
+    cb: () => void,
+    invocation?: InvocationContext
   ): Promise<void>;
   triggered(
     engine: SuspendableEngine,

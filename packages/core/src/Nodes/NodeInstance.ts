@@ -1,3 +1,4 @@
+import type { InvocationContext } from '../engine/ExecutionObserver.js';
 import type { Engine } from '../engine/Engine.js';
 import type { Fiber } from '../engine/Fiber.js';
 import type { IGraph } from '../Graphs/Graph.js';
@@ -38,31 +39,42 @@ export interface INode {
 
 export interface IFunctionNode extends INode {
   nodeType: typeof NodeType.Function;
-  exec: (node: INode) => void | Promise<void>;
+  exec: (node: INode, invocation?: InvocationContext) => void | Promise<void>;
 }
 
 export interface IEventNode extends INode {
   nodeType: typeof NodeType.Event;
-  init: (engine: Engine) => void;
-  dispose: (engine: Engine) => void;
+  init: (
+    engine: Engine,
+    invocation?: InvocationContext
+  ) => void | Promise<void>;
+  dispose: (engine: Engine) => void | Promise<void>;
 }
 
 export interface IFlowNode extends INode {
   nodeType: typeof NodeType.Flow;
   triggered: (
     fiber: Fiber,
-    triggeringSocketName: string
+    triggeringSocketName: string,
+    invocation?: InvocationContext
   ) => void | Promise<void>;
 }
 
+/**
+ * Each invocation must call finished exactly once, including suppressed or
+ * cancelled invocations. Returning from triggered does not settle the work.
+ * Disposal must release resources and settle outstanding invocations; factory
+ * instances await asynchronous disposal hooks when their dispose is awaited.
+ */
 export interface IAsyncNode extends INode {
   nodeType: typeof NodeType.Async;
   triggered: (
     engine: Engine,
     triggeringSocketName: string,
-    finished: () => void
-  ) => void;
-  dispose: () => void;
+    finished: (error?: unknown) => void,
+    invocation?: InvocationContext
+  ) => void | Promise<void>;
+  dispose: () => void | Promise<void>;
 }
 
 export const isFlowNode = (node: INode): node is IFlowNode =>

@@ -1,3 +1,4 @@
+import type { ExecutionObserverOptions } from './ExecutionObserver.js';
 import { EventEmitter } from '../Events/EventEmitter.js';
 import type { GraphInstance } from '../Graphs/Graph.js';
 import type { INode } from '../Nodes/NodeInstance.js';
@@ -20,17 +21,24 @@ export type NodeChangeEvent = {
  * - Event notification for node changes
  */
 export class RealtimeEngine extends Engine {
+  private readonly pendingInitializations = new Set<Promise<void>>();
   private deletedNodeIds = new Set<string>();
   public readonly onNodeChanged = new EventEmitter<NodeChangeEvent>();
 
-  constructor(graph: GraphInstance, registry: IRegistry) {
-    super(graph, registry);
+  constructor(
+    graph: GraphInstance,
+    registry: IRegistry,
+    options: ExecutionObserverOptions = {}
+  ) {
+    super(graph, registry, options);
   }
 
   /**
    * Add a new node to the graph at runtime
    */
   addNode(node: INode): void {
+    if (this.isDisposed)
+      throw new Error('Cannot add a node to a disposed engine');
     try {
       // Register the node
       this.nodes[node.id] = node;
@@ -39,7 +47,13 @@ export class RealtimeEngine extends Engine {
       if (isEventNode(node)) {
         this.eventNodes.push(node);
         // Initialize async
-        void node.init(this);
+        const initialization = this.initializeEventNode(node).catch((error) =>
+          this.reportAsyncFailure(node, error, false)
+        );
+        this.pendingInitializations.add(initialization);
+        void initialization
+          .finally(() => this.pendingInitializations.delete(initialization))
+          .catch(() => {});
       }
 
       // Emit event
@@ -65,6 +79,8 @@ export class RealtimeEngine extends Engine {
         throw new Error(`Node with id ${nodeId} not found`);
       }
 
+      this.cancelNodeInvocations(node);
+
       // Mark as deleted to skip pending fibers targeting this node
       this.deletedNodeIds.add(nodeId);
 
@@ -77,7 +93,9 @@ export class RealtimeEngine extends Engine {
         if (eventNodeIndex >= 0) {
           this.eventNodes.splice(eventNodeIndex, 1);
         }
-        node.dispose(this);
+        void this.cleanupNode(node).catch((error) =>
+          this.reportAsyncFailure(node, error)
+        );
       }
 
       // Dispose async nodes
@@ -86,7 +104,9 @@ export class RealtimeEngine extends Engine {
         if (asyncNodeIndex >= 0) {
           this.asyncNodes.splice(asyncNodeIndex, 1);
         }
-        node.dispose();
+        void this.cleanupNode(node).catch((error) =>
+          this.reportAsyncFailure(node, error)
+        );
       }
 
       // Clean up any pending fibers targeting this node
@@ -168,6 +188,9 @@ export class RealtimeEngine extends Engine {
     limitInSeconds = 100,
     limitInSteps = 100000000
   ): Promise<number> {
+    await this.initialize();
+    await Promise.all(this.pendingInitializations);
+    this.throwIfAsyncFailed();
     const startDateTime = Date.now();
     let elapsedSeconds = 0;
     let elapsedSteps = 0;
@@ -211,7 +234,6 @@ export class RealtimeEngine extends Engine {
       elapsedSeconds = (Date.now() - startDateTime) * 0.001;
     }
 
-    this.executionSteps += elapsedSteps;
     return elapsedSteps;
   }
 

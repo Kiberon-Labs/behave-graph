@@ -159,7 +159,7 @@ export function Intro() {
             lineHeight: 1.5
           }}
         >
-          AI &amp; DevSecOps consulting  engineering-led, security-minded,
+          AI &amp; DevSecOps consulting engineering-led, security-minded,
           outcome-driven.
           <br />
           The tools we build for our own work, given back to the community.
@@ -308,7 +308,7 @@ export function Intro() {
             opacity: taglineIn
           }}
         >
-          Visual scripting for the web  engine, editor, and everything between
+          Visual scripting for the web engine, editor, and everything between
         </div>
         <div
           style={{

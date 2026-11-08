@@ -1,3 +1,4 @@
+import type { InvocationContext } from './ExecutionObserver.js';
 import { Assert } from '../Diagnostics/Assert.js';
 import { type IFunctionNode, isFunctionNode } from '../Nodes/NodeInstance.js';
 import type { Socket } from '../Sockets/Socket.js';
@@ -15,8 +16,10 @@ import type { Engine } from './Engine.js';
  */
 export function resolveSocketValue(
   engine: Engine,
-  inputSocket: Socket
+  inputSocket: Socket,
+  parent?: InvocationContext
 ): number | Promise<number> {
+  if (engine.isDisposed) return 0;
   // if it has no links, leave value on input socket alone.
   if (inputSocket.links.length === 0) {
     return 0;
@@ -53,46 +56,70 @@ export function resolveSocketValue(
     return 0;
   }
 
-  let executionSteps = 0;
+  const invocation = engine.beginInvocation(
+    upstreamNode,
+    parent,
+    parent?.fiberId
+  );
+  try {
+    let executionSteps = 0;
 
-  // resolve all inputs for the upstream node (this is where the recursion happens)
-  // TODO: This is a bit dangerous as if there are loops in the graph, this will blow up the stack
-  const upstreamInputs = upstreamNode.inputs;
-  for (let i = 0; i < upstreamInputs.length; i++) {
-    const result = resolveSocketValue(engine, upstreamInputs[i]!);
-    if (typeof result === 'number') {
-      executionSteps += result;
-    } else {
-      // an upstream resolution went async; finish the remainder asynchronously
-      return finishResolveAsync(
-        engine,
-        inputSocket,
-        upstreamNode,
-        upstreamOutputSocket,
-        i,
-        result,
-        executionSteps
+    // resolve all inputs for the upstream node (this is where the recursion happens)
+    // TODO: This is a bit dangerous as if there are loops in the graph, this will blow up the stack
+    const upstreamInputs = upstreamNode.inputs;
+    for (let i = 0; i < upstreamInputs.length; i++) {
+      const result = resolveSocketValue(engine, upstreamInputs[i]!, invocation);
+      if (typeof result === 'number') {
+        executionSteps += result;
+      } else {
+        // an upstream resolution went async; finish the remainder asynchronously
+        return finishResolveAsync(
+          engine,
+          inputSocket,
+          upstreamNode,
+          upstreamOutputSocket,
+          i,
+          result,
+          executionSteps,
+          invocation
+        );
+      }
+    }
+
+    engine.observeInputs(invocation);
+    engine.onNodeExecutionStart.emit(upstreamNode);
+    const execResult = upstreamNode.exec(upstreamNode, invocation);
+    if (isThenable(execResult)) {
+      return execResult.then(
+        () => {
+          if (engine.isDisposed) return executionSteps;
+          executionSteps++;
+          engine.finishInvocation(invocation);
+          engine.onNodeExecutionEnd.emit(upstreamNode);
+          inputSocket.value = upstreamOutputSocket.value;
+          return executionSteps;
+        },
+        (error) => {
+          engine.finishInvocation(invocation, 'failed', error);
+          engine.onNodeExecutionError.emit({ node: upstreamNode, error });
+          throw error;
+        }
       );
     }
+
+    if (engine.isDisposed) return executionSteps;
+    executionSteps++;
+    engine.finishInvocation(invocation);
+    engine.onNodeExecutionEnd.emit(upstreamNode);
+
+    // get the output value we wanted.
+    inputSocket.value = upstreamOutputSocket.value;
+    return executionSteps;
+  } catch (error) {
+    engine.finishInvocation(invocation, 'failed', error);
+    engine.onNodeExecutionError.emit({ node: upstreamNode, error });
+    throw error;
   }
-
-  engine.onNodeExecutionStart.emit(upstreamNode);
-  const execResult = upstreamNode.exec(upstreamNode);
-  if (isThenable(execResult)) {
-    return execResult.then(() => {
-      executionSteps++;
-      engine.onNodeExecutionEnd.emit(upstreamNode);
-      inputSocket.value = upstreamOutputSocket.value;
-      return executionSteps;
-    });
-  }
-
-  executionSteps++;
-  engine.onNodeExecutionEnd.emit(upstreamNode);
-
-  // get the output value we wanted.
-  inputSocket.value = upstreamOutputSocket.value;
-  return executionSteps;
 }
 
 async function finishResolveAsync(
@@ -102,20 +129,36 @@ async function finishResolveAsync(
   upstreamOutputSocket: Socket,
   pendingIndex: number,
   pending: Promise<number>,
-  stepsSoFar: number
+  stepsSoFar: number,
+  invocation?: InvocationContext
 ): Promise<number> {
-  let executionSteps = stepsSoFar + (await pending);
+  try {
+    let executionSteps = stepsSoFar + (await pending);
+    if (engine.isDisposed) return executionSteps;
 
-  const upstreamInputs = upstreamNode.inputs;
-  for (let i = pendingIndex + 1; i < upstreamInputs.length; i++) {
-    executionSteps += await resolveSocketValue(engine, upstreamInputs[i]!);
+    const upstreamInputs = upstreamNode.inputs;
+    for (let i = pendingIndex + 1; i < upstreamInputs.length; i++) {
+      executionSteps += await resolveSocketValue(
+        engine,
+        upstreamInputs[i]!,
+        invocation
+      );
+      if (engine.isDisposed) return executionSteps;
+    }
+
+    engine.onNodeExecutionStart.emit(upstreamNode);
+    engine.observeInputs(invocation);
+    await upstreamNode.exec(upstreamNode, invocation);
+    if (engine.isDisposed) return executionSteps;
+    executionSteps++;
+    engine.finishInvocation(invocation);
+    engine.onNodeExecutionEnd.emit(upstreamNode);
+
+    inputSocket.value = upstreamOutputSocket.value;
+    return executionSteps;
+  } catch (error) {
+    engine.finishInvocation(invocation, 'failed', error);
+    engine.onNodeExecutionError.emit({ node: upstreamNode, error });
+    throw error;
   }
-
-  engine.onNodeExecutionStart.emit(upstreamNode);
-  await upstreamNode.exec(upstreamNode);
-  executionSteps++;
-  engine.onNodeExecutionEnd.emit(upstreamNode);
-
-  inputSocket.value = upstreamOutputSocket.value;
-  return executionSteps;
 }

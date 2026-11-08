@@ -1,3 +1,4 @@
+import type { InvocationContext } from '../engine/ExecutionObserver.js';
 import type {
   SocketDefinition,
   SocketListDefinition,
@@ -45,13 +46,16 @@ export abstract class FunctionNode
   extends Node<'Function'>
   implements IFunctionNode
 {
-  public readonly exec: (node: INode) => Promise<void> | void;
+  public readonly exec: (
+    node: INode,
+    invocation?: InvocationContext
+  ) => Promise<void> | void;
   constructor(
     description: NodeDescription,
     graph: IGraph,
     inputs: Socket[] = [],
     outputs: Socket[] = [],
-    exec: (node: INode) => Promise<void> | void,
+    exec: (node: INode, invocation?: InvocationContext) => Promise<void> | void,
     configuration: NodeConfiguration = {},
     id: string
   ) {
@@ -105,7 +109,10 @@ export class FunctionNodeInstance<
 
   // Not declared async: returns the inner exec's result directly so callers
   // can stay synchronous when the node's exec is synchronous.
-  exec = (node: INode): void | Promise<void> => {
+  exec = (
+    node: INode,
+    invocation?: InvocationContext
+  ): void | Promise<void> => {
     let params = this._execParams;
     if (params === undefined || params.node !== node) {
       params = {
@@ -124,7 +131,9 @@ export class FunctionNodeInstance<
       } as typeof this._execParams;
       this._execParams = params;
     }
-    return this.execInner(params!) as void | Promise<void>;
+    return this.execInner(
+      invocation ? { ...params!, invocation } : params!
+    ) as void | Promise<void>;
   };
 }
 

@@ -92,10 +92,10 @@ export class GraphRunnerServer {
       setState: (key: string, value: unknown) => {
         stateMap.set(key, value);
       },
-      storeEvent: () => { }, // No-op for server
-      rehydrateState: async () => { }, // No-op for server
-      syncState: async () => { }, // No-op for server
-      syncAndClearState: async () => { }, // No-op for server
+      storeEvent: () => {}, // No-op for server
+      rehydrateState: async () => {}, // No-op for server
+      syncState: async () => {}, // No-op for server
+      syncAndClearState: async () => {}, // No-op for server
       resetState: async () => {
         stateMap.clear();
       }
@@ -278,10 +278,10 @@ export class GraphRunnerServer {
 
       console.log(
         `Loaded custom registry from: ${registryPath}` +
-        (createEngine ? ' (+ custom engine)' : '') +
-        (executionHandlers
-          ? ` (+ ${Object.keys(executionHandlers).length} execution handler(s))`
-          : '')
+          (createEngine ? ' (+ custom engine)' : '') +
+          (executionHandlers
+            ? ` (+ ${Object.keys(executionHandlers).length} execution handler(s))`
+            : '')
       );
       return { registry, createEngine, executionHandlers };
     } catch (error) {

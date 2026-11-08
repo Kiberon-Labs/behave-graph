@@ -52,27 +52,27 @@ type SettingDescriptorBase = {
 export type SettingDescriptor =
   | (SettingDescriptorBase & { type: 'boolean'; default: boolean })
   | (SettingDescriptorBase & {
-    type: 'number';
-    default: number;
-    min?: number;
-    max?: number;
-    step?: number;
-  })
+      type: 'number';
+      default: number;
+      min?: number;
+      max?: number;
+      step?: number;
+    })
   | (SettingDescriptorBase & {
-    type: 'string';
-    default: string;
-    placeholder?: string;
-  })
+      type: 'string';
+      default: string;
+      placeholder?: string;
+    })
   | (SettingDescriptorBase & {
-    type: 'enum';
-    default: string;
-    options: SettingEnumOption[];
-  })
+      type: 'enum';
+      default: string;
+      options: SettingEnumOption[];
+    })
   | (SettingDescriptorBase & {
-    type: 'custom';
-    default?: unknown;
-    render: FC<SettingControlProps>;
-  });
+      type: 'custom';
+      default?: unknown;
+      render: FC<SettingControlProps>;
+    });
 
 export type SettingsSchemaStore = {
   /** Registered descriptors, in registration order. */

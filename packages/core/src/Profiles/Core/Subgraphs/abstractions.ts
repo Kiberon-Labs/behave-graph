@@ -1,3 +1,4 @@
+import type { InvocationContext } from '../../../engine/ExecutionObserver.js';
 import type { GraphJSON } from '../../../Graphs/IO/GraphJSON.js';
 
 /**
@@ -11,7 +12,8 @@ export interface IGraphApi {
   /** Instantiate and run a referenced graph, returning its output values. */
   runGraph(
     id: string,
-    inputs: Record<string, any>
+    inputs: Record<string, any>,
+    invocation?: InvocationContext
   ): Promise<Record<string, any>>;
 }
 

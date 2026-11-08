@@ -1,6 +1,11 @@
 import { makeAsyncNodeDefinition } from '../../../Nodes/NodeDefinitions.js';
 import { NodeCategory } from '@/Nodes/Registry/NodeCategory.js';
 
+const pendingDelays = new WeakMap<
+  object,
+  { timeout: ReturnType<typeof setTimeout>; finish: () => void }
+>();
+
 // New format
 export const Delay = makeAsyncNodeDefinition({
   typeName: 'time/delay',
@@ -26,23 +31,38 @@ export const Delay = makeAsyncNodeDefinition({
   triggered: async ({ state, finished = () => {}, commit, read }) => {
     // if there is a valid timeout running, leave it.
     if (state.timeoutPending) {
+      // Suppression completes this invocation; the existing timer owns its
+      // own completion callback and still commits only once.
+      finished();
       return;
     }
 
     state.timeoutPending = true;
 
-    setTimeout(async () => {
-      // check if cancelled
-      if (!state.timeoutPending) return;
-
-      state.timeoutPending = false;
-      commit('flow');
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      pendingDelays.delete(state);
       finished();
-    }, read<number>('duration'));
-  },
-  dispose: () => {
-    return {
-      timeoutPending: false
     };
+    const timeout = setTimeout(() => {
+      state.timeoutPending = false;
+      try {
+        commit('flow');
+      } finally {
+        finish();
+      }
+    }, read<number>('duration'));
+    pendingDelays.set(state, { timeout, finish });
+  },
+  dispose: ({ state }) => {
+    state.timeoutPending = false;
+    const pending = pendingDelays.get(state);
+    if (pending) {
+      clearTimeout(pending.timeout);
+      pending.finish();
+    }
+    return { timeoutPending: false };
   }
 });

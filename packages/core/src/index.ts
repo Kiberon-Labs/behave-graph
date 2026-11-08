@@ -107,3 +107,5 @@ export * from './utils/memo.js';
 
 //Annotations
 export * from './annotations/index.js';
+
+export * from './engine/ExecutionObserver.js';
